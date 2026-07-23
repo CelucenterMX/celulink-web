@@ -3,170 +3,302 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>celulink.mx/menu — Hub de herramientas</title>
-<meta name="description" content="Hub principal de CeluCenter: catálogos, herramientas y promociones para tiendas y clientes.">
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<title>celulink.mx/menu — Hub interno</title>
+<meta name="description" content="Hub interno de celulink.mx — Catálogos, herramientas y administración.">
+<link rel="icon" type="image/png" href="../assets/favicon-celucenter.png">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Nunito:wght@600;700&display=swap" rel="stylesheet">
 <style>
-* { margin: 0; padding: 0; box-sizing: border-box; }
 :root {
-  --turquesa: #1ab394;
-  --turquesa-oscuro: #0f8a72;
-  --gris: #333;
-  --gris-claro: #f5f7fa;
-  --texto-suave: #6b7280;
-  --borde: #e5e7eb;
+  --celeste:#00A5D4; --verde:#7AB800; --marino:#0B2545;
+  --naranja:#F5A623; --rojo:#E53935;
+  --gris-claro:#F4F6F9; --gris:#8A94A6; --negro:#1A1A2E;
+  --grad-hero: linear-gradient(135deg, #0B2545 0%, #00A5D4 100%);
+  --grad-promo: linear-gradient(135deg, #F5A623 0%, #E53935 100%);
+  --grad-marca: linear-gradient(135deg, #00A5D4 0%, #7AB800 100%);
+  --radius: 14px;
+  --shadow-md: 0 2px 8px rgba(0,0,0,.1);
+  --shadow-lg: 0 8px 24px rgba(0,0,0,0.06);
 }
+* { margin: 0; padding: 0; box-sizing: border-box; }
 body {
-  font-family: 'Poppins', -apple-system, sans-serif;
+  font-family: 'Montserrat', -apple-system, sans-serif;
   background: var(--gris-claro);
-  color: var(--gris);
-  line-height: 1.6;
+  color: var(--negro);
+  line-height: 1.5;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
 }
-.container { max-width: 1100px; margin: 0 auto; padding: 0 20px; }
-header {
+
+/* NAV */
+.nav {
+  background: var(--marino);
+  color: white;
+  padding: 14px 20px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: var(--shadow-md);
+}
+.nav-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+.nav-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: white;
+}
+.nav-brand-logo {
+  height: 32px; width: 32px; border-radius: 50%;
+  background: white; padding: 4px;
+}
+.nav-brand-text {
+  font-weight: 800; font-size: 1.15rem;
+  letter-spacing: -0.02em;
+}
+.nav-brand-text .link { color: var(--celeste); }
+.nav-links { display: flex; gap: 8px; align-items: center; }
+.nav-links a {
+  color: rgba(255,255,255,0.75);
+  text-decoration: none;
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 8px 14px;
+  border-radius: 20px;
+  transition: background 0.15s;
+}
+.nav-links a:hover { background: rgba(255,255,255,0.1); color: white; }
+.nav-tag {
+  background: var(--celeste);
+  color: white;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+/* HEADER SECCIÓN */
+.page-head {
   background: white;
-  border-bottom: 1px solid var(--borde);
-  padding: 28px 0;
+  border-bottom: 1px solid #E2E8F0;
+  padding: 48px 20px 40px;
   text-align: center;
 }
-header h1 { color: var(--turquesa-oscuro); font-size: 1.8rem; font-weight: 700; }
-header p { color: var(--texto-suave); font-size: 0.95rem; margin-top: 4px; }
-main { flex: 1; padding: 48px 20px; }
-.intro { text-align: center; max-width: 640px; margin: 0 auto 48px; }
-.intro h2 { font-size: 1.3rem; color: var(--gris); margin-bottom: 8px; }
-.intro p { color: var(--texto-suave); }
+.page-head h1 {
+  font-size: clamp(1.8rem, 4vw, 2.4rem);
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  margin-bottom: 8px;
+}
+.page-head h1 .link { color: var(--celeste); }
+.page-head p {
+  color: var(--gris);
+  font-size: 1rem;
+}
+.page-head .badge {
+  display: inline-block;
+  background: rgba(0,165,212,0.1);
+  color: var(--celeste);
+  padding: 6px 16px;
+  border-radius: 100px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  margin-bottom: 16px;
+}
+
+/* MAIN */
+main { flex: 1; padding: 56px 20px; }
+.container { max-width: 1100px; margin: 0 auto; }
+
+/* GRID */
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 20px;
+  gap: 16px;
 }
 .card {
   background: white;
-  border: 1px solid var(--borde);
-  border-radius: 12px;
-  padding: 24px;
-  transition: transform 0.15s, box-shadow 0.15s;
+  border: 1px solid #E2E8F0;
+  border-radius: var(--radius);
+  padding: 22px;
   text-decoration: none;
   color: inherit;
   display: block;
+  transition: all 0.2s;
+  position: relative;
 }
 .card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--celeste);
 }
 .card .badge {
   display: inline-block;
-  font-size: 0.7rem;
-  font-weight: 600;
-  letter-spacing: 0.5px;
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
-  padding: 3px 10px;
-  border-radius: 12px;
+  padding: 4px 10px;
+  border-radius: 100px;
   margin-bottom: 12px;
 }
-.badge-public { background: #d1fae5; color: #065f46; }
+.badge-public { background: #dcfce7; color: #166534; }
 .badge-admin { background: #fee2e2; color: #991b1b; }
-.badge-promo { background: #fef3c7; color: #92400e; }
-.card h3 { font-size: 1.05rem; margin-bottom: 6px; color: var(--gris); }
-.card p { font-size: 0.85rem; color: var(--texto-suave); }
-footer {
-  text-align: center;
-  padding: 24px;
-  font-size: 0.8rem;
-  color: var(--texto-suave);
-  border-top: 1px solid var(--borde);
-  background: white;
+.badge-promo { background: #FFF8E1; color: #B45309; }
+.badge-marca { background: rgba(122,184,0,0.15); color: #4d7c0d; }
+.card h3 {
+  font-size: 1.05rem;
+  font-weight: 800;
+  margin-bottom: 6px;
+  color: var(--negro);
 }
-.status-ok { color: #065f46; font-weight: 600; }
+.card p {
+  font-size: 0.85rem;
+  color: var(--gris);
+  line-height: 1.5;
+}
+.card .arrow {
+  display: block;
+  margin-top: 14px;
+  color: var(--celeste);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+.card.missing {
+  opacity: 0.5;
+  border-style: dashed;
+}
+.card.missing .arrow { color: var(--gris); }
+
+/* FOOTER */
+footer {
+  background: var(--marino);
+  color: rgba(255,255,255,0.7);
+  padding: 28px 20px;
+  text-align: center;
+  font-size: 0.85rem;
+}
+footer a { color: white; text-decoration: none; opacity: 0.85; }
+footer a:hover { opacity: 1; text-decoration: underline; }
+.footer-line { margin: 6px 0; }
+.footer-status { color: var(--verde); font-weight: 700; }
+
+@media (max-width: 640px) {
+  .nav-links a:not(.nav-tag) { display: none; }
+}
 </style>
 </head>
 <body>
 
-<header>
-  <div class="container">
-    <h1>📱 celulink.mx/menu</h1>
-    <p>Hub interno · herramientas, catálogos y promos</p>
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="../" class="nav-brand">
+      <img class="nav-brand-logo" src="../assets/icono-celucenter.png" alt="CeluCenter">
+      <span class="nav-brand-text">celu<span class="link">link</span>.mx<span style="opacity:0.6; font-weight:500; font-size:0.9rem;"> /menu</span></span>
+    </a>
+    <div class="nav-links">
+      <a href="../">← Inicio</a>
+      <span class="nav-tag">hub interno</span>
+    </div>
   </div>
-</header>
+</nav>
+
+<section class="page-head">
+  <div class="container">
+    <div class="badge">Hub interno · v1.1</div>
+    <h1>Accesos rápidos</h1>
+    <p>Catálogos, herramientas, promos y administración en un solo lugar.</p>
+  </div>
+</section>
 
 <main>
   <div class="container">
 
-    <section class="intro">
-      <h2>Accesos rápidos</h2>
-      <p>Catálogos, herramientas y promociones en un solo lugar.</p>
-    </section>
+    <div class="grid">
 
-    <section class="grid">
-
-      <a class="card" href="../catalogos/accesorios/">
-        <span class="badge badge-public">Catálogo</span>
-        <h3>Accesorios mayoreo</h3>
-        <p>Catálogo con precios escalonados y carrito (2X / F / G).</p>
+      <!-- Destacado (gradiente marca) -->
+      <a class="card" href="../catalogos/accesorios/" style="background: var(--grad-marca); border: none; color: white;">
+        <span class="badge" style="background: rgba(255,255,255,0.2); color: white;">Catálogo público</span>
+        <h3 style="color: white;">Accesorios mayoreo</h3>
+        <p style="color: rgba(255,255,255,0.9);">Catálogo con precios escalonados y carrito (2X / F / G).</p>
+        <span class="arrow" style="color: white;">Explorar →</span>
       </a>
 
       <a class="card" href="../catalogos/equipos/">
         <span class="badge badge-public">Catálogo</span>
         <h3>Equipos CeluCenter</h3>
         <p>BM, Ecom, LAFT — catálogo público de equipos.</p>
+        <span class="arrow">Ir →</span>
       </a>
 
       <a class="card" href="../herramientas/generador-flyers/">
         <span class="badge badge-public">Herramienta</span>
         <h3>Generador de Flyers</h3>
         <p>Crea publicidad con plantillas de campaña.</p>
+        <span class="arrow">Abrir →</span>
       </a>
 
       <a class="card" href="../herramientas/prepago/">
         <span class="badge badge-admin">Interna</span>
         <h3>Reporte de prepago</h3>
         <p>Reporte operativo interno.</p>
+        <span class="arrow">Pendiente →</span>
       </a>
 
       <a class="card" href="../herramientas/publicidad/">
         <span class="badge badge-admin">Interna</span>
         <h3>Publicidad</h3>
-        <p>Recursos y plantillas de publicidad interna.</p>
+        <p>Recursos y plantillas internas.</p>
+        <span class="arrow">Pendiente →</span>
       </a>
 
       <a class="card" href="../promos/quiniela/">
         <span class="badge badge-promo">Promo</span>
         <h3>Quiniela Mundial 2026</h3>
         <p>Predice los partidos del mundial.</p>
+        <span class="arrow">Ir →</span>
       </a>
 
       <a class="card" href="../admin/reto-equipos/">
         <span class="badge badge-admin">Admin</span>
         <h3>Reto Equipos</h3>
         <p>Dashboard competencia mensual entre sucursales.</p>
+        <span class="arrow">Pendiente →</span>
       </a>
 
       <a class="card" href="../admin/encuesta/">
         <span class="badge badge-admin">Admin</span>
         <h3>Encuesta Artículos</h3>
         <p>Votación interna de artículos para tiendas.</p>
+        <span class="arrow">Pendiente →</span>
       </a>
 
       <a class="card" href="../marca/">
-        <span class="badge badge-public">Marca</span>
+        <span class="badge badge-marca">Brand</span>
         <h3>Libro de marca</h3>
         <p>Brand DNA, paleta, tipografía y plantillas.</p>
+        <span class="arrow">Pendiente →</span>
       </a>
 
-    </section>
+    </div>
 
   </div>
 </main>
 
 <footer>
-  <div class="container">
-    <p><span class="status-ok">● Sistema operativo</span> · mono-repo consolidado · v1.1</p>
-    <p style="margin-top: 6px;">CeluCenter — <a href="mailto:contacto@celulink.mx" style="color: var(--turquesa); text-decoration: none;">contacto@celulink.mx</a></p>
-    <p style="margin-top: 6px;"><a href="../" style="color: var(--turquesa); text-decoration: none;">← Inicio</a></p>
-  </div>
+  <p class="footer-line"><span class="footer-status">●</span> Sistema operativo · <a href="../">volver al inicio</a></p>
+  <p class="footer-line"><a href="mailto:contacto@celulink.mx">contacto@celulink.mx</a> · sub-marca de CeluCenter</p>
 </footer>
 
 </body>

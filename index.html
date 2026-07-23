@@ -3,63 +3,166 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CeluCenter — Tu tienda de celulares y accesorios</title>
-<meta name="description" content="CeluCenter: 27 tiendas en Jalisco, Colima, Michoacán y Sinaloa. Celulares, accesorios y tecnología. Envíos a todo México.">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E📱%3C/text%3E%3C/svg%3E">
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<title>celulink.mx — Tecnología para todos | Sub-marca de CeluCenter</title>
+<meta name="description" content="celulink.mx — La forma más fácil y confiable de estrenar tecnología. 27 tiendas físicas. Envíos a todo México.">
+<link rel="icon" type="image/png" href="./assets/favicon-celucenter.png">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Nunito:wght@600;700&display=swap" rel="stylesheet">
 <style>
-* { margin: 0; padding: 0; box-sizing: border-box; }
+/* ===========================================
+   celulink.mx — sub-marca de CeluCenter
+   Brand DNA v2.1 (paleta oficial Julio 2026)
+   =========================================== */
+
 :root {
-  --turquesa: #1ab394;
-  --turquesa-oscuro: #0f8a72;
-  --turquesa-claro: #d9f3ee;
-  --gris: #1f2937;
-  --gris-suave: #6b7280;
-  --gris-claro: #f5f7fa;
-  --borde: #e5e7eb;
+  /* Paleta oficial CeluCenter v2.1 */
+  --celeste: #00A5D4;
+  --verde:   #7AB800;
+  --marino:  #0B2545;
+  --naranja: #F5A623;
+  --rojo:    #E53935;
+  --gris-claro: #F4F6F9;
+  --gris:    #8A94A6;
+  --blanco:  #FFFFFF;
+  --negro:   #1A1A2E;
+
+  /* Gradientes oficiales */
+  --grad-hero: linear-gradient(135deg, #0B2545 0%, #00A5D4 100%);
+  --grad-marca: linear-gradient(135deg, #00A5D4 0%, #7AB800 100%);
+  --grad-promo: linear-gradient(135deg, #F5A623 0%, #E53935 100%);
+
+  /* Tokens */
+  --radius: 14px;
+  --radius-sm: 8px;
+  --radius-lg: 20px;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,.08);
+  --shadow-md: 0 2px 8px rgba(0,0,0,.1);
+  --shadow-lg: 0 8px 32px rgba(0,0,0,.15);
 }
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
 body {
-  font-family: 'Poppins', -apple-system, sans-serif;
+  font-family: 'Montserrat', -apple-system, sans-serif;
   background: white;
-  color: var(--gris);
-  line-height: 1.6;
+  color: var(--negro);
+  line-height: 1.5;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
 }
 
+/* NAV */
+.nav {
+  background: var(--marino);
+  color: white;
+  padding: 14px 20px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: var(--shadow-md);
+}
+.nav-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+.nav-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: white;
+}
+.nav-brand-logo {
+  height: 32px;
+  width: 32px;
+  border-radius: 50%;
+  background: white;
+  padding: 4px;
+}
+.nav-brand-text {
+  font-weight: 800;
+  font-size: 1.15rem;
+  letter-spacing: -0.02em;
+}
+.nav-brand-text .link { color: var(--celeste); }
+.nav-links { display: flex; gap: 8px; }
+.nav-links a {
+  color: rgba(255,255,255,0.75);
+  text-decoration: none;
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 8px 14px;
+  border-radius: 20px;
+  transition: background 0.15s;
+}
+.nav-links a:hover { background: rgba(255,255,255,0.1); color: white; }
+.nav-tag {
+  background: var(--celeste);
+  color: white;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
 /* HERO */
 .hero {
-  background: linear-gradient(135deg, #0f8a72 0%, #1ab394 100%);
+  background: var(--grad-hero);
   color: white;
-  padding: 80px 20px 100px;
+  padding: 100px 20px 110px;
   text-align: center;
   position: relative;
   overflow: hidden;
 }
 .hero::before {
-  content: "";
+  content: '';
   position: absolute;
   inset: 0;
-  background: radial-gradient(circle at 20% 30%, rgba(255,255,255,0.1) 0%, transparent 50%),
-              radial-gradient(circle at 80% 70%, rgba(255,255,255,0.08) 0%, transparent 50%);
+  background:
+    radial-gradient(circle at 25% 30%, rgba(122,184,0,0.15) 0%, transparent 50%),
+    radial-gradient(circle at 75% 70%, rgba(245,166,35,0.12) 0%, transparent 50%);
   pointer-events: none;
 }
 .hero-inner {
   position: relative;
-  max-width: 720px;
+  max-width: 760px;
   margin: 0 auto;
 }
-.hero h1 {
-  font-size: clamp(2rem, 5vw, 3.2rem);
-  font-weight: 800;
-  margin-bottom: 16px;
-  line-height: 1.1;
+.hero-badge {
+  display: inline-block;
+  background: rgba(245,166,35,0.15);
+  border: 1px solid rgba(245,166,35,0.4);
+  color: var(--naranja);
+  padding: 6px 16px;
+  border-radius: 100px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-bottom: 24px;
 }
+.hero h1 {
+  font-size: clamp(2.2rem, 5vw, 3.6rem);
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+  margin-bottom: 20px;
+}
+.hero h1 .verde { color: var(--verde); }
+.hero h1 .naranja { color: var(--naranja); }
 .hero p {
   font-size: clamp(1rem, 2.2vw, 1.2rem);
-  opacity: 0.95;
-  margin-bottom: 32px;
+  opacity: 0.92;
+  margin-bottom: 36px;
+  max-width: 580px;
+  margin-left: auto;
+  margin-right: auto;
 }
 .hero-cta {
   display: inline-flex;
@@ -68,61 +171,63 @@ body {
   justify-content: center;
 }
 .btn {
-  display: inline-block;
-  padding: 14px 28px;
-  border-radius: 30px;
-  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 30px;
+  border-radius: 100px;
+  font-weight: 700;
   text-decoration: none;
   font-size: 0.95rem;
+  font-family: 'Nunito', sans-serif;
   transition: transform 0.15s, box-shadow 0.15s;
+  border: none;
+  cursor: pointer;
 }
-.btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.15); }
-.btn-primary { background: white; color: var(--turquesa-oscuro); }
-.btn-secondary { background: rgba(255,255,255,0.15); color: white; border: 1.5px solid rgba(255,255,255,0.4); }
-
-/* NAV */
-.nav {
-  background: white;
-  border-bottom: 1px solid var(--borde);
-  padding: 14px 20px;
+.btn:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+.btn-primary {
+  background: var(--naranja);
+  color: white;
 }
-.nav-inner {
-  max-width: 1100px;
-  margin: 0 auto;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+.btn-secondary {
+  background: rgba(255,255,255,0.15);
+  color: white;
+  border: 1.5px solid rgba(255,255,255,0.4);
+  backdrop-filter: blur(4px);
 }
-.nav-brand {
-  font-weight: 700;
-  color: var(--turquesa-oscuro);
-  font-size: 1.1rem;
-  text-decoration: none;
-}
-.nav-links a {
-  color: var(--gris-suave);
-  text-decoration: none;
-  margin-left: 24px;
-  font-size: 0.9rem;
-  font-weight: 500;
-}
-.nav-links a:hover { color: var(--turquesa-oscuro); }
 
 /* MAIN */
 main {
   flex: 1;
-  padding: 60px 20px;
+  padding: 80px 20px;
+  background: white;
 }
 .container {
   max-width: 1100px;
   margin: 0 auto;
 }
-.section { margin-bottom: 64px; }
+.section { margin-bottom: 72px; }
+.section-label {
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--celeste);
+  margin-bottom: 12px;
+}
 .section-title {
-  font-size: 1.5rem;
-  font-weight: 700;
-  margin-bottom: 24px;
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  color: var(--negro);
+  margin-bottom: 12px;
+  line-height: 1.2;
+}
+.section-desc {
   color: var(--gris);
+  font-size: 1.05rem;
+  max-width: 600px;
+  margin-bottom: 36px;
 }
 
 /* STATS */
@@ -133,23 +238,34 @@ main {
 }
 .stat {
   background: var(--gris-claro);
-  padding: 24px;
-  border-radius: 12px;
+  padding: 28px 20px;
+  border-radius: var(--radius);
   text-align: center;
+  border-bottom: 3px solid transparent;
+  transition: transform 0.15s, border-color 0.15s;
+}
+.stat:hover {
+  transform: translateY(-3px);
+  border-bottom-color: var(--celeste);
 }
 .stat .num {
-  font-size: 2.2rem;
-  font-weight: 800;
-  color: var(--turquesa-oscuro);
+  font-size: 2.4rem;
+  font-weight: 900;
+  color: var(--marino);
   line-height: 1;
+  letter-spacing: -0.02em;
 }
+.stat .num.celeste { color: var(--celeste); }
+.stat .num.verde { color: var(--verde); }
+.stat .num.naranja { color: var(--naranja); }
 .stat .label {
   font-size: 0.85rem;
-  color: var(--gris-suave);
-  margin-top: 6px;
+  color: var(--gris);
+  margin-top: 8px;
+  font-weight: 500;
 }
 
-/* WHAT WE OFFER */
+/* FEATURES */
 .features {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -157,61 +273,138 @@ main {
 }
 .feature {
   background: white;
-  border: 1px solid var(--borde);
-  border-radius: 12px;
+  border: 1px solid #E2E8F0;
+  border-radius: var(--radius);
   padding: 28px;
   text-decoration: none;
   color: inherit;
-  transition: transform 0.15s, box-shadow 0.15s;
+  transition: all 0.2s;
+  display: block;
 }
-.feature:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.06); }
-.feature .icon {
-  font-size: 1.8rem;
-  margin-bottom: 12px;
+.feature:hover {
+  transform: translateY(-3px);
+  border-color: var(--celeste);
+  box-shadow: 0 12px 28px rgba(0,165,212,0.12);
 }
-.feature h3 { font-size: 1.05rem; margin-bottom: 6px; }
-.feature p { font-size: 0.9rem; color: var(--gris-suave); }
+.feature .icon-box {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--celeste), #1d8fb8);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+  margin-bottom: 16px;
+}
+.feature.cat .icon-box { background: linear-gradient(135deg, var(--celeste), #1d8fb8); }
+.feature.promo .icon-box { background: var(--grad-promo); }
+.feature.admin .icon-box { background: var(--marino); }
+.feature h3 {
+  font-size: 1.05rem;
+  font-weight: 800;
+  margin-bottom: 6px;
+  color: var(--negro);
+}
+.feature p {
+  font-size: 0.9rem;
+  color: var(--gris);
+  line-height: 1.5;
+}
+.feature .arrow {
+  display: inline-block;
+  margin-top: 12px;
+  color: var(--celeste);
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+
+/* DESTACADO: catálogo de accesorios */
+.feature-highlight {
+  background: var(--grad-marca);
+  border: none;
+  color: white;
+  position: relative;
+  overflow: hidden;
+}
+.feature-highlight::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 80% 20%, rgba(255,255,255,0.15) 0%, transparent 50%);
+}
+.feature-highlight > * { position: relative; }
+.feature-highlight .icon-box { background: rgba(255,255,255,0.2); }
+.feature-highlight h3 { color: white; }
+.feature-highlight p { color: rgba(255,255,255,0.9); }
+.feature-highlight .arrow { color: white; }
 
 /* CONTACT */
 .contact {
-  background: var(--gris-claro);
-  padding: 48px 32px;
-  border-radius: 16px;
+  background: var(--grad-hero);
+  color: white;
+  padding: 56px 36px;
+  border-radius: var(--radius-lg);
   text-align: center;
+  position: relative;
+  overflow: hidden;
 }
+.contact::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 20% 80%, rgba(122,184,0,0.15) 0%, transparent 50%);
+  pointer-events: none;
+}
+.contact > * { position: relative; }
 .contact h3 {
-  font-size: 1.3rem;
-  margin-bottom: 24px;
+  font-size: 1.4rem;
+  font-weight: 800;
+  margin-bottom: 8px;
+}
+.contact p {
+  opacity: 0.85;
+  margin-bottom: 28px;
+  font-size: 0.95rem;
 }
 .contact-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 16px;
-  max-width: 700px;
+  gap: 14px;
+  max-width: 720px;
   margin: 0 auto;
 }
 .contact-item {
   background: white;
+  color: var(--negro);
   padding: 18px 16px;
-  border-radius: 10px;
+  border-radius: var(--radius);
   text-decoration: none;
-  color: var(--gris);
   font-size: 0.9rem;
   transition: transform 0.15s;
+  display: block;
 }
 .contact-item:hover { transform: translateY(-2px); }
 .contact-item strong {
   display: block;
-  color: var(--turquesa-oscuro);
-  font-size: 0.95rem;
+  color: var(--celeste);
+  font-size: 0.8rem;
+  font-weight: 700;
   margin-bottom: 4px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+.contact-item span {
+  font-family: 'Nunito', sans-serif;
+  font-weight: 600;
 }
 
 /* FOOTER */
 footer {
-  background: var(--gris);
-  color: white;
-  padding: 32px 20px 20px;
+  background: var(--marino);
+  color: rgba(255,255,255,0.7);
+  padding: 36px 20px 24px;
 }
 .footer-inner {
   max-width: 1100px;
@@ -220,24 +413,40 @@ footer {
   justify-content: space-between;
   align-items: center;
   flex-wrap: wrap;
-  gap: 16px;
+  gap: 20px;
 }
-footer p { font-size: 0.85rem; opacity: 0.8; }
-footer a { color: white; text-decoration: underline; opacity: 0.85; }
-.footer-link {
-  background: rgba(255,255,255,0.1);
-  color: white;
-  padding: 8px 16px;
-  border-radius: 20px;
-  text-decoration: none;
+.footer-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.footer-brand img {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: white;
+  padding: 3px;
+}
+.footer-brand-text {
   font-size: 0.85rem;
-  font-weight: 500;
 }
-.footer-link:hover { background: rgba(255,255,255,0.2); }
+.footer-brand-text strong { color: white; }
+.footer-brand-text small { display: block; opacity: 0.7; font-size: 0.75rem; }
+.footer-links {
+  display: flex;
+  gap: 24px;
+  font-size: 0.85rem;
+}
+.footer-links a {
+  color: rgba(255,255,255,0.7);
+  text-decoration: none;
+}
+.footer-links a:hover { color: white; }
 
 @media (max-width: 640px) {
-  .nav-links a { margin-left: 14px; font-size: 0.85rem; }
-  .hero { padding: 60px 20px 80px; }
+  .nav-links { display: none; }
+  .hero { padding: 70px 20px 80px; }
+  .nav-tag { display: none; }
 }
 </style>
 </head>
@@ -245,22 +454,29 @@ footer a { color: white; text-decoration: underline; opacity: 0.85; }
 
 <nav class="nav">
   <div class="nav-inner">
-    <a href="./" class="nav-brand">📱 celulink.mx</a>
+    <a href="./" class="nav-brand">
+      <img class="nav-brand-logo" src="./assets/icono-celucenter.png" alt="CeluCenter">
+      <span class="nav-brand-text">celu<span class="link">link</span>.mx</span>
+    </a>
     <div class="nav-links">
       <a href="#ofertas">Catálogo</a>
       <a href="#contacto">Contacto</a>
       <a href="./menu/">Menú</a>
+      <span class="nav-tag">sub-marca</span>
     </div>
   </div>
 </nav>
 
 <section class="hero">
   <div class="hero-inner">
-    <h1>Tu próxima tecnología<br>a un clic</h1>
-    <p>Celulares, accesorios y todo lo que necesitas. 27 tiendas físicas en Jalisco, Colima, Michoacán y Sinaloa. Envíos a todo México.</p>
+    <div class="hero-badge">Sub-marca de CeluCenter · Jalisco</div>
+    <h1>Estrena hoy.<br>
+      <span class="verde">Tecnología</span> a tu <span class="naranja">alcance.</span>
+    </h1>
+    <p>27 tiendas físicas en Jalisco, Colima, Michoacán y Sinaloa. Envíos a todo México. Sin letras chicas — te decimos cómo.</p>
     <div class="hero-cta">
-      <a class="btn btn-primary" href="https://wa.me/523413300001?text=Hola%2C%20me%20interesa%20un%20equipo" target="_blank" rel="noopener">WhatsApp Ventas</a>
-      <a class="btn btn-secondary" href="#ofertas">Ver Catálogo</a>
+      <a class="btn btn-primary" href="https://wa.me/523413300001?text=Hola%2C%20me%20interesa%20un%20equipo" target="_blank" rel="noopener">WhatsApp Ventas →</a>
+      <a class="btn btn-secondary" href="./catalogos/accesorios/">Ver catálogo</a>
     </div>
   </div>
 </section>
@@ -271,15 +487,15 @@ footer a { color: white; text-decoration: underline; opacity: 0.85; }
     <section class="section">
       <div class="stats">
         <div class="stat">
-          <div class="num">27</div>
+          <div class="num celeste">27</div>
           <div class="label">Tiendas físicas</div>
         </div>
         <div class="stat">
-          <div class="num">4</div>
+          <div class="num verde">4</div>
           <div class="label">Estados</div>
         </div>
         <div class="stat">
-          <div class="num">+1000</div>
+          <div class="num naranja">+1000</div>
           <div class="label">Productos</div>
         </div>
         <div class="stat">
@@ -290,41 +506,60 @@ footer a { color: white; text-decoration: underline; opacity: 0.85; }
     </section>
 
     <section class="section" id="ofertas">
-      <h2 class="section-title">Lo que te ofrecemos</h2>
+      <div class="section-label">Lo que te ofrecemos</div>
+      <h2 class="section-title">Tu próxima tecnología empieza aquí</h2>
+      <p class="section-desc">Variedad real, financiamiento flexible y gente que te conoce por tu nombre.</p>
+
       <div class="features">
-        <a class="feature" href="./catalogos/accesorios/">
-          <div class="icon">📱</div>
-          <h3>Celulares y smartphones</h3>
-          <p>Catálogo completo: Apple, Samsung, Xiaomi, Motorola y más.</p>
+
+        <!-- Destacado: catálogo accesorios -->
+        <a class="feature feature-highlight" href="./catalogos/accesorios/">
+          <div class="icon-box">📱</div>
+          <h3>Catálogo de accesorios</h3>
+          <p>Lo nuevo en celulares y accesorios. Ve directo al catálogo con precios mayoreo.</p>
+          <span class="arrow">Ver catálogo →</span>
         </a>
-        <a class="feature" href="./catalogos/accesorios/">
-          <div class="icon">🎧</div>
-          <h3>Accesorios</h3>
-          <p>Audífonos JBL, cargadores, micas, fundas y más. Mayoreo disponible.</p>
+
+        <a class="feature cat" href="./catalogos/equipos/">
+          <div class="icon-box">📲</div>
+          <h3>Equipos CeluCenter</h3>
+          <p>BM, Ecom, LAFT — el catálogo completo de equipos.</p>
+          <span class="arrow">Explorar →</span>
         </a>
+
+        <a class="feature cat" href="./herramientas/generador-flyers/">
+          <div class="icon-box">🎨</div>
+          <h3>Generador de Flyers</h3>
+          <p>Crea publicidad con plantillas de campaña.</p>
+          <span class="arrow">Abrir herramienta →</span>
+        </a>
+
         <a class="feature" href="./promos/quiniela/">
-          <div class="icon">🏆</div>
-          <h3>Promociones y rifas</h3>
-          <p>Concursos, rifas y descuentos especiales todo el año.</p>
+          <div class="icon-box">🏆</div>
+          <h3>Quiniela Mundial 2026</h3>
+          <p>Predice los partidos y gana con nosotros.</p>
+          <span class="arrow">Ver promoción →</span>
         </a>
+
       </div>
     </section>
 
     <section class="section" id="contacto">
       <div class="contact">
-        <h3>¿Necesitas ayuda o quieres un producto?</h3>
+        <h3>¿Necesitas ayuda o un producto?</h3>
+        <p>Te atendemos en WhatsApp — directo, sin rodeos.</p>
         <div class="contact-grid">
           <a class="contact-item" href="https://wa.me/523413300001" target="_blank" rel="noopener">
             <strong>WhatsApp Ventas</strong>
-            +52 341 330 0001
+            <span>+52 341 330 0001</span>
           </a>
           <a class="contact-item" href="mailto:ventas@celulink.mx">
             <strong>Email</strong>
-            ventas@celulink.mx
+            <span>ventas@celulink.mx</span>
           </a>
           <a class="contact-item" href="tel:+523414386105">
             <strong>Atención directa</strong>
-            +52 341 438 6105
+            <span>+52 341 438 6105</span>
           </a>
         </div>
       </div>
@@ -335,8 +570,18 @@ footer a { color: white; text-decoration: underline; opacity: 0.85; }
 
 <footer>
   <div class="footer-inner">
-    <p>© 2026 CeluCenter · Servicios de Telecomunicaciones CeluCenter S de RL de CV</p>
-    <a class="footer-link" href="./menu/">Menú completo →</a>
+    <div class="footer-brand">
+      <img src="./assets/icono-celucenter.png" alt="CeluCenter">
+      <div class="footer-brand-text">
+        <strong>celulink.mx</strong>
+        <small>Sub-marca digital de CeluCenter · Guadalajara, Jalisco</small>
+      </div>
+    </div>
+    <div class="footer-links">
+      <a href="./">Inicio</a>
+      <a href="./menu/">Menú completo</a>
+      <a href="mailto:contacto@celulink.mx">Contacto</a>
+    </div>
   </div>
 </footer>
 
