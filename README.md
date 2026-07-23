@@ -12,13 +12,9 @@ celulink.mx/
 │   └── /equipos/                    ← catalogo-equipos-celucenter (BM/Ecom/LAFT)
 ├── /herramientas/
 │   ├── /generador-flyers/           ← generador-flyers
-│   ├── /cotizador/                  ← cotizador-dolares
 │   ├── /prepago/                    ← reporte-prepago
-│   ├── /km/                         ← kilometraje
 │   └── /publicidad/                 ← herramientas/publicidad
 ├── /promos/
-│   ├── /rifa/                       ← rifa2026
-│   ├── /mundial/                    ← rifa-mundial-2026
 │   └── /quiniela/                   ← quinielacc2026
 └── /admin/
     ├── /reto-equipos/               ← reto-equipos (dashboard competencia)
@@ -32,20 +28,26 @@ celulink.mx/
 - **Source:** branch `main`, root
 - **HTTPS:** Let's Encrypt (automático)
 
-## Repos originales (para referencia)
+## Repos originales (de referencia — NO se migran a celulink)
 
-Migra contenido desde:
+Estos se quedan en sus repos originales y NO entran a celulink.mx:
+
+| Repo | Razón |
+|------|-------|
+| `cotizador-dolares` | Se quitó (no aplica) |
+| `herramientas/km` (kilometraje) | Se quitó (no aplica) |
+| `rifa2026` | Se quitó (no aplica) |
+| `rifa-mundial-2026` | Se quitó (no aplica) |
+
+## Repos que SÍ se migran
 
 ```
 CelucenterMX/brand                     → /marca/
 CelucenterMX/accesorios-mayoreo        → /catalogos/accesorios/
 CelucenterMX/catalogo-equipos-celucenter → /catalogos/equipos/
 CelucenterMX/generador-flyers          → /herramientas/generador-flyers/
-CelucenterMX/cotizador-dolares         → /herramientas/cotizador/
 CelucenterMX/reporte-prepago           → /herramientas/prepago/
-CelucenterMX/herramientas              → /herramientas/{km,publicidad}/
-CelucenterMX/rifa2026                  → /promos/rifa/
-CelucenterMX/rifa-mundial-2026         → /promos/mundial/
+CelucenterMX/herramientas/publicidad   → /herramientas/publicidad/
 CelucenterMX/quinielacc2026            → /promos/quiniela/
 CelucenterMX/reto-equipos              → /admin/reto-equipos/
 CelucenterMX/encuesta-articulos-celucenter → /admin/encuesta/
@@ -58,9 +60,10 @@ CelucenterMX/encuesta-articulos-celucenter → /admin/encuesta/
 - [x] Landing en `/`
 - [x] Activar GH Pages
 - [x] Configurar dominio custom `celulink.mx`
-- [ ] DNS ya propagado (verificar 24-48 h)
-- [ ] HTTPS funcionando con cert de Let's Encrypt
-- [ ] Validar correo `pagos@`, `contacto@`, `ventas@` después del switch DNS
-- [ ] Migrar los 11 repos restantes
+- [x] DNS propagado
+- [x] HTTPS funcionando con cert de Let's Encrypt
+- [ ] Validar correo `pagos@`, `contacto@`, `ventas@`
+- [ ] Migrar los 9 repos restantes (3 quedaron fuera: cotizador, km, rifas)
 - [ ] Reemplazar Apps Script URLs en HTML donde aplique
-- [ ] Archivar los 12 repos viejos (read-only)
+- [ ] Archivar los 9 repos viejos que sí migran (read-only)
+- [ ] No migrar: `cotizador-dolares`, `herramientas/km`, `rifa2026`, `rifa-mundial-2026`
