@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cotizador Pesos a Dolares — CeluCenter</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: 'Poppins', sans-serif;
+  background: #f5f7fa;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+}
+.header {
+  text-align: center;
+  margin-bottom: 20px;
+  padding-top: 10px;
+}
+.header img {
+  height: 44px;
+  width: auto;
+  margin-bottom: 6px;
+}
+.header h1 {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #1a2b3c;
+}
+.header p {
+  font-size: 0.72rem;
+  color: #5a6b7d;
+}
+.container {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+  padding: 28px 24px;
+  max-width: 400px;
+  width: 100%;
+  border-top: 3px solid #2aabd2;
+}
+.rate-badge {
+  text-align: center;
+  font-size: 0.82rem;
+  color: #5a6b7d;
+  margin-bottom: 24px;
+  background: #f8f9fb;
+  padding: 10px;
+  border-radius: 10px;
+}
+.rate-badge span {
+  font-weight: 700;
+  color: #16a34a;
+  font-size: 1rem;
+}
+.field {
+  margin-bottom: 20px;
+}
+.field label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: #5a6b7d;
+  margin-bottom: 8px;
+}
+.field label .flag { font-size: 1.2rem; }
+.input-wrap {
+  position: relative;
+}
+.input-wrap .symbol {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #9aabbc;
+}
+.field input {
+  width: 100%;
+  padding: 14px 14px 14px 34px;
+  font-family: 'Poppins', sans-serif;
+  font-size: 1.4rem;
+  font-weight: 700;
+  border: 2px solid #e2e8f0;
+  border-radius: 10px;
+  outline: none;
+  color: #1a2b3c;
+  background: #f8f9fb;
+  transition: border-color 0.3s;
+}
+.field input:focus {
+  border-color: #2aabd2;
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(42,171,210,0.12);
+}
+.field input.result {
+  background: #f0fdf4;
+  border-color: #bbf7d0;
+  color: #16a34a;
+  cursor: default;
+}
+.arrow {
+  text-align: center;
+  font-size: 1.5rem;
+  color: #2aabd2;
+  margin: -4px 0;
+}
+.details {
+  background: #f8f9fb;
+  border-radius: 10px;
+  padding: 12px 16px;
+  margin-top: 20px;
+  font-size: 0.8rem;
+  color: #5a6b7d;
+}
+.details .row {
+  display: flex;
+  justify-content: space-between;
+  padding: 4px 0;
+}
+.details .row strong { color: #1a2b3c; }
+.updated {
+  text-align: center;
+  font-size: 0.68rem;
+  color: #9aabbc;
+  margin-top: 16px;
+}
+.footer {
+  text-align: center;
+  margin-top: 24px;
+  font-size: 0.7rem;
+  color: #9aabbc;
+}
+.footer a { color: #2aabd2; text-decoration: none; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <img src="celucenter_logo.png" alt="CeluCenter">
+  <h1>Cotizador Pesos a Dolares</h1>
+  <p>Tipo de cambio en tiempo real</p>
+</div>
+
+<div class="container">
+  <div class="rate-badge" id="rateBadge">Cargando tipo de cambio...</div>
+
+  <div class="field">
+    <label><span class="flag">&#127474;&#127485;</span> Pesos mexicanos (MXN)</label>
+    <div class="input-wrap">
+      <span class="symbol">$</span>
+      <input type="number" id="inputMXN" placeholder="0.00" inputmode="decimal" min="0" step="0.01">
+    </div>
+  </div>
+
+  <div class="arrow">&#8595;</div>
+
+  <div class="field">
+    <label><span class="flag">&#127482;&#127480;</span> Dolares americanos (USD)</label>
+    <div class="input-wrap">
+      <span class="symbol">$</span>
+      <input type="text" id="outputUSD" class="result" readonly placeholder="0.00">
+    </div>
+  </div>
+
+  <div class="details" id="details" style="display:none;">
+    <div class="row"><span>Tipo de cambio</span> <strong id="detRate"></strong></div>
+    <div class="row"><span>Monto MXN</span> <strong id="detMXN"></strong></div>
+    <div class="row"><span>Equivalente USD</span> <strong id="detUSD"></strong></div>
+  </div>
+
+  <!-- SECCION CAMBIO -->
+  <div id="cambioSection" style="display:none;">
+    <div style="border-top:2px solid #e2e8f0; margin:24px 0 20px;"></div>
+    <div style="text-align:center; font-size:0.82rem; font-weight:600; color:#1a2b3c; margin-bottom:16px;">Calcular cambio en pesos</div>
+
+    <div class="field">
+      <label><span class="flag">&#127482;&#127480;</span> Dolares que recibe del cliente</label>
+      <div class="input-wrap">
+        <span class="symbol">$</span>
+        <input type="number" id="inputDolaresRecibidos" placeholder="0" inputmode="numeric" min="0" step="1">
+      </div>
+    </div>
+
+    <div id="cambioResult" style="display:none; background:#fffbeb; border:1px solid #fde68a; border-radius:10px; padding:16px; text-align:center;">
+      <div style="font-size:0.78rem; color:#92400e;">Cambio a devolver en pesos</div>
+      <div id="cambioMXN" style="font-size:1.8rem; font-weight:800; color:#f59e0b; margin:4px 0;"></div>
+      <div id="cambioDetalle" style="font-size:0.72rem; color:#5a6b7d;"></div>
+    </div>
+  </div>
+
+  <div class="updated" id="updated"></div>
+</div>
+
+<div class="footer">
+  <p>CeluCenter &mdash; <a href="https://celucentershop.bitrix24.site" target="_blank">Sucursales</a></p>
+</div>
+
+<script>
+// Tipo de cambio FIJO de CeluCenter — siempre $17 MXN por USD
+const FIXED_RATE = 17;
+let rate = FIXED_RATE;
+
+function fetchRate() {
+  rate = FIXED_RATE;
+  document.getElementById('rateBadge').innerHTML =
+    '1 USD = <span>$' + rate.toFixed(2) + ' MXN</span> (tipo CeluCenter)';
+  document.getElementById('updated').textContent =
+    'Tipo de cambio fijo CeluCenter';
+  convertir();
+}
+
+function convertir() {
+  const mxn = parseFloat(document.getElementById('inputMXN').value);
+  const output = document.getElementById('outputUSD');
+  const details = document.getElementById('details');
+
+  if (!rate || isNaN(mxn) || mxn <= 0) {
+    output.value = '';
+    details.style.display = 'none';
+    return;
+  }
+
+  const usdExact = mxn / rate;
+  const usd = Math.ceil(usdExact);
+  output.value = usd;
+
+  document.getElementById('detRate').textContent = '$' + rate.toFixed(2) + ' MXN';
+  document.getElementById('detMXN').textContent = '$' + mxn.toLocaleString('es-MX', {minimumFractionDigits:2, maximumFractionDigits:2}) + ' MXN';
+  document.getElementById('detUSD').textContent = '$' + usd.toLocaleString('en-US') + ' USD';
+  details.style.display = 'block';
+  document.getElementById('cambioSection').style.display = 'block';
+  calcularCambio();
+}
+
+function calcularCambio() {
+  const mxn = parseFloat(document.getElementById('inputMXN').value);
+  const dolaresRecibidos = parseInt(document.getElementById('inputDolaresRecibidos').value);
+  const cambioResult = document.getElementById('cambioResult');
+
+  if (!rate || isNaN(mxn) || mxn <= 0 || isNaN(dolaresRecibidos) || dolaresRecibidos <= 0) {
+    cambioResult.style.display = 'none';
+    return;
+  }
+
+  const valorRecibidoMXN = dolaresRecibidos * rate;
+  const cambio = Math.round(valorRecibidoMXN - mxn);
+
+  if (cambio < 0) {
+    document.getElementById('cambioMXN').textContent = 'Faltan $' + Math.abs(cambio).toLocaleString('es-MX') + ' MXN';
+    document.getElementById('cambioMXN').style.color = '#dc2626';
+    document.getElementById('cambioDetalle').textContent = '$' + dolaresRecibidos + ' USD = $' + Math.round(valorRecibidoMXN).toLocaleString('es-MX') + ' MXN — no alcanza';
+  } else if (cambio === 0) {
+    document.getElementById('cambioMXN').textContent = '$0 — Pago exacto';
+    document.getElementById('cambioMXN').style.color = '#16a34a';
+    document.getElementById('cambioDetalle').textContent = '$' + dolaresRecibidos + ' USD = $' + Math.round(valorRecibidoMXN).toLocaleString('es-MX') + ' MXN';
+  } else {
+    document.getElementById('cambioMXN').textContent = '$' + cambio.toLocaleString('es-MX') + ' MXN';
+    document.getElementById('cambioMXN').style.color = '#f59e0b';
+    document.getElementById('cambioDetalle').textContent = '$' + dolaresRecibidos + ' USD = $' + Math.round(valorRecibidoMXN).toLocaleString('es-MX') + ' MXN — precio $' + mxn.toLocaleString('es-MX') + ' MXN';
+  }
+
+  cambioResult.style.display = 'block';
+}
+
+document.getElementById('inputMXN').addEventListener('input', convertir);
+document.getElementById('inputDolaresRecibidos').addEventListener('input', calcularCambio);
+fetchRate();
+</script>
+
+</body>
+</html>
