@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>celulink.mx/menu — Hub de herramientas</title>
+<meta name="description" content="Hub principal de CeluCenter: catálogos, herramientas y promociones para tiendas y clientes.">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+  --turquesa: #1ab394;
+  --turquesa-oscuro: #0f8a72;
+  --gris: #333;
+  --gris-claro: #f5f7fa;
+  --texto-suave: #6b7280;
+  --borde: #e5e7eb;
+}
+body {
+  font-family: 'Poppins', -apple-system, sans-serif;
+  background: var(--gris-claro);
+  color: var(--gris);
+  line-height: 1.6;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+.container { max-width: 1100px; margin: 0 auto; padding: 0 20px; }
+header {
+  background: white;
+  border-bottom: 1px solid var(--borde);
+  padding: 28px 0;
+  text-align: center;
+}
+header h1 { color: var(--turquesa-oscuro); font-size: 1.8rem; font-weight: 700; }
+header p { color: var(--texto-suave); font-size: 0.95rem; margin-top: 4px; }
+main { flex: 1; padding: 48px 20px; }
+.intro { text-align: center; max-width: 640px; margin: 0 auto 48px; }
+.intro h2 { font-size: 1.3rem; color: var(--gris); margin-bottom: 8px; }
+.intro p { color: var(--texto-suave); }
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 20px;
+}
+.card {
+  background: white;
+  border: 1px solid var(--borde);
+  border-radius: 12px;
+  padding: 24px;
+  transition: transform 0.15s, box-shadow 0.15s;
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+}
+.card .badge {
+  display: inline-block;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  padding: 3px 10px;
+  border-radius: 12px;
+  margin-bottom: 12px;
+}
+.badge-public { background: #d1fae5; color: #065f46; }
+.badge-admin { background: #fee2e2; color: #991b1b; }
+.badge-promo { background: #fef3c7; color: #92400e; }
+.card h3 { font-size: 1.05rem; margin-bottom: 6px; color: var(--gris); }
+.card p { font-size: 0.85rem; color: var(--texto-suave); }
+footer {
+  text-align: center;
+  padding: 24px;
+  font-size: 0.8rem;
+  color: var(--texto-suave);
+  border-top: 1px solid var(--borde);
+  background: white;
+}
+.status-ok { color: #065f46; font-weight: 600; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="container">
+    <h1>📱 celulink.mx/menu</h1>
+    <p>Hub interno · herramientas, catálogos y promos</p>
+  </div>
+</header>
+
+<main>
+  <div class="container">
+
+    <section class="intro">
+      <h2>Accesos rápidos</h2>
+      <p>Catálogos, herramientas y promociones en un solo lugar.</p>
+    </section>
+
+    <section class="grid">
+
+      <a class="card" href="../catalogos/accesorios/">
+        <span class="badge badge-public">Catálogo</span>
+        <h3>Accesorios mayoreo</h3>
+        <p>Catálogo con precios escalonados y carrito (2X / F / G).</p>
+      </a>
+
+      <a class="card" href="../catalogos/equipos/">
+        <span class="badge badge-public">Catálogo</span>
+        <h3>Equipos CeluCenter</h3>
+        <p>BM, Ecom, LAFT — catálogo público de equipos.</p>
+      </a>
+
+      <a class="card" href="../herramientas/generador-flyers/">
+        <span class="badge badge-public">Herramienta</span>
+        <h3>Generador de Flyers</h3>
+        <p>Crea publicidad con plantillas de campaña.</p>
+      </a>
+
+      <a class="card" href="../herramientas/prepago/">
+        <span class="badge badge-admin">Interna</span>
+        <h3>Reporte de prepago</h3>
+        <p>Reporte operativo interno.</p>
+      </a>
+
+      <a class="card" href="../herramientas/publicidad/">
+        <span class="badge badge-admin">Interna</span>
+        <h3>Publicidad</h3>
+        <p>Recursos y plantillas de publicidad interna.</p>
+      </a>
+
+      <a class="card" href="../promos/quiniela/">
+        <span class="badge badge-promo">Promo</span>
+        <h3>Quiniela Mundial 2026</h3>
+        <p>Predice los partidos del mundial.</p>
+      </a>
+
+      <a class="card" href="../admin/reto-equipos/">
+        <span class="badge badge-admin">Admin</span>
+        <h3>Reto Equipos</h3>
+        <p>Dashboard competencia mensual entre sucursales.</p>
+      </a>
+
+      <a class="card" href="../admin/encuesta/">
+        <span class="badge badge-admin">Admin</span>
+        <h3>Encuesta Artículos</h3>
+        <p>Votación interna de artículos para tiendas.</p>
+      </a>
+
+      <a class="card" href="../marca/">
+        <span class="badge badge-public">Marca</span>
+        <h3>Libro de marca</h3>
+        <p>Brand DNA, paleta, tipografía y plantillas.</p>
+      </a>
+
+    </section>
+
+  </div>
+</main>
+
+<footer>
+  <div class="container">
+    <p><span class="status-ok">● Sistema operativo</span> · mono-repo consolidado · v1.1</p>
+    <p style="margin-top: 6px;">CeluCenter — <a href="mailto:contacto@celulink.mx" style="color: var(--turquesa); text-decoration: none;">contacto@celulink.mx</a></p>
+    <p style="margin-top: 6px;"><a href="../" style="color: var(--turquesa); text-decoration: none;">← Inicio</a></p>
+  </div>
+</footer>
+
+</body>
+</html>

@@ -53,17 +53,41 @@ CelucenterMX/reto-equipos              → /admin/reto-equipos/
 CelucenterMX/encuesta-articulos-celucenter → /admin/encuesta/
 ```
 
+## Estructura final
+
+```
+celulink.mx/
+├── /                          ← landing CeluCenter (página principal)
+├── /menu/                     ← hub de enlaces a herramientas y catálogos
+├── /marca/                    ← brand book
+├── /catalogos/
+│   ├── /accesorios/           ← accesorios-mayoreo (2X/F/G) ✨ MIGRADO
+│   └── /equipos/              ← catalogo-equipos-celucenter
+├── /herramientas/
+│   ├── /generador-flyers/     ← generador-flyers ✨ MIGRADO
+│   ├── /prepago/              ← reporte-prepago
+│   └── /publicidad/           ← herramientas/publicidad
+├── /promos/
+│   └── /quiniela/             ← quinielacc2026
+└── /admin/
+    ├── /reto-equipos/         ← reto-equipos
+    └── /encuesta/             ← encuesta-articulos-celucenter
+```
+
 ## Pendientes
 
 - [x] Crear mono-repo
 - [x] Estructura base
-- [x] Landing en `/`
+- [x] Landing CeluCenter en `/` (rediseñado)
+- [x] Hub de enlaces en `/menu`
 - [x] Activar GH Pages
 - [x] Configurar dominio custom `celulink.mx`
 - [x] DNS propagado
-- [x] HTTPS funcionando con cert de Let's Encrypt
+- [x] HTTPS con cert Let's Encrypt
+- [x] Migrar generador-flyers
+- [x] Migrar accesorios-mayoreo
 - [ ] Validar correo `pagos@`, `contacto@`, `ventas@`
-- [ ] Migrar los 9 repos restantes (3 quedaron fuera: cotizador, km, rifas)
-- [ ] Reemplazar Apps Script URLs en HTML donde aplique
-- [ ] Archivar los 9 repos viejos que sí migran (read-only)
+- [ ] Migrar 7 repos restantes
+- [ ] Reemplazar Apps Script URLs en HTML
+- [ ] Archivar repos viejos
 - [ ] No migrar: `cotizador-dolares`, `herramientas/km`, `rifa2026`, `rifa-mundial-2026`

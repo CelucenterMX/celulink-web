@@ -3,168 +3,340 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>celulink.mx — Hub principal CeluCenter</title>
-<meta name="description" content="Hub principal de CeluCenter: catálogos, herramientas y promociones para tiendas y clientes.">
+<title>CeluCenter — Tu tienda de celulares y accesorios</title>
+<meta name="description" content="CeluCenter: 27 tiendas en Jalisco, Colima, Michoacán y Sinaloa. Celulares, accesorios y tecnología. Envíos a todo México.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E📱%3C/text%3E%3C/svg%3E">
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
 :root {
   --turquesa: #1ab394;
   --turquesa-oscuro: #0f8a72;
-  --gris: #333;
+  --turquesa-claro: #d9f3ee;
+  --gris: #1f2937;
+  --gris-suave: #6b7280;
   --gris-claro: #f5f7fa;
-  --texto-suave: #6b7280;
   --borde: #e5e7eb;
 }
 body {
   font-family: 'Poppins', -apple-system, sans-serif;
-  background: var(--gris-claro);
+  background: white;
   color: var(--gris);
   line-height: 1.6;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
 }
-.container { max-width: 1100px; margin: 0 auto; padding: 0 20px; }
-header {
+
+/* HERO */
+.hero {
+  background: linear-gradient(135deg, #0f8a72 0%, #1ab394 100%);
+  color: white;
+  padding: 80px 20px 100px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 20% 30%, rgba(255,255,255,0.1) 0%, transparent 50%),
+              radial-gradient(circle at 80% 70%, rgba(255,255,255,0.08) 0%, transparent 50%);
+  pointer-events: none;
+}
+.hero-inner {
+  position: relative;
+  max-width: 720px;
+  margin: 0 auto;
+}
+.hero h1 {
+  font-size: clamp(2rem, 5vw, 3.2rem);
+  font-weight: 800;
+  margin-bottom: 16px;
+  line-height: 1.1;
+}
+.hero p {
+  font-size: clamp(1rem, 2.2vw, 1.2rem);
+  opacity: 0.95;
+  margin-bottom: 32px;
+}
+.hero-cta {
+  display: inline-flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.btn {
+  display: inline-block;
+  padding: 14px 28px;
+  border-radius: 30px;
+  font-weight: 600;
+  text-decoration: none;
+  font-size: 0.95rem;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.15); }
+.btn-primary { background: white; color: var(--turquesa-oscuro); }
+.btn-secondary { background: rgba(255,255,255,0.15); color: white; border: 1.5px solid rgba(255,255,255,0.4); }
+
+/* NAV */
+.nav {
   background: white;
   border-bottom: 1px solid var(--borde);
-  padding: 28px 0;
+  padding: 14px 20px;
+}
+.nav-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.nav-brand {
+  font-weight: 700;
+  color: var(--turquesa-oscuro);
+  font-size: 1.1rem;
+  text-decoration: none;
+}
+.nav-links a {
+  color: var(--gris-suave);
+  text-decoration: none;
+  margin-left: 24px;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+.nav-links a:hover { color: var(--turquesa-oscuro); }
+
+/* MAIN */
+main {
+  flex: 1;
+  padding: 60px 20px;
+}
+.container {
+  max-width: 1100px;
+  margin: 0 auto;
+}
+.section { margin-bottom: 64px; }
+.section-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 24px;
+  color: var(--gris);
+}
+
+/* STATS */
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 16px;
+}
+.stat {
+  background: var(--gris-claro);
+  padding: 24px;
+  border-radius: 12px;
   text-align: center;
 }
-header h1 { color: var(--turquesa-oscuro); font-size: 1.8rem; font-weight: 700; }
-header p { color: var(--texto-suave); font-size: 0.95rem; margin-top: 4px; }
-main { flex: 1; padding: 48px 20px; }
-.intro { text-align: center; max-width: 640px; margin: 0 auto 48px; }
-.intro h2 { font-size: 1.3rem; color: var(--gris); margin-bottom: 8px; }
-.intro p { color: var(--texto-suave); }
-.grid {
+.stat .num {
+  font-size: 2.2rem;
+  font-weight: 800;
+  color: var(--turquesa-oscuro);
+  line-height: 1;
+}
+.stat .label {
+  font-size: 0.85rem;
+  color: var(--gris-suave);
+  margin-top: 6px;
+}
+
+/* WHAT WE OFFER */
+.features {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 20px;
 }
-.card {
+.feature {
   background: white;
   border: 1px solid var(--borde);
   border-radius: 12px;
-  padding: 24px;
-  transition: transform 0.15s, box-shadow 0.15s;
+  padding: 28px;
   text-decoration: none;
   color: inherit;
-  display: block;
+  transition: transform 0.15s, box-shadow 0.15s;
 }
-.card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(0,0,0,0.06);
-}
-.card .badge {
-  display: inline-block;
-  font-size: 0.7rem;
-  font-weight: 600;
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
-  padding: 3px 10px;
-  border-radius: 12px;
+.feature:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.06); }
+.feature .icon {
+  font-size: 1.8rem;
   margin-bottom: 12px;
 }
-.badge-public { background: #d1fae5; color: #065f46; }
-.badge-admin { background: #fee2e2; color: #991b1b; }
-.badge-promo { background: #fef3c7; color: #92400e; }
-.card h3 { font-size: 1.05rem; margin-bottom: 6px; color: var(--gris); }
-.card p { font-size: 0.85rem; color: var(--texto-suave); }
-footer {
+.feature h3 { font-size: 1.05rem; margin-bottom: 6px; }
+.feature p { font-size: 0.9rem; color: var(--gris-suave); }
+
+/* CONTACT */
+.contact {
+  background: var(--gris-claro);
+  padding: 48px 32px;
+  border-radius: 16px;
   text-align: center;
-  padding: 24px;
-  font-size: 0.8rem;
-  color: var(--texto-suave);
-  border-top: 1px solid var(--borde);
-  background: white;
 }
-.status-ok { color: #065f46; font-weight: 600; }
+.contact h3 {
+  font-size: 1.3rem;
+  margin-bottom: 24px;
+}
+.contact-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  max-width: 700px;
+  margin: 0 auto;
+}
+.contact-item {
+  background: white;
+  padding: 18px 16px;
+  border-radius: 10px;
+  text-decoration: none;
+  color: var(--gris);
+  font-size: 0.9rem;
+  transition: transform 0.15s;
+}
+.contact-item:hover { transform: translateY(-2px); }
+.contact-item strong {
+  display: block;
+  color: var(--turquesa-oscuro);
+  font-size: 0.95rem;
+  margin-bottom: 4px;
+}
+
+/* FOOTER */
+footer {
+  background: var(--gris);
+  color: white;
+  padding: 32px 20px 20px;
+}
+.footer-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+footer p { font-size: 0.85rem; opacity: 0.8; }
+footer a { color: white; text-decoration: underline; opacity: 0.85; }
+.footer-link {
+  background: rgba(255,255,255,0.1);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 20px;
+  text-decoration: none;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+.footer-link:hover { background: rgba(255,255,255,0.2); }
+
+@media (max-width: 640px) {
+  .nav-links a { margin-left: 14px; font-size: 0.85rem; }
+  .hero { padding: 60px 20px 80px; }
+}
 </style>
 </head>
 <body>
 
-<header>
-  <div class="container">
-    <h1>📱 celulink.mx</h1>
-    <p>Hub principal de CeluCenter</p>
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="./" class="nav-brand">📱 celulink.mx</a>
+    <div class="nav-links">
+      <a href="#ofertas">Catálogo</a>
+      <a href="#contacto">Contacto</a>
+      <a href="./menu/">Menú</a>
+    </div>
   </div>
-</header>
+</nav>
+
+<section class="hero">
+  <div class="hero-inner">
+    <h1>Tu próxima tecnología<br>a un clic</h1>
+    <p>Celulares, accesorios y todo lo que necesitas. 27 tiendas físicas en Jalisco, Colima, Michoacán y Sinaloa. Envíos a todo México.</p>
+    <div class="hero-cta">
+      <a class="btn btn-primary" href="https://wa.me/523413300001?text=Hola%2C%20me%20interesa%20un%20equipo" target="_blank" rel="noopener">WhatsApp Ventas</a>
+      <a class="btn btn-secondary" href="#ofertas">Ver Catálogo</a>
+    </div>
+  </div>
+</section>
 
 <main>
   <div class="container">
 
-    <section class="intro">
-      <h2>Accesos rápidos</h2>
-      <p>Catálogos, herramientas y promociones en un solo lugar.</p>
+    <section class="section">
+      <div class="stats">
+        <div class="stat">
+          <div class="num">27</div>
+          <div class="label">Tiendas físicas</div>
+        </div>
+        <div class="stat">
+          <div class="num">4</div>
+          <div class="label">Estados</div>
+        </div>
+        <div class="stat">
+          <div class="num">+1000</div>
+          <div class="label">Productos</div>
+        </div>
+        <div class="stat">
+          <div class="num">24-48h</div>
+          <div class="label">Envíos a todo México</div>
+        </div>
+      </div>
     </section>
 
-    <section class="grid">
+    <section class="section" id="ofertas">
+      <h2 class="section-title">Lo que te ofrecemos</h2>
+      <div class="features">
+        <a class="feature" href="./catalogos/accesorios/">
+          <div class="icon">📱</div>
+          <h3>Celulares y smartphones</h3>
+          <p>Catálogo completo: Apple, Samsung, Xiaomi, Motorola y más.</p>
+        </a>
+        <a class="feature" href="./catalogos/accesorios/">
+          <div class="icon">🎧</div>
+          <h3>Accesorios</h3>
+          <p>Audífonos JBL, cargadores, micas, fundas y más. Mayoreo disponible.</p>
+        </a>
+        <a class="feature" href="./promos/quiniela/">
+          <div class="icon">🏆</div>
+          <h3>Promociones y rifas</h3>
+          <p>Concursos, rifas y descuentos especiales todo el año.</p>
+        </a>
+      </div>
+    </section>
 
-      <a class="card" href="./catalogos/accesorios/">
-        <span class="badge badge-public">Catálogo</span>
-        <h3>Accesorios mayoreo</h3>
-        <p>Catálogo con precios escalonados y carrito (2X / F / G).</p>
-      </a>
-
-      <a class="card" href="./catalogos/equipos/">
-        <span class="badge badge-public">Catálogo</span>
-        <h3>Equipos CeluCenter</h3>
-        <p>BM, Ecom, LAFT — catálogo público de equipos.</p>
-      </a>
-
-      <a class="card" href="./herramientas/generador-flyers/">
-        <span class="badge badge-public">Herramienta</span>
-        <h3>Generador de Flyers</h3>
-        <p>Crea publicidad con plantillas de campaña.</p>
-      </a>
-
-      <a class="card" href="./herramientas/prepago/">
-        <span class="badge badge-admin">Interna</span>
-        <h3>Reporte de prepago</h3>
-        <p>Reporte operativo interno.</p>
-      </a>
-
-      <a class="card" href="./herramientas/publicidad/">
-        <span class="badge badge-admin">Interna</span>
-        <h3>Publicidad</h3>
-        <p>Recursos y plantillas de publicidad interna.</p>
-      </a>
-
-      <a class="card" href="./promos/quiniela/">
-        <span class="badge badge-promo">Promo</span>
-        <h3>Quiniela Mundial 2026</h3>
-        <p>Predice los partidos del mundial.</p>
-      </a>
-
-      <a class="card" href="./admin/reto-equipos/">
-        <span class="badge badge-admin">Admin</span>
-        <h3>Reto Equipos</h3>
-        <p>Dashboard competencia mensual entre sucursales.</p>
-      </a>
-
-      <a class="card" href="./admin/encuesta/">
-        <span class="badge badge-admin">Admin</span>
-        <h3>Encuesta Artículos</h3>
-        <p>Votación interna de artículos para tiendas.</p>
-      </a>
-
-      <a class="card" href="./marca/">
-        <span class="badge badge-public">Marca</span>
-        <h3>Libro de marca</h3>
-        <p>Brand DNA, paleta, tipografía y plantillas.</p>
-      </a>
-
+    <section class="section" id="contacto">
+      <div class="contact">
+        <h3>¿Necesitas ayuda o quieres un producto?</h3>
+        <div class="contact-grid">
+          <a class="contact-item" href="https://wa.me/523413300001" target="_blank" rel="noopener">
+            <strong>WhatsApp Ventas</strong>
+            +52 341 330 0001
+          </a>
+          <a class="contact-item" href="mailto:ventas@celulink.mx">
+            <strong>Email</strong>
+            ventas@celulink.mx
+          </a>
+          <a class="contact-item" href="tel:+523414386105">
+            <strong>Atención directa</strong>
+            +52 341 438 6105
+          </a>
+        </div>
+      </div>
     </section>
 
   </div>
 </main>
 
 <footer>
-  <div class="container">
-    <p><span class="status-ok">● Sistema operativo</span> · mono-repo consolidado · v1.0</p>
-    <p style="margin-top: 6px;">CeluCenter — <a href="mailto:contacto@celulink.mx" style="color: var(--turquesa); text-decoration: none;">contacto@celulink.mx</a></p>
+  <div class="footer-inner">
+    <p>© 2026 CeluCenter · Servicios de Telecomunicaciones CeluCenter S de RL de CV</p>
+    <a class="footer-link" href="./menu/">Menú completo →</a>
   </div>
 </footer>
 
