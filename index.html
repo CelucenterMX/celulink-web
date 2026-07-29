@@ -447,6 +447,7 @@ footer {
   .nav-links { display: none; }
   .hero { padding: 70px 20px 80px; }
   .nav-tag { display: none; }
+  .features { grid-template-columns: 1fr !important; }
 }
 </style>
 </head>
@@ -502,35 +503,20 @@ footer {
       <h2 class="section-title">Tu próxima tecnología empieza aquí</h2>
       <p class="section-desc">Variedad real, financiamiento flexible y gente que te conoce por tu nombre.</p>
 
-      <div class="features">
+      <div class="features" style="grid-template-columns: repeat(2, 1fr); max-width: 860px;">
 
-        <!-- Destacado: catálogo accesorios -->
-        <a class="feature feature-highlight" href="./catalogos/accesorios/">
-          <div class="icon-box">📱</div>
-          <h3>Catálogo de accesorios</h3>
-          <p>Lo nuevo en celulares y accesorios. Ve directo al catálogo con precios mayoreo.</p>
-          <span class="arrow">Ver catálogo →</span>
+        <a class="feature feature-highlight" href="./catalogos/accesorios/" style="padding: 40px 36px;">
+          <div class="icon-box" style="width:60px;height:60px;font-size:1.8rem;border-radius:16px;margin-bottom:20px;">📱</div>
+          <h3 style="font-size:1.25rem;margin-bottom:10px;">Catálogo de Accesorios</h3>
+          <p style="font-size:0.95rem;line-height:1.6;">Cables, fundas, audífonos y más. Precios mayoreo con sistema de listas.</p>
+          <span class="arrow" style="font-size:0.95rem;margin-top:20px;display:block;">Ver catálogo →</span>
         </a>
 
-        <a class="feature cat" href="./catalogos/equipos/">
-          <div class="icon-box">📲</div>
-          <h3>Equipos CeluCenter</h3>
-          <p>BM, Ecom, LAFT — el catálogo completo de equipos.</p>
-          <span class="arrow">Explorar →</span>
-        </a>
-
-        <a class="feature cat" href="./herramientas/generador-flyers/">
-          <div class="icon-box">🎨</div>
-          <h3>Generador de Flyers</h3>
-          <p>Crea publicidad con plantillas de campaña.</p>
-          <span class="arrow">Abrir herramienta →</span>
-        </a>
-
-        <a class="feature" href="./promos/quiniela/">
-          <div class="icon-box">🏆</div>
-          <h3>Quiniela Mundial 2026</h3>
-          <p>Predice los partidos y gana con nosotros.</p>
-          <span class="arrow">Ver promoción →</span>
+        <a class="feature cat" href="./catalogos/equipos/" style="padding: 40px 36px;">
+          <div class="icon-box" style="width:60px;height:60px;font-size:1.8rem;border-radius:16px;margin-bottom:20px;">📲</div>
+          <h3 style="font-size:1.25rem;margin-bottom:10px;">Equipos CeluCenter</h3>
+          <p style="font-size:0.95rem;line-height:1.6;">BM, Ecom y LAFT — el catálogo completo de equipos con precios actualizados.</p>
+          <span class="arrow" style="font-size:0.95rem;margin-top:20px;display:block;">Ver equipos →</span>
         </a>
 
       </div>
