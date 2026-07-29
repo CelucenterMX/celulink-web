@@ -1004,7 +1004,7 @@ async function removeBg() {
   try {
     if (!bgRemovalModule) {
       status.textContent = 'Descargando modelo de IA (solo la primera vez)...';
-      bgRemovalModule = await import('https://cdn.jsdelivr.net/npm/@imgly/background-removal@1/dist/index.js');
+      bgRemovalModule = await import('https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.7.0/dist/index.mjs');
     }
     status.textContent = 'Procesando imagen... (puede tardar unos segundos)';
 

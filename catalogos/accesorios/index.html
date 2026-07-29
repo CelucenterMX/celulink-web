@@ -586,6 +586,32 @@
             box-shadow: none;
         }
 
+        .product-card.agotado { opacity: 0.7; }
+        .product-card.agotado:hover { opacity: 0.9; }
+        .product-image-wrapper.agotado .product-image {
+            filter: grayscale(90%) brightness(0.6);
+        }
+        .product-image-wrapper.agotado .product-image-placeholder {
+            filter: grayscale(100%);
+            opacity: 0.4;
+        }
+        .product-image-wrapper.agotado::after {
+            content: 'AGOTADO';
+            position: absolute;
+            top: 50%; left: 50%;
+            width: 220%;
+            transform: translate(-50%, -50%) rotate(-45deg);
+            background: rgba(80, 80, 80, 0.85);
+            color: white;
+            font-size: 1rem;
+            font-weight: 800;
+            letter-spacing: 4px;
+            text-align: center;
+            padding: 6px 0;
+            z-index: 4;
+            pointer-events: none;
+        }
+
         .almacen-btn-agotado {
             border-color: #EF9A9A !important;
             color: #C62828 !important;
@@ -624,7 +650,6 @@
         .price-public {
             font-size: 12px;
             color: #999;
-            text-decoration: line-through;
         }
 
         .price-yours {
@@ -1796,7 +1821,7 @@
         function buildAlmacenButtons() {
             const container = document.getElementById('almacenBtns');
             // LAFT siempre primero, luego el resto ordenado
-            const rest = Array.from(almacenes).filter(a => a !== 'LAFT').sort();
+            const rest = Array.from(almacenes).filter(a => a !== 'LAFT' && a !== 'AGOTADO').sort();
             const sorted = almacenes.has('LAFT') ? ['LAFT', ...rest] : rest;
 
             // Assign colors (LAFT = rojo, luego azul, verde, negro...)
@@ -2066,8 +2091,8 @@
 
             return `
                 <a href="${detailLink}" class="product-card-link">
-                <div class="product-card">
-                    <div class="product-image-wrapper">
+                <div class="product-card${product.existencias <= 0 ? ' agotado' : ''}">
+                    <div class="product-image-wrapper${product.existencias <= 0 ? ' agotado' : ''}">
                         ${product.imagenUrl ?
                             `<img src="${escapeHtml(product.imagenUrl)}" alt="${escapeHtml(product.nombre)}" class="product-image" loading="lazy" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">` :
                             ''
