@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#FF6B35">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="MotoTaxi">
+  <title>MotoTaxi Tamazula</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --primary: #FF6B35;
+      --primary-dark: #e55a2b;
+      --secondary: #1A1A2E;
+      --accent: #16C79A;
+      --bg: #F7F7F7;
+      --white: #FFFFFF;
+      --text: #1A1A2E;
+      --muted: #888;
+      --error: #E63946;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* HEADER */
+    header {
+      background: var(--primary);
+      color: white;
+      padding: 20px 16px 16px;
+      text-align: center;
+    }
+
+    header .logo {
+      font-family: 'Poppins', sans-serif;
+      font-size: 22px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    header .subtitle {
+      font-size: 12px;
+      opacity: 0.85;
+      margin-top: 2px;
+      font-weight: 500;
+    }
+
+    /* MAIN */
+    main {
+      flex: 1;
+      padding: 16px;
+      max-width: 480px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    /* LOCATION CARD */
+    .card {
+      background: white;
+      border-radius: 16px;
+      padding: 16px;
+      margin-bottom: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+
+    .card-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--muted);
+      font-weight: 600;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    #location-status {
+      font-size: 14px;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    #location-status.ready {
+      color: var(--accent);
+    }
+
+    #location-status.error {
+      color: var(--error);
+    }
+
+    #location-link {
+      font-size: 13px;
+      color: var(--primary);
+      text-decoration: none;
+      word-break: break-all;
+      display: none;
+    }
+
+    #location-link.show {
+      display: block;
+    }
+
+    #manual-location {
+      display: none;
+      margin-top: 8px;
+    }
+
+    #manual-location.show {
+      display: block;
+    }
+
+    #manual-location input {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1.5px solid #ddd;
+      border-radius: 10px;
+      font-size: 14px;
+      font-family: 'Inter', sans-serif;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    #manual-location input:focus {
+      border-color: var(--primary);
+    }
+
+    .btn-gps {
+      background: none;
+      border: 1.5px solid var(--primary);
+      color: var(--primary);
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 8px;
+      display: none;
+    }
+
+    .btn-gps.show {
+      display: inline-block;
+    }
+
+    /* INPUTS */
+    .input-group {
+      margin-bottom: 12px;
+    }
+
+    .input-group label {
+      display: block;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--muted);
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+
+    .input-group input, .input-group textarea {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1.5px solid #ddd;
+      border-radius: 12px;
+      font-size: 15px;
+      font-family: 'Inter', sans-serif;
+      outline: none;
+      transition: border-color 0.2s;
+      background: white;
+    }
+
+    .input-group input:focus, .input-group textarea:focus {
+      border-color: var(--primary);
+    }
+
+    .input-group input.error, .input-group textarea.error {
+      border-color: var(--error);
+    }
+
+    .input-group .error-msg {
+      font-size: 11px;
+      color: var(--error);
+      margin-top: 4px;
+      display: none;
+    }
+
+    .input-group .error-msg.show {
+      display: block;
+    }
+
+    .input-group textarea {
+      resize: none;
+      height: 64px;
+    }
+
+    .char-count {
+      font-size: 11px;
+      color: var(--muted);
+      text-align: right;
+      margin-top: 4px;
+    }
+
+    /* DESTINO */
+    .destino-toggle {
+      font-size: 12px;
+      color: var(--primary);
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-weight: 600;
+      padding: 4px 0;
+      margin-bottom: 8px;
+    }
+
+    #destino-section {
+      display: none;
+    }
+
+    #destino-section.show {
+      display: block;
+    }
+
+    /* SUBMIT */
+    .btn-submit {
+      width: 100%;
+      padding: 16px;
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 14px;
+      font-size: 16px;
+      font-weight: 700;
+      font-family: 'Poppins', sans-serif;
+      cursor: pointer;
+      margin-top: 8px;
+      transition: background 0.2s, transform 0.1s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      min-height: 56px;
+    }
+
+    .btn-submit:hover { background: var(--primary-dark); }
+    .btn-submit:active { transform: scale(0.98); }
+    .btn-submit:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    .btn-submit .spinner {
+      width: 20px;
+      height: 20px;
+      border: 2.5px solid rgba(255,255,255,0.4);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      display: none;
+    }
+
+    .btn-submit.loading .spinner { display: block; }
+    .btn-submit.loading .btn-text { display: none; }
+    .btn-submit.loading .loading-text { display: inline; }
+    .btn-submit .loading-text { display: none; }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* STATUS BANNER */
+    .status-banner {
+      padding: 12px 16px;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 500;
+      margin-bottom: 12px;
+      display: none;
+      align-items: center;
+      gap: 8px;
+      animation: slideIn 0.3s ease;
+    }
+
+    .status-banner.show { display: flex; }
+    .status-banner.success { background: #d4edda; color: #155724; }
+    .status-banner.error { background: #f8d7da; color: #721c24; }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(-8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* FOOTER */
+    footer {
+      text-align: center;
+      padding: 12px 16px 20px;
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    footer a { color: var(--primary); text-decoration: none; }
+
+    /* OFFLINE */
+    .offline-banner {
+      background: #fff3cd;
+      color: #856404;
+      text-align: center;
+      padding: 8px;
+      font-size: 12px;
+      font-weight: 500;
+      display: none;
+    }
+
+    .offline-banner.show { display: block; }
+
+    /* Install banner */
+    .install-banner {
+      background: var(--secondary);
+      color: white;
+      text-align: center;
+      padding: 10px 16px;
+      font-size: 12px;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .install-banner.show { display: flex; }
+    .install-banner button {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 4px 12px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="offline-banner" id="offlineBanner">⚠️ Sin conexión a internet</div>
+
+  <header>
+    <div class="logo">🏍️ MotoTaxi Tamazula</div>
+    <div class="subtitle">Tamazula de Gordiano, Jalisco</div>
+  </header>
+
+  <div class="install-banner" id="installBanner">
+    📱 Instala la app en tu celular
+    <button id="installBtn">Añadir</button>
+  </div>
+
+  <main>
+
+    <div id="statusBanner" class="status-banner"></div>
+
+    <!-- Ubicación -->
+    <div class="card">
+      <div class="card-label">📍 Tu ubicación</div>
+      <div id="location-status">Obteniendo ubicación...</div>
+      <a id="location-link" href="#" target="_blank" rel="noopener">📎 Ver en Google Maps</a>
+      <div id="manual-location">
+        <input type="text" id="manual-addr" placeholder="Escribe tu dirección o colonia">
+      </div>
+      <button class="btn-gps" id="btn-request-gps">📍 Activar ubicación</button>
+    </div>
+
+    <!-- Formulario -->
+    <div class="card">
+      <div class="input-group">
+        <label>👤 Nombre de pila</label>
+        <input type="text" id="input-nombre" placeholder="Ej. Juan" maxlength="30" autocomplete="name">
+        <div class="error-msg" id="err-nombre">Ingresa tu nombre</div>
+      </div>
+
+      <div class="input-group">
+        <label>📞 Teléfono (10 dígitos)</label>
+        <input type="tel" id="input-tel" placeholder="3411234567" maxlength="10" inputmode="numeric" autocomplete="tel">
+        <div class="error-msg" id="err-tel">Ingresa un teléfono válido (10 dígitos)</div>
+      </div>
+
+      <button class="destino-toggle" id="toggle-destino">+ ¿Añadir destino?</button>
+
+      <div id="destino-section">
+        <div class="input-group">
+          <label>🏁 ¿A dónde vas?</label>
+          <input type="text" id="input-destino" placeholder="Ej. Colonia El Parque" maxlength="60">
+        </div>
+      </div>
+
+      <div class="input-group">
+        <label>📝 Nota (opcional)</label>
+        <textarea id="input-nota" placeholder="Indicaciones extra, punto de referencia..." maxlength="120"></textarea>
+        <div class="char-count"><span id="nota-count">0</span>/120</div>
+      </div>
+    </div>
+
+    <button class="btn-submit" id="btn-submit">
+      <span class="btn-text">🏍️ SOLICITAR MOTOTAXI</span>
+      <span class="loading-text">Enviando...</span>
+      <div class="spinner"></div>
+    </button>
+
+    <div style="height:8px"></div>
+
+    <div id="history-section" style="display:none">
+      <div class="card" style="padding:14px">
+        <div class="card-label" style="margin-bottom:10px">🕐 Solicitudes recientes</div>
+        <div id="history-list" style="font-size:13px;color:#666"></div>
+      </div>
+    </div>
+
+  </main>
+
+  <footer>
+    Tu información no se comparte con terceros · MotoTaxi Tamazula 2025
+  </footer>
+
+  <script>
+    // ─── Config ───────────────────────────────────────────────
+    const APPS_SCRIPT_URL = ''; // ⚠️ Poner URL del Google Apps Script (doPost)
+
+    // ─── Estado ────────────────────────────────────────────────
+    let gpsCoords = null; // { lat, lng }
+    let gpsDenied = false;
+    let submitting = false;
+
+    // ─── Elements ─────────────────────────────────────────────
+    const $status     = document.getElementById('location-status');
+    const $link       = document.getElementById('location-link');
+    const $manualLoc  = document.getElementById('manual-location');
+    const $manualAddr = document.getElementById('manual-addr');
+    const $btnGps     = document.getElementById('btn-request-gps');
+    const $nombre     = document.getElementById('input-nombre');
+    const $tel        = document.getElementById('input-tel');
+    const $nota       = document.getElementById('input-nota');
+    const $notaCount  = document.getElementById('nota-count');
+    const $destino    = document.getElementById('input-destino');
+    const $destinoSec = document.getElementById('destino-section');
+    const $toggleDest = document.getElementById('toggle-destino');
+    const $btnSubmit  = document.getElementById('btn-submit');
+    const $statusBanner = document.getElementById('statusBanner');
+    const $historySec = document.getElementById('history-section');
+    const $historyList= document.getElementById('history-list');
+    const $offline    = document.getElementById('offlineBanner');
+    const $installBanner = document.getElementById('installBanner');
+    const $installBtn = document.getElementById('installBtn');
+
+    // ─── GPS ──────────────────────────────────────────────────
+    function requestGPS() {
+      if (!navigator.geolocation) {
+        gpsDenied = true;
+        showGpsError('Geolocalización no disponible en este navegador');
+        return;
+      }
+      $status.textContent = '🔄 Obteniendo ubicación...';
+      navigator.geolocation.getCurrentPosition(
+        pos => {
+          gpsCoords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+          const mapsUrl = `https://www.google.com/maps?q=${gpsCoords.lat},${gpsCoords.lng}`;
+          $status.innerHTML = '✅ Ubicación obtenida';
+          $status.className = 'ready';
+          $link.href = mapsUrl;
+          $link.textContent = `📍 ${formatCoords(gpsCoords.lat, gpsCoords.lng)} — Ver en Maps`;
+          $link.classList.add('show');
+          $btnGps.classList.remove('show');
+        },
+        err => {
+          gpsDenied = true;
+          showGpsError('Ubicación denegada. Escribe tu dirección.');
+        },
+        { timeout: 15000, enableHighAccuracy: true }
+      );
+    }
+
+    function showGpsError(msg) {
+      $status.textContent = '⚠️ ' + msg;
+      $status.className = 'error';
+      $manualLoc.classList.add('show');
+      $btnGps.classList.add('show');
+      $btnGps.textContent = '📍 Activar ubicación';
+    }
+
+    function formatCoords(lat, lng) {
+      const la = Math.abs(lat).toFixed(4);
+      const lo = Math.abs(lng).toFixed(4);
+      const d = lat >= 0 ? 'N' : 'S';
+      const m = lng >= 0 ? 'E' : 'W';
+      return `${la}°${d}, ${lo}°${m}`;
+    }
+
+    // ─── Destino toggle ────────────────────────────────────────
+    let destinoOpen = false;
+    $toggleDest.addEventListener('click', () => {
+      destinoOpen = !destinoOpen;
+      $destinoSec.classList.toggle('show', destinoOpen);
+      $toggleDest.textContent = destinoOpen ? '− Ocultar destino' : '+ ¿Añadir destino?';
+    });
+
+    // ─── Char count ────────────────────────────────────────────
+    $nota.addEventListener('input', () => {
+      $notaCount.textContent = $nota.value.length;
+    });
+
+    // ─── Form submission ──────────────────────────────────────
+    $btnSubmit.addEventListener('click', submitRequest);
+
+    async function submitRequest() {
+      if (submitting) return;
+      clearErrors();
+
+      const nombre = $nombre.value.trim();
+      const tel    = $tel.value.trim().replace(/\D/g, '');
+      const nota   = $nota.value.trim();
+      const destino= $destino.value.trim();
+      const manualAddr = $manualAddr.value.trim();
+
+      // Validación
+      let ok = true;
+      if (!nombre) { showErr('err-nombre', 'input-nombre'); ok = false; }
+      if (tel.length !== 10) { showErr('err-tel', 'input-tel'); ok = false; }
+
+      if (!ok) return;
+
+      // Validar ubicación
+      if (!gpsCoords && !manualAddr) {
+        showBanner('⚠️ Activa tu ubicación o escribe tu dirección', 'error');
+        return;
+      }
+
+      submitting = true;
+      $btnSubmit.classList.add('loading');
+      $btnSubmit.disabled = true;
+
+      const payload = {
+        nombre,
+        telefono: tel,
+        lat:      gpsCoords ? gpsCoords.lat : null,
+        lng:      gpsCoords ? gpsCoords.lng : null,
+        dirManual: manualAddr || null,
+        destino:  destino || null,
+        nota,
+        ts: new Date().toISOString()
+      };
+
+      try {
+        if (!APPS_SCRIPT_URL) {
+          // Demo: solo mostrar éxito sin enviar a ningún lado
+          await demoSuccess(payload);
+        } else {
+          const resp = await fetch(APPS_SCRIPT_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+          // no-cors no devuelve body, asumimos ok
+          demoSuccess(payload);
+        }
+      } catch (e) {
+        submitting = false;
+        $btnSubmit.classList.remove('loading');
+        $btnSubmit.disabled = false;
+        showBanner('❌ No se pudo enviar. Revisa tu conexión.', 'error');
+      }
+    }
+
+    async function demoSuccess(payload) {
+      await delay(800);
+      submitting = false;
+      $btnSubmit.classList.remove('loading');
+      $btnSubmit.disabled = false;
+
+      const hora = new Date().toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' });
+      const zona = payload.dirManual || (payload.lat ? 'GPS activo' : 'Sin ubicación');
+      addToHistory(hora, payload.nombre, zona);
+
+      showBanner(`✅ ¡Solicitud enviada! Un mototaxista te contactará pronto.`, 'success');
+
+      // Limpiar
+      $nombre.value = '';
+      $tel.value = '';
+      $nota.value = '';
+      $notaCount.textContent = '0';
+      $destino.value = '';
+      if (destinoOpen) {
+        destinoOpen = false;
+        $destinoSec.classList.remove('show');
+        $toggleDest.textContent = '+ ¿Añadir destino?';
+      }
+    }
+
+    function showErr(errId, inputId) {
+      document.getElementById(errId).classList.add('show');
+      document.getElementById(inputId).classList.add('error');
+    }
+
+    function clearErrors() {
+      document.querySelectorAll('.error-msg').forEach(e => e.classList.remove('show'));
+      document.querySelectorAll('.error').forEach(e => e.classList.remove('error'));
+    }
+
+    function showBanner(msg, type) {
+      $statusBanner.textContent = msg;
+      $statusBanner.className = `status-banner show ${type}`;
+      clearTimeout(showBanner._t);
+      showBanner._t = setTimeout(() => {
+        $statusBanner.classList.remove('show');
+      }, 5000);
+    }
+
+    function delay(ms) {
+      return new Promise(r => setTimeout(r, ms));
+    }
+
+    // ─── Historial local ──────────────────────────────────────
+    function getHistory() {
+      try { return JSON.parse(localStorage.getItem('mt_history') || '[]'); }
+      catch { return []; }
+    }
+
+    function addToHistory(hora, nombre, zona) {
+      const h = getHistory();
+      h.unshift({ hora, nombre, zona, ts: Date.now() });
+      if (h.length > 5) h.pop();
+      localStorage.setItem('mt_history', JSON.stringify(h));
+      renderHistory(h);
+    }
+
+    function renderHistory(h) {
+      if (!h.length) return;
+      $historySec.style.display = 'block';
+      $historyList.innerHTML = h.map(item =>
+        `<div style="padding:4px 0;border-bottom:1px solid #eee;display:flex;justify-content:space-between">
+          <span>• ${item.hora} — ${item.nombre}</span>
+          <span style="color:#999;font-size:11px">${item.zona}</span>
+         </div>`
+      ).join('');
+    }
+
+    // ─── Online / Offline ──────────────────────────────────────
+    function updateOnline() {
+      $offline.classList.toggle('show', !navigator.onLine);
+    }
+    window.addEventListener('online',  updateOnline);
+    window.addEventListener('offline', updateOnline);
+    updateOnline();
+
+    // ─── PWA Install ───────────────────────────────────────────
+    let deferredPrompt = null;
+    window.addEventListener('beforeinstallprompt', e => {
+      e.preventDefault();
+      deferredPrompt = e;
+      $installBanner.classList.add('show');
+    });
+
+    $installBtn.addEventListener('click', async () => {
+      if (!deferredPrompt) return;
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      deferredPrompt = null;
+      $installBanner.classList.remove('show');
+    });
+
+    // ─── Boot ─────────────────────────────────────────────────
+    requestGPS();
+    renderHistory(getHistory());
+
+    // Register Service Worker
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js').catch(() => {});
+    }
+  </script>
+</body>
+</html>
