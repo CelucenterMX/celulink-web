@@ -217,6 +217,38 @@
       margin-top: 4px;
     }
 
+    /* CHECKBOX */
+    .checkbox-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 10px;
+      padding: 10px 12px;
+      background: #FFF5F0;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .checkbox-wrap:hover {
+      background: #FFE8DB;
+    }
+
+    .checkbox-wrap input[type="checkbox"] {
+      width: 20px;
+      height: 20px;
+      accent-color: #FF6B35;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    .checkbox-label {
+      font-size: 13px;
+      color: var(--text);
+      line-height: 1.3;
+      user-select: none;
+    }
+
     /* DESTINO */
     .destino-toggle {
       font-size: 12px;
@@ -390,9 +422,15 @@
       </div>
 
       <div class="input-group">
-        <label>📞 Teléfono (10 dígitos)</label>
+        <label>📞 Teléfono <span style="color:#999;font-weight:400">(opcional)</span></label>
         <input type="tel" id="input-tel" placeholder="3411234567" maxlength="10" inputmode="numeric" autocomplete="tel">
         <div class="error-msg" id="err-tel">Ingresa un teléfono válido (10 dígitos)</div>
+
+        <label class="checkbox-wrap" id="compartir-wrap" style="display:none">
+          <input type="checkbox" id="check-compartir" checked>
+          <span class="checkmark"></span>
+          <span class="checkbox-label">Compartir mi número con el taxista para que me llame</span>
+        </label>
       </div>
 
       <button class="destino-toggle" id="toggle-destino">+ ¿Añadir destino?</button>
@@ -455,6 +493,8 @@
     const $destinoSec = document.getElementById('destino-section');
     const $toggleDest = document.getElementById('toggle-destino');
     const $btnSubmit  = document.getElementById('btn-submit');
+    const $compartir     = document.getElementById('check-compartir');
+    const $compartirWrap = document.getElementById('compartir-wrap');
     const $statusBanner = document.getElementById('statusBanner');
     const $historySec = document.getElementById('history-section');
     const $historyList= document.getElementById('history-list');
@@ -518,6 +558,12 @@
       $notaCount.textContent = $nota.value.length;
     });
 
+    // ─── Checkbox tel: aparece solo si hay teléfono ────────────
+    $tel.addEventListener('input', () => {
+      const hayTel = $tel.value.trim().length > 0;
+      $compartirWrap.style.display = hayTel ? 'flex' : 'none';
+    });
+
     // ─── Form submission ──────────────────────────────────────
     $btnSubmit.addEventListener('click', submitRequest);
 
@@ -534,7 +580,12 @@
       // Validación
       let ok = true;
       if (!nombre) { showErr('err-nombre', 'input-nombre'); ok = false; }
-      if (tel.length !== 10) { showErr('err-tel', 'input-tel'); ok = false; }
+
+      // Tel es opcional, pero si lo puso debe ser 10 dígitos
+      if (tel && tel.length !== 10) {
+        showErr('err-tel', 'input-tel');
+        ok = false;
+      }
 
       if (!ok) return;
 
@@ -550,7 +601,8 @@
 
       const payload = {
         nombre,
-        telefono: tel,
+        telefono: tel || null,
+        compartirTel: tel ? $compartir.checked : false,
         lat:      gpsCoords ? gpsCoords.lat : null,
         lng:      gpsCoords ? gpsCoords.lng : null,
         dirManual: manualAddr || null,

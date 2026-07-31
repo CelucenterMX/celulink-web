@@ -1,38 +1,38 @@
 /**
  * Taxi Tamazula — Google Apps Script
- * Backend para recibir solicitudes y enviarlas al canal de WhatsApp
+ * Backend para recibir solicitudes y guardarlas en Sheets + enviar a WhatsApp
  * 
- * INSTRUCCIONES:
- * 1. Crear un Google Apps Script (script.google.com)
- * 2. Copiar este código en Code.gs
- * 3. Desplegar como Web App (Deploy → New deployment → Web App)
- * 4. Ejecutar como: "Yo"
- * 5. Acceder: "Cualquier persona"
- * 6. Copiar la URL y ponerla en index.html como APPS_SCRIPT_URL
- * 7. Añadir la URL como URL permitida en manifest.json de Apps Script
+ * FLUJO:
+ * 1. doPost recibe solicitud del frontend
+ * 2. Valida (solo nombre obligatorio)
+ * 3. Construye mensaje de WhatsApp (con o sin teléfono según checkbox)
+ * 4. Envía a WhatsApp vía Wazzup o Bitrix24
+ * 5. Guarda en Google Sheet "TaxiT Clientes" (hojas Clientes + Solicitudes)
  */
 
 // ─── Config ───────────────────────────────────────────────
-// ⚠️ EDITAR: URL del canal de WhatsApp via Wazzup/Bitrix24
-// Esta es la URL del webhook o la API de Wazzup para enviar mensajes
+const SHEET_ID = '1MlPMMbou8B09qyW6V4twKEGQOjKnCyYZqGkxqrTQju8'; // TaxiT Clientes
+
+// WhatsApp via Wazzup
 const WAZZUP_API_URL = 'https://api.wazzup24.com/v1/message';
-const WAZZUP_API_KEY = ''; // ⚠️ Tu API key de Wazzup
+const WAZZUP_API_KEY = ''; // ⚠️ Pegar API key cuando esté lista
 
-// Si usas Bitrix24 en lugar de Wazzup directo:
-const BITRIX_WEBHOOK_URL = ''; // ⚠️ Tu webhook de Bitrix24
-const BITRIX_CHAT_ID = ''; // ⚠️ ID del chat/canal de WhatsApp
+// WhatsApp via Bitrix24
+const BITRIX_WEBHOOK_URL = ''; // ⚠️ Webhook URL
+const BITRIX_CHAT_ID = ''; // ⚠️ Chat ID del canal
 
-// Canal destino (nombre o número)
+// Canal destino (para Wazzup)
 const CANAL_NOMBRE = 'Taxi Tamazula';
 
 // ─── doPost — Recibe solicitud del rider ──────────────────
 function doPost(e) {
   try {
     const payload = JSON.parse(e.postData.contents);
-    
+
     const {
       nombre,
       telefono,
+      compartirTel,
       lat,
       lng,
       dirManual,
@@ -41,89 +41,103 @@ function doPost(e) {
       ts
     } = payload;
 
-    // Validación básica
-    if (!nombre || !telefono) {
-      return ContentService.createTextOutput(JSON.stringify({
-        status: 'error',
-        message: 'Faltan campos requeridos'
-      })).setMimeType(ContentService.MimeType.JSON);
+    // Validación: solo nombre obligatorio
+    if (!nombre || !nombre.trim()) {
+      return jsonResponse({ status: 'error', message: 'Falta el nombre' });
     }
 
+    // Si dio teléfono, validar formato (10 dígitos)
+    let telLimpio = '';
+    if (telefono && telefono.trim()) {
+      telLimpio = telefono.replace(/\D/g, '');
+      if (telLimpio.length !== 10) {
+        return jsonResponse({ status: 'error', message: 'Teléfono inválido (debe ser 10 dígitos)' });
+      }
+    }
+
+    // Decidir si se incluye el teléfono en el mensaje de WhatsApp
+    const incluyeTel = telLimpio && compartirTel === true;
+
     // Armar mensaje
-    const mensaje = construirMensaje(payload);
+    const mensaje = construirMensaje({
+      ...payload,
+      telefono: incluyeTel ? telLimpio : null
+    });
 
     // Enviar a WhatsApp
     const resultado = enviarWhatsApp(mensaje);
 
-    // Guardar en spreadsheet (opcional, para tener historial)
-    guardarHistorial(payload, resultado);
+    // Guardar en Sheet
+    guardarEnHojas({
+      nombre: nombre.trim(),
+      telefono: telLimpio || null,
+      compartirTel: incluyeTel,
+      lat: lat || null,
+      lng: lng || null,
+      dirManual: dirManual || null,
+      destino: destino || null,
+      nota: nota || '',
+      ts: ts || new Date().toISOString()
+    });
 
-    return ContentService.createTextOutput(JSON.stringify({
+    return jsonResponse({
       status: 'ok',
       message: 'Solicitud enviada',
       id: resultado?.id || null
-    })).setMimeType(ContentService.MimeType.JSON);
+    });
 
   } catch (error) {
-    return ContentService.createTextOutput(JSON.stringify({
-      status: 'error',
-      message: error.toString()
-    })).setMimeType(ContentService.MimeType.JSON);
+    return jsonResponse({ status: 'error', message: error.toString() });
   }
 }
 
-// ─── Construir mensaje ────────────────────────────────────
+// ─── Helper: respuesta JSON ───────────────────────────────
+function jsonResponse(obj) {
+  return ContentService.createTextOutput(JSON.stringify(obj))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+// ─── Construir mensaje de WhatsApp ────────────────────────
 function construirMensaje(payload) {
   const { nombre, telefono, lat, lng, dirManual, destino, nota, ts } = payload;
-  
+
   const fecha = new Date(ts || Date.now());
-  const horaStr = fecha.toLocaleTimeString('es-MX', { 
-    hour: '2-digit', 
-    minute: '2-digit' 
-  });
-  const fechaStr = fecha.toLocaleDateString('es-MX', {
-    day: 'numeric', month: 'short'
-  });
+  const horaStr = fecha.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' });
+  const fechaStr = fecha.toLocaleDateString('es-MX', { day: 'numeric', month: 'short' });
 
   const mapsLink = lat && lng
     ? `📍 https://www.google.com/maps?q=${lat},${lng}`
     : null;
 
-  const zonaTexto = dirManual 
-    ? `📍 ${dirManual}` 
-    : (mapsLink ? '📍 Tamazula de Gordiano' : '📍 Sin ubicación');
-
   let msg = `🚕 SOLICITUD DE TAXI\n`;
   msg += `━━━━━━━━━━━━━━━━━━\n`;
   msg += `📅 ${fechaStr} · ${horaStr}\n`;
   msg += `👤 ${nombre}\n`;
-  msg += `📞 ${formatearTelefono(telefono)}\n`;
-  
+
+  if (telefono) {
+    msg += `📞 ${formatearTelefono(telefono)}\n`;
+  }
+
   if (mapsLink) msg += `${mapsLink}\n`;
-  else if (dirManual) msg += `${zonaTexto}\n`;
-  
+  else if (dirManual) msg += `📍 ${dirManual}\n`;
+
   if (destino) msg += `🏁 Destino: ${destino}\n`;
   if (nota) msg += `📝 Nota: ${nota}\n`;
-  
+
   msg += `━━━━━━━━━━━━━━━━━━\n`;
-  msg += `🟢 Un taxista te contactará pronto`;
+  msg += telefono
+    ? `🟢 Un taxista te contactará pronto`
+    : `🟢 Un taxista te contactará pronto (sin teléfono)`;
 
   return msg;
 }
 
 // ─── Enviar a WhatsApp ────────────────────────────────────
 function enviarWhatsApp(mensaje) {
-  // Opción 1: Wazzup API
-  if (WAZZUP_API_KEY) {
-    return enviarWazzup(mensaje);
-  }
-  
-  // Opción 2: Bitrix24 webhook
-  if (BITRIX_WEBHOOK_URL) {
-    return enviarBitrix(mensaje);
-  }
-  
-  // Opción 3: Debug — guardar en sheet y return
+  if (WAZZUP_API_KEY) return enviarWazzup(mensaje);
+  if (BITRIX_WEBHOOK_URL) return enviarBitrix(mensaje);
+
+  // Sin credenciales: loguear
   Logger.log('MENSAJE A ENVIAR:\n' + mensaje);
   return { id: 'debug-' + Date.now(), debug: true };
 }
@@ -131,11 +145,8 @@ function enviarWhatsApp(mensaje) {
 function enviarWazzup(mensaje) {
   const payload = {
     channelType: 'whatsapp',
-    channelId: CANAL_NOMBRE, // o el ID del canal
-    message: {
-      type: 'text',
-      text: mensaje
-    }
+    channelId: CANAL_NOMBRE,
+    message: { type: 'text', text: mensaje }
   };
 
   const options = {
@@ -150,11 +161,11 @@ function enviarWazzup(mensaje) {
 
   const response = UrlFetchApp.fetch(WAZZUP_API_URL, options);
   const result = JSON.parse(response.getContentText());
-  
+
   if (response.getResponseCode() !== 200) {
     throw new Error('Wazzup error: ' + JSON.stringify(result));
   }
-  
+
   return result;
 }
 
@@ -182,37 +193,92 @@ function enviarBitrix(mensaje) {
   return { id: result.response };
 }
 
-// ─── Guardar historial ────────────────────────────────────
-function guardarHistorial(payload, resultado) {
+// ─── Guardar en Google Sheets ──────────────────────────────
+function guardarEnHojas(data) {
   try {
-    const ss = SpreadsheetApp.getActiveSpreadsheet();
-    let sheet = ss.getSheetByName('Solicitudes');
-    
-    if (!sheet) {
-      sheet = ss.insertSheet('Solicitudes');
-      sheet.getRange(1, 1, 1, 8).setValues([[
-        'Fecha', 'Hora', 'Nombre', 'Teléfono', 
-        'Lat', 'Lng', 'Dirección', 'Destino', 'Nota', 'Resultado'
-      ]]);
-      sheet.setFrozenRows(1);
+    const ss = SpreadsheetApp.openById(SHEET_ID);
+    if (!ss) {
+      Logger.log('No se pudo abrir Sheet ID: ' + SHEET_ID);
+      return;
     }
 
-    const fecha = new Date(payload.ts || Date.now());
-    
-    sheet.appendRow([
-      fecha.toLocaleDateString('es-MX'),
-      fecha.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' }),
-      payload.nombre,
-      payload.telefono,
-      payload.lat || '',
-      payload.lng || '',
-      payload.dirManual || '',
-      payload.destino || '',
-      payload.nota || '',
-      JSON.stringify(resultado)
+    // Asegurar que las hojas existan
+    let clientes = ss.getSheetByName('Clientes');
+    if (!clientes) {
+      clientes = ss.insertSheet('Clientes');
+      clientes.getRange(1, 1, 1, 6).setValues([[
+        'Fecha Registro', 'Nombre', 'Teléfono',
+        'Total Solicitudes', 'Última Solicitud', 'Notas'
+      ]]);
+      clientes.setFrozenRows(1);
+      clientes.getRange(1, 1, 1, 6).setFontWeight('bold');
+      clientes.getRange(1, 1, 1, 6).setBackground('#FF6B35');
+      clientes.getRange(1, 1, 1, 6).setFontColor('#FFFFFF');
+    }
+
+    let solicitudes = ss.getSheetByName('Solicitudes');
+    if (!solicitudes) {
+      solicitudes = ss.insertSheet('Solicitudes');
+      solicitudes.getRange(1, 1, 1, 8).setValues([[
+        'Timestamp', 'Nombre', 'Tel Compartido', 'Teléfono',
+        'Ubicación', 'Destino', 'Nota', 'Mensaje'
+      ]]);
+      solicitudes.setFrozenRows(1);
+      solicitudes.getRange(1, 1, 1, 8).setFontWeight('bold');
+      solicitudes.getRange(1, 1, 1, 8).setBackground('#FF6B35');
+      solicitudes.getRange(1, 1, 1, 8).setFontColor('#FFFFFF');
+    }
+
+    const fecha = new Date(data.ts);
+
+    // 1. Actualizar Clientes (upsert por nombre)
+    const nombresRange = clientes.getRange(2, 2, clientes.getLastRow() - 1, 1).getValues();
+    let filaExistente = -1;
+    for (let i = 0; i < nombresRange.length; i++) {
+      if (nombresRange[i][0] === data.nombre) {
+        filaExistente = i + 2;
+        break;
+      }
+    }
+
+    if (filaExistente > 0) {
+      // Actualizar existente
+      if (data.telefono) {
+        clientes.getRange(filaExistente, 3).setValue(data.telefono);
+      }
+      const totalActual = clientes.getRange(filaExistente, 4).getValue() || 0;
+      clientes.getRange(filaExistente, 4).setValue(totalActual + 1);
+      clientes.getRange(filaExistente, 5).setValue(fecha);
+    } else {
+      // Nuevo cliente
+      clientes.appendRow([
+        fecha,                       // Fecha Registro
+        data.nombre,                 // Nombre
+        data.telefono || '',         // Teléfono
+        1,                           // Total Solicitudes
+        fecha,                       // Última Solicitud
+        ''                           // Notas
+      ]);
+    }
+
+    // 2. Registrar solicitud
+    const ubicacion = data.lat && data.lng
+      ? `${data.lat},${data.lng}`
+      : (data.dirManual || 'Sin ubicación');
+
+    solicitudes.appendRow([
+      fecha,
+      data.nombre,
+      data.compartirTel ? 'Sí' : 'No',
+      data.telefono || '',
+      ubicacion,
+      data.destino || '',
+      data.nota || '',
+      '' // mensaje se llena solo si querés loguearlo
     ]);
+
   } catch (e) {
-    Logger.log('Error guardando historial: ' + e.toString());
+    Logger.log('Error guardando en Sheet: ' + e.toString());
   }
 }
 
@@ -231,14 +297,14 @@ function testMensaje() {
   const payload = {
     nombre: 'Juan Pérez',
     telefono: '3411234567',
+    compartirTel: true,
     lat: 19.935,
     lng: -103.485,
-    dirManual: null,
     destino: 'Colonia El Parque',
     nota: 'Estoy frente a la iglesia',
     ts: new Date().toISOString()
   };
-  
+
   const msg = construirMensaje(payload);
   Logger.log(msg);
 }
