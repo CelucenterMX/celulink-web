@@ -1,4 +1,4 @@
-const CACHE_NAME = 'mototaxi-v1';
+const CACHE_NAME = 'taxit-v1';
 const STATIC_ASSETS = [
   '/',
   '/index.html',

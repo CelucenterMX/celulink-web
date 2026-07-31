@@ -1,5 +1,5 @@
 /**
- * MotoTaxi Tamazula — Google Apps Script
+ * Taxi Tamazula — Google Apps Script
  * Backend para recibir solicitudes y enviarlas al canal de WhatsApp
  * 
  * INSTRUCCIONES:
@@ -23,7 +23,7 @@ const BITRIX_WEBHOOK_URL = ''; // ⚠️ Tu webhook de Bitrix24
 const BITRIX_CHAT_ID = ''; // ⚠️ ID del chat/canal de WhatsApp
 
 // Canal destino (nombre o número)
-const CANAL_NOMBRE = 'MotoTaxi Tamazula';
+const CANAL_NOMBRE = 'Taxi Tamazula';
 
 // ─── doPost — Recibe solicitud del rider ──────────────────
 function doPost(e) {
@@ -43,10 +43,10 @@ function doPost(e) {
 
     // Validación básica
     if (!nombre || !telefono) {
-      return HtmlService.createHtmlOutput(JSON.stringify({
+      return ContentService.createTextOutput(JSON.stringify({
         status: 'error',
         message: 'Faltan campos requeridos'
-      })).setMimeType(HtmlService.MimeType.JSON);
+      })).setMimeType(ContentService.MimeType.JSON);
     }
 
     // Armar mensaje
@@ -58,17 +58,17 @@ function doPost(e) {
     // Guardar en spreadsheet (opcional, para tener historial)
     guardarHistorial(payload, resultado);
 
-    return HtmlService.createHtmlOutput(JSON.stringify({
+    return ContentService.createTextOutput(JSON.stringify({
       status: 'ok',
       message: 'Solicitud enviada',
       id: resultado?.id || null
-    })).setMimeType(HtmlService.MimeType.JSON);
+    })).setMimeType(ContentService.MimeType.JSON);
 
   } catch (error) {
-    return HtmlService.createHtmlOutput(JSON.stringify({
+    return ContentService.createTextOutput(JSON.stringify({
       status: 'error',
       message: error.toString()
-    })).setMimeType(HtmlService.MimeType.JSON);
+    })).setMimeType(ContentService.MimeType.JSON);
   }
 }
 
@@ -93,7 +93,7 @@ function construirMensaje(payload) {
     ? `📍 ${dirManual}` 
     : (mapsLink ? '📍 Tamazula de Gordiano' : '📍 Sin ubicación');
 
-  let msg = `🏍️ SOLICITUD DE MOTOTAXI\n`;
+  let msg = `🚕 SOLICITUD DE TAXI\n`;
   msg += `━━━━━━━━━━━━━━━━━━\n`;
   msg += `📅 ${fechaStr} · ${horaStr}\n`;
   msg += `👤 ${nombre}\n`;
@@ -106,7 +106,7 @@ function construirMensaje(payload) {
   if (nota) msg += `📝 Nota: ${nota}\n`;
   
   msg += `━━━━━━━━━━━━━━━━━━\n`;
-  msg += `🟢 Un mototaxista te contactará pronto`;
+  msg += `🟢 Un taxista te contactará pronto`;
 
   return msg;
 }
@@ -161,7 +161,7 @@ function enviarWazzup(mensaje) {
 function enviarBitrix(mensaje) {
   const payload = {
     MESSAGE: mensaje,
-    SYSTEM: 'MotoTaxi Bot'
+    SYSTEM: 'TaxiT Bot'
   };
 
   const options = {

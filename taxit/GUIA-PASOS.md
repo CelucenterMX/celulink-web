@@ -1,7 +1,7 @@
-# 🏍️ MotoTaxi Tamazula — Guía de Despliegue
+# 🏍️ Taxi Tamazula — Guía de Despliegue
 
 > **Estado actual (31-jul-2026):** ✅ Desplegado y funcional
-> Web app: https://celulink.mx/mototaxi/
+> Web app: https://celulink.mx/taxi/
 > Apps Script: `13_a8JgfBCMaQdg5qvBsgo2ZgcFBALQtn_-cdLUnvfkqeBfDD2K1Rupbz`
 
 ---
@@ -10,10 +10,10 @@
 
 ```bash
 # 1. Subir código al Apps Script
-python3 ~/clawd/proyectos/mototaxi-tamazula/fix-apps-script.py
+python3 ~/clawd/proyectos/taxi-tamazula/fix-apps-script.py
 
 # 2. Crear nueva versión
-cd ~/clawd/proyectos/mototaxi-tamazula
+cd ~/clawd/proyectos/taxi-tamazula
 clasp version
 
 # 3. ⚠️ NO re-deployes con clasp — rompe el "tipo" del deployment
@@ -22,7 +22,7 @@ clasp version
 #    Copia la URL /exec
 
 # 4. Actualizar index.html con la nueva URL
-~/clawd/proyectos/mototaxi-tamazula/deploy-script.sh "URL/exec"
+~/clawd/proyectos/taxi-tamazula/deploy-script.sh "URL/exec"
 ```
 
 ---
@@ -64,7 +64,7 @@ clasp version
 ## Estructura de archivos
 
 ```
-~/clawd/proyectos/mototaxi-tamazula/
+~/clawd/proyectos/taxi-tamazula/
 ├── index.html       ← Web app (frontend)
 ├── manifest.json    ← PWA
 ├── sw.js           ← Service Worker (NO se sube al Apps Script)
@@ -108,7 +108,7 @@ const BITRIX_CHAT_ID = 'id_del_chat';
 
 ## Próximos pasos pendientes
 
-- [ ] Crear canal de WhatsApp Business "MotoTaxi Tamazula"
+- [ ] Crear canal de WhatsApp Business "Taxi Tamazula"
 - [ ] Conectar el canal a Wazzup o Bitrix24
 - [ ] (Opcional) Crear Google Sheet para historial de solicitudes
   - Apps Script → agregar `SpreadsheetApp.getActiveSpreadsheet()` requiere un spreadsheet asociado
@@ -119,7 +119,7 @@ const BITRIX_CHAT_ID = 'id_del_chat';
 
 | Recurso | URL |
 |---------|-----|
-| Web app live | https://celulink.mx/mototaxi/ |
+| Web app live | https://celulink.mx/taxi/ |
 | Apps Script editor | https://script.google.com/home/projects/13_a8JgfBCMaQdg5qvBsgo2ZgcFBALQtn_-cdLUnvfkqeBfDD2K1Rupbz/edit |
 | Apps Script executions | https://script.google.com/home/projects/13_a8JgfBCMaQdg5qvBsgo2ZgcFBALQtn_-cdLUnvfkqeBfDD2K1Rupbz/executions |
 | Repo GitHub | https://github.com/CelucenterMX/celulink-web |

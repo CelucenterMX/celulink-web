@@ -6,8 +6,8 @@
   <meta name="theme-color" content="#FF6B35">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <meta name="apple-mobile-web-app-title" content="MotoTaxi">
-  <title>MotoTaxi Tamazula</title>
+  <meta name="apple-mobile-web-app-title" content="TaxiT">
+  <title>Taxi Tamazula</title>
   <link rel="manifest" href="manifest.json">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
@@ -357,7 +357,7 @@
   <div class="offline-banner" id="offlineBanner">⚠️ Sin conexión a internet</div>
 
   <header>
-    <div class="logo">🏍️ MotoTaxi Tamazula</div>
+    <div class="logo">🚕 Taxi Tamazula</div>
     <div class="subtitle">Tamazula de Gordiano, Jalisco</div>
   </header>
 
@@ -412,7 +412,7 @@
     </div>
 
     <button class="btn-submit" id="btn-submit">
-      <span class="btn-text">🏍️ SOLICITAR MOTOTAXI</span>
+      <span class="btn-text">🚕 SOLICITAR TAXI</span>
       <span class="loading-text">Enviando...</span>
       <div class="spinner"></div>
     </button>
@@ -429,7 +429,7 @@
   </main>
 
   <footer>
-    Tu información no se comparte con terceros · MotoTaxi Tamazula 2025
+    Tu información no se comparte con terceros · Taxi Tamazula 2026
   </footer>
 
   <script>
@@ -591,7 +591,7 @@
       const zona = payload.dirManual || (payload.lat ? 'GPS activo' : 'Sin ubicación');
       addToHistory(hora, payload.nombre, zona);
 
-      showBanner(`✅ ¡Solicitud enviada! Un mototaxista te contactará pronto.`, 'success');
+      showBanner(`✅ ¡Solicitud enviada! Un taxista te contactará pronto.`, 'success');
 
       // Limpiar
       $nombre.value = '';
