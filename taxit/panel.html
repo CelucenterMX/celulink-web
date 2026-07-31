@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#FF6B35">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="TaxiT Panel">
+  <title>TaxiT — Panel Taxista</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --primary: #FF6B35;
+      --primary-dark: #e55a2b;
+      --secondary: #1A1A2E;
+      --accent: #16C79A;
+      --bg: #F7F7F7;
+      --text: #1A1A2E;
+      --muted: #888;
+      --error: #E63946;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding-bottom: 80px;
+    }
+
+    header {
+      background: var(--primary);
+      color: white;
+      padding: 20px 16px;
+      text-align: center;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    header h1 {
+      font-family: 'Poppins', sans-serif;
+      font-size: 22px;
+      font-weight: 700;
+    }
+
+    header .sub {
+      font-size: 13px;
+      opacity: 0.9;
+      margin-top: 4px;
+    }
+
+    main {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px 16px;
+    }
+
+    .card {
+      background: white;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    }
+
+    .card-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+    }
+
+    .input-group {
+      margin-bottom: 12px;
+    }
+
+    .input-group label {
+      display: block;
+      font-size: 13px;
+      font-weight: 500;
+      margin-bottom: 6px;
+      color: var(--text);
+    }
+
+    .input-group input {
+      width: 100%;
+      padding: 12px 14px;
+      border: 2px solid #E5E5E5;
+      border-radius: 8px;
+      font-size: 16px;
+      font-family: inherit;
+      transition: border 0.15s;
+    }
+
+    .input-group input:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+
+    .input-group .error-msg {
+      font-size: 12px;
+      color: var(--error);
+      margin-top: 4px;
+      display: none;
+    }
+
+    .input-group .error-msg.show {
+      display: block;
+    }
+
+    .btn {
+      width: 100%;
+      padding: 14px;
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+      transition: background 0.15s;
+    }
+
+    .btn:hover { background: var(--primary-dark); }
+    .btn:active { transform: translateY(1px); }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .btn-secondary {
+      background: #FFF;
+      color: var(--primary);
+      border: 2px solid var(--primary);
+    }
+
+    .btn-success {
+      background: var(--accent);
+    }
+
+    .btn-success:hover { background: #14b88a; }
+
+    .toggle-mode {
+      text-align: center;
+      margin-top: 16px;
+      font-size: 14px;
+      color: var(--muted);
+    }
+
+    .toggle-mode a {
+      color: var(--primary);
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+    }
+
+    .status-banner {
+      padding: 12px 16px;
+      border-radius: 8px;
+      margin-bottom: 12px;
+      font-size: 14px;
+      font-weight: 500;
+      display: none;
+    }
+
+    .status-banner.show { display: block; }
+    .status-banner.success { background: #D4EDDA; color: #155724; }
+    .status-banner.error { background: #F8D7DA; color: #721C24; }
+
+    .solicitud {
+      border: 2px solid #E5E5E5;
+      border-radius: 12px;
+      padding: 14px;
+      margin-bottom: 10px;
+      background: white;
+      transition: border 0.15s, transform 0.15s;
+    }
+
+    .solicitud.pendiente { border-color: #FFD4B8; }
+    .solicitud.mia { border-color: var(--accent); background: #F0FBF6; }
+
+    .solicitud .time {
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+
+    .solicitud .name {
+      font-weight: 600;
+      font-size: 16px;
+      margin-bottom: 6px;
+    }
+
+    .solicitud .detail {
+      font-size: 14px;
+      color: #555;
+      margin-bottom: 4px;
+    }
+
+    .solicitud .detail strong {
+      color: var(--text);
+    }
+
+    .solicitud .btn-row {
+      margin-top: 10px;
+      display: flex;
+      gap: 8px;
+    }
+
+    .solicitud .btn-row button {
+      flex: 1;
+      padding: 10px;
+      font-size: 14px;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .empty-state .emoji {
+      font-size: 48px;
+      margin-bottom: 12px;
+    }
+
+    .counter-badge {
+      display: inline-block;
+      background: white;
+      color: var(--primary);
+      font-weight: 700;
+      padding: 2px 10px;
+      border-radius: 12px;
+      font-size: 13px;
+      margin-left: 8px;
+    }
+
+    .session-bar {
+      background: white;
+      padding: 12px 16px;
+      border-radius: 8px;
+      margin-bottom: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 14px;
+    }
+
+    .session-bar .name {
+      font-weight: 600;
+    }
+
+    .session-bar button {
+      background: none;
+      border: none;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 13px;
+      text-decoration: underline;
+    }
+
+    .pulse {
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.6; }
+    }
+
+    .auto-refresh {
+      font-size: 12px;
+      color: var(--muted);
+      text-align: center;
+      margin-top: 8px;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>🚕 TaxiT Panel</h1>
+  <div class="sub">Taxista</div>
+</header>
+
+<main>
+
+  <!-- PANTALLA LOGIN / REGISTRO -->
+  <div id="auth-screen">
+    <div class="card">
+      <div id="auth-title" class="card-label">Inicia sesión</div>
+
+      <div id="status-banner" class="status-banner"></div>
+
+      <div class="input-group">
+        <label>👤 Tu nombre</label>
+        <input type="text" id="input-nombre" placeholder="Ej. Juan Pérez" maxlength="40" autocomplete="name">
+        <div class="error-msg" id="err-nombre">Ingresa tu nombre</div>
+      </div>
+
+      <div class="input-group">
+        <label>📞 Tu teléfono (10 dígitos)</label>
+        <input type="tel" id="input-tel" placeholder="3411234567" maxlength="10" inputmode="numeric" autocomplete="tel">
+        <div class="error-msg" id="err-tel">Ingresa un teléfono válido (10 dígitos)</div>
+      </div>
+
+      <button class="btn" id="btn-submit">Entrar</button>
+
+      <div class="toggle-mode">
+        <a id="toggle-mode">¿Aún no eres taxista? Regístrate</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- PANTALLA PANEL -->
+  <div id="panel-screen" style="display:none">
+
+    <div class="session-bar">
+      <span class="name">👤 <span id="session-name"></span></span>
+      <button id="btn-logout">Cerrar sesión</button>
+    </div>
+
+    <div class="card">
+      <div class="card-label">
+        🕐 Solicitudes en espera
+        <span class="counter-badge" id="count-pendientes">0</span>
+      </div>
+      <div id="lista-pendientes"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">
+        🚕 Mis solicitudes activas
+        <span class="counter-badge" id="count-mias">0</span>
+      </div>
+      <div id="lista-mias"></div>
+    </div>
+
+    <div class="auto-refresh">
+      <span class="pulse">●</span> Actualiza cada 30 seg
+    </div>
+  </div>
+
+</main>
+
+<script>
+  // ─── Config ───────────────────────────────────────────────
+  const APPS_SCRIPT_URL = ''; // ⚠️ Se inyecta al deploy
+
+  // ─── Estado ────────────────────────────────────────────────
+  let mode = 'login'; // 'login' | 'registro'
+  let session = null;  // { nombre, telefono }
+  let pollingTimer = null;
+
+  // ─── Elements ─────────────────────────────────────────────
+  const $authScreen   = document.getElementById('auth-screen');
+  const $panelScreen  = document.getElementById('panel-screen');
+  const $authTitle    = document.getElementById('auth-title');
+  const $nombre       = document.getElementById('input-nombre');
+  const $tel          = document.getElementById('input-tel');
+  const $btnSubmit    = document.getElementById('btn-submit');
+  const $toggleMode   = document.getElementById('toggle-mode');
+  const $statusBanner = document.getElementById('status-banner');
+  const $sessionName  = document.getElementById('session-name');
+  const $btnLogout    = document.getElementById('btn-logout');
+  const $listaPend    = document.getElementById('lista-pendientes');
+  const $listaMias    = document.getElementById('lista-mias');
+  const $countPend    = document.getElementById('count-pendientes');
+  const $countMias    = document.getElementById('count-mias');
+
+  // ─── Init ─────────────────────────────────────────────────
+  const stored = localStorage.getItem('taxit_session');
+  if (stored) {
+    try {
+      session = JSON.parse(stored);
+      showPanel();
+    } catch (e) {
+      localStorage.removeItem('taxit_session');
+    }
+  }
+
+  // ─── Toggle login / registro ──────────────────────────────
+  $toggleMode.addEventListener('click', () => {
+    mode = (mode === 'login') ? 'registro' : 'login';
+    updateMode();
+  });
+
+  function updateMode() {
+    if (mode === 'login') {
+      $authTitle.textContent = 'Inicia sesión';
+      $btnSubmit.textContent = 'Entrar';
+      $toggleMode.textContent = '¿Aún no eres taxista? Regístrate';
+    } else {
+      $authTitle.textContent = 'Regístrate como taxista';
+      $btnSubmit.textContent = 'Registrarme';
+      $toggleMode.textContent = '¿Ya estás registrado? Inicia sesión';
+    }
+  }
+
+  // ─── Submit ───────────────────────────────────────────────
+  $btnSubmit.addEventListener('click', submit);
+
+  async function submit() {
+    clearErrors();
+    const nombre = $nombre.value.trim();
+    const telRaw = $tel.value.trim();
+    const tel = telRaw.replace(/\D/g, '');
+
+    let ok = true;
+    if (!nombre) { showErr('err-nombre'); ok = false; }
+    if (tel.length !== 10) { showErr('err-tel'); ok = false; }
+    if (!ok) return;
+
+    $btnSubmit.disabled = true;
+    const action = (mode === 'login') ? 'login_taxista' : 'registrar_taxista';
+
+    try {
+      const resp = await fetch(APPS_SCRIPT_URL, {
+        method: 'POST',
+        mode: 'cors',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({
+          action: action,
+          nombre: nombre,
+          telefono: tel
+        })
+      });
+      const data = await resp.json();
+
+      if (data.status === 'ok') {
+        session = { nombre: data.nombre, telefono: tel };
+        localStorage.setItem('taxit_session', JSON.stringify(session));
+        showBanner('✅ ' + data.message, 'success');
+        setTimeout(showPanel, 500);
+      } else {
+        showBanner('❌ ' + (data.message || 'Error'), 'error');
+      }
+    } catch (e) {
+      showBanner('❌ Error de conexión', 'error');
+    } finally {
+      $btnSubmit.disabled = false;
+    }
+  }
+
+  // ─── Panel ────────────────────────────────────────────────
+  function showPanel() {
+    $authScreen.style.display = 'none';
+    $panelScreen.style.display = 'block';
+    $sessionName.textContent = session.nombre;
+    refresh();
+    if (pollingTimer) clearInterval(pollingTimer);
+    pollingTimer = setInterval(refresh, 30000);
+  }
+
+  async function refresh() {
+    try {
+      const resp = await fetch(APPS_SCRIPT_URL, {
+        method: 'POST',
+        mode: 'cors',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({
+          action: 'listar_solicitudes',
+          taxistaTel: session.telefono
+        })
+      });
+      const data = await resp.json();
+      if (data.status === 'ok') {
+        renderSolicitudes(data.pendientes || [], data.mias || []);
+      } else {
+        showBanner('❌ ' + data.message, 'error');
+      }
+    } catch (e) {
+      // silencioso para no spammear
+    }
+  }
+
+  function renderSolicitudes(pendientes, mias) {
+    $countPend.textContent = pendientes.length;
+    $countMias.textContent = mias.length;
+
+    $listaPend.innerHTML = '';
+    if (pendientes.length === 0) {
+      $listaPend.innerHTML = '<div class="empty-state"><div class="emoji">📭</div>No hay solicitudes en espera</div>';
+    } else {
+      pendientes.forEach(s => $listaPend.appendChild(renderPendiente(s)));
+    }
+
+    $listaMias.innerHTML = '';
+    if (mias.length === 0) {
+      $listaMias.innerHTML = '<div class="empty-state"><div class="emoji">🚕</div>No tienes solicitudes activas</div>';
+    } else {
+      mias.forEach(s => $listaMias.appendChild(renderMia(s)));
+    }
+  }
+
+  function renderPendiente(s) {
+    const div = document.createElement('div');
+    div.className = 'solicitud pendiente';
+    div.innerHTML = `
+      <div class="time">${formatTime(s.timestamp)}</div>
+      <div class="name">👤 ${esc(s.nombre)}</div>
+      <div class="detail">📍 ${esc(s.ubicacion || 'Sin ubicación')}</div>
+      ${s.destino ? `<div class="detail">🏁 <strong>${esc(s.destino)}</strong></div>` : ''}
+      ${s.nota ? `<div class="detail">📝 ${esc(s.nota)}</div>` : ''}
+      <div class="btn-row">
+        <button class="btn btn-success" onclick="aceptar(${s.fila})">✓ Aceptar</button>
+      </div>
+    `;
+    return div;
+  }
+
+  function renderMia(s) {
+    const div = document.createElement('div');
+    div.className = 'solicitud mia';
+    let telHtml = s.telefono ? `<div class="detail">📞 <strong>${esc(s.telefono)}</strong></div>` : '<div class="detail">📞 Sin teléfono compartido</div>';
+    div.innerHTML = `
+      <div class="time">${formatTime(s.timestamp)} · asignada a ti</div>
+      <div class="name">👤 ${esc(s.nombre)}</div>
+      <div class="detail">📍 ${esc(s.ubicacion || 'Sin ubicación')}</div>
+      ${s.destino ? `<div class="detail">🏁 <strong>${esc(s.destino)}</strong></div>` : ''}
+      ${s.nota ? `<div class="detail">📝 ${esc(s.nota)}</div>` : ''}
+      ${telHtml}
+      <div class="btn-row">
+        <button class="btn btn-success" onclick="completar(${s.fila})">✓ Completar</button>
+        ${s.telefono ? `<a class="btn btn-secondary" href="tel:${esc(s.telefono)}">📞 Llamar</a>` : ''}
+        ${s.telefono ? `<a class="btn btn-secondary" href="https://wa.me/52${esc(s.telefono)}" target="_blank">💬 WhatsApp</a>` : ''}
+      </div>
+    `;
+    return div;
+  }
+
+  window.aceptar = async function(fila) {
+    if (!confirm('¿Aceptar esta solicitud?')) return;
+    try {
+      const resp = await fetch(APPS_SCRIPT_URL, {
+        method: 'POST',
+        mode: 'cors',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({
+          action: 'aceptar_solicitud',
+          fila: fila,
+          taxistaNombre: session.nombre,
+          taxistaTel: session.telefono
+        })
+      });
+      const data = await resp.json();
+      if (data.status === 'ok') {
+        showBanner('✅ Solicitud aceptada', 'success');
+        refresh();
+      } else {
+        showBanner('❌ ' + data.message, 'error');
+        refresh();
+      }
+    } catch (e) {
+      showBanner('❌ Error de conexión', 'error');
+    }
+  };
+
+  window.completar = async function(fila) {
+    if (!confirm('¿Marcar como completada?')) return;
+    try {
+      const resp = await fetch(APPS_SCRIPT_URL, {
+        method: 'POST',
+        mode: 'cors',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({
+          action: 'completar_solicitud',
+          fila: fila,
+          taxistaTel: session.telefono
+        })
+      });
+      const data = await resp.json();
+      if (data.status === 'ok') {
+        showBanner('✅ Completada', 'success');
+        refresh();
+      } else {
+        showBanner('❌ ' + data.message, 'error');
+      }
+    } catch (e) {
+      showBanner('❌ Error de conexión', 'error');
+    }
+  };
+
+  // ─── Logout ───────────────────────────────────────────────
+  $btnLogout.addEventListener('click', () => {
+    if (confirm('¿Cerrar sesión?')) {
+      localStorage.removeItem('taxit_session');
+      session = null;
+      if (pollingTimer) clearInterval(pollingTimer);
+      location.reload();
+    }
+  });
+
+  // ─── Helpers ──────────────────────────────────────────────
+  function showErr(id) {
+    document.getElementById(id).classList.add('show');
+    const inputId = id.replace('err-', 'input-');
+    document.getElementById(inputId).style.borderColor = 'var(--error)';
+  }
+
+  function clearErrors() {
+    document.querySelectorAll('.error-msg').forEach(e => e.classList.remove('show'));
+    document.querySelectorAll('input').forEach(i => i.style.borderColor = '');
+  }
+
+  function showBanner(msg, type) {
+    $statusBanner.textContent = msg;
+    $statusBanner.className = 'status-banner show ' + type;
+    setTimeout(() => $statusBanner.classList.remove('show'), 4000);
+  }
+
+  function formatTime(iso) {
+    if (!iso) return '';
+    const d = new Date(iso);
+    return d.toLocaleString('es-MX', { hour: '2-digit', minute: '2-digit', day: 'numeric', month: 'short' });
+  }
+
+  function esc(s) {
+    if (!s) return '';
+    return String(s).replace(/[&<>"']/g, c => ({
+      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    }[c]));
+  }
+</script>
+
+</body>
+</html>
