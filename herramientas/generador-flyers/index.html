@@ -5,33 +5,21 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Generador de Flyers — Celucenter</title>
 <style>
-  :root {
-    --celeste:#00A5D4; --verde:#7AB800; --marino:#0B2545;
-    --naranja:#F5A623; --rojo:#E53935;
-    --gris-claro:#F4F6F9; --gris:#8A94A6; --negro:#1A1A2E;
-    --grad-marca: linear-gradient(135deg, #00A5D4 0%, #7AB800 100%);
-    --grad-hero: linear-gradient(135deg, #0B2545 0%, #00A5D4 100%);
-    --shadow-sm: 0 1px 3px rgba(0,0,0,.08);
-    --shadow-md: 0 2px 8px rgba(0,0,0,.1);
-    --shadow-lg: 0 8px 32px rgba(0,0,0,.15);
-  }
-
-
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body {
-    font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    background: var(--gris-claro);
-    color: var(--negro);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #0d1117;
+    color: #e6edf3;
     min-height: 100vh;
   }
   .header {
-    background: var(--grad-marca);
-    border-bottom: 2px solid rgba(255,255,255,0.1);
+    background: linear-gradient(135deg, #0a1628 0%, #162447 100%);
+    border-bottom: 2px solid #00d4ff33;
     padding: 16px 24px;
     text-align: center;
   }
-  .header h1 { font-size: 20px; font-weight: 700; color: var(--celeste); }
-  .header p { font-size: 12px; color: var(--gris); margin-top: 2px; }
+  .header h1 { font-size: 20px; font-weight: 700; color: #00d4ff; }
+  .header p { font-size: 12px; color: #8b949e; margin-top: 2px; }
 
   .container {
     max-width: 1400px;
@@ -45,39 +33,39 @@
   @media (max-width: 900px) { .container { grid-template-columns: 1fr; } }
 
   .card {
-    background: white;
-    border: 1px solid #E2E8F0;
+    background: #161b22;
+    border: 1px solid #30363d;
     border-radius: 10px;
     padding: 16px;
     margin-bottom: 12px;
   }
   .card h2 {
-    font-size: 13px; font-weight: 600; color: var(--celeste);
+    font-size: 13px; font-weight: 600; color: #00d4ff;
     margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px;
   }
 
   label {
-    display: block; font-size: 11px; font-weight: 600; color: var(--gris);
+    display: block; font-size: 11px; font-weight: 600; color: #8b949e;
     margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.3px;
   }
   input[type="text"], input[type="number"], select {
     width: 100%; padding: 8px 10px; font-size: 14px;
-    background: var(--gris-claro); border: 1px solid #E2E8F0; border-radius: 6px;
-    color: var(--negro); margin-bottom: 10px;
+    background: #0d1117; border: 1px solid #30363d; border-radius: 6px;
+    color: #e6edf3; margin-bottom: 10px;
   }
-  input:focus, select:focus { outline: none; border-color: var(--celeste); }
+  input:focus, select:focus { outline: none; border-color: #00d4ff; }
 
   .tpl-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 8px; margin-bottom: 10px; }
   .tpl-card {
     cursor: pointer; border: 2px solid #30363d; border-radius: 6px;
     overflow: hidden; transition: border-color 0.15s; position: relative;
   }
-  .tpl-card.selected { border-color: var(--celeste); }
+  .tpl-card.selected { border-color: #00d4ff; }
   .tpl-card img { width: 100%; height: 70px; object-fit: cover; display: block; }
-  .tpl-card .tpl-name { font-size: 10px; padding: 3px 4px; background: var(--gris-claro); text-align: center; color: var(--gris); }
+  .tpl-card .tpl-name { font-size: 10px; padding: 3px 4px; background: #0d1117; text-align: center; color: #8b949e; }
   .tpl-card .tpl-delete {
     position: absolute; top: 3px; right: 3px; width: 18px; height: 18px;
-    border-radius: 50%; background: var(--rojo); color: white; border: none;
+    border-radius: 50%; background: #da3633; color: white; border: none;
     font-size: 11px; cursor: pointer; display: none; align-items: center; justify-content: center; line-height: 1;
   }
   .tpl-card:hover .tpl-delete:not(.hidden) { display: flex; }
@@ -87,20 +75,20 @@
     text-align: center; cursor: pointer; transition: border-color 0.15s;
     position: relative; margin-bottom: 10px;
   }
-  .upload-zone:hover, .upload-zone.dragover { border-color: var(--celeste); background: rgba(0,165,212,0.06); }
+  .upload-zone:hover, .upload-zone.dragover { border-color: #00d4ff; background: #00d4ff0a; }
   .upload-zone .uz-icon { font-size: 28px; display: block; }
-  .upload-zone .uz-text { font-size: 12px; color: var(--gris); }
+  .upload-zone .uz-text { font-size: 12px; color: #8b949e; }
   .upload-zone .uz-preview { max-width: 100%; max-height: 80px; border-radius: 4px; display: none; }
   .upload-zone input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
 
   .slider-row { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
-  .slider-row input[type="range"] { flex: 1; accent-color: var(--celeste); background: transparent; margin-bottom: 0; }
-  .slider-row .val { font-size: 12px; color: var(--gris); min-width: 36px; text-align: right; }
+  .slider-row input[type="range"] { flex: 1; accent-color: #00d4ff; background: transparent; margin-bottom: 0; }
+  .slider-row .val { font-size: 12px; color: #8b949e; min-width: 36px; text-align: right; }
 
   .btn-sm {
     padding: 6px 12px; font-size: 11px; font-weight: 600;
-    border: 1px solid #E2E8F0; border-radius: 5px;
-    background: #21262d; color: var(--negro); cursor: pointer;
+    border: 1px solid #30363d; border-radius: 5px;
+    background: #21262d; color: #e6edf3; cursor: pointer;
   }
   .btn-sm:hover { background: #30363d; }
 
@@ -111,26 +99,26 @@
   }
   .btn-action:hover { opacity: 0.9; }
   .btn-action:disabled { opacity: 0.4; cursor: not-allowed; }
-  .btn-green { background: var(--verde); color: white; }
-  .btn-cyan { background: linear-gradient(135deg, var(--celeste), #1d8fb8); color: #000; }
+  .btn-green { background: #238636; color: white; }
+  .btn-cyan { background: linear-gradient(135deg, #00d4ff, #0088cc); color: #000; }
 
   .preview-wrap {
-    background: white; border: 1px solid #E2E8F0; border-radius: 10px;
+    background: #161b22; border: 1px solid #30363d; border-radius: 10px;
     padding: 16px; text-align: center; position: sticky; top: 20px;
   }
   .preview-wrap h2 {
-    font-size: 13px; font-weight: 600; color: var(--celeste);
+    font-size: 13px; font-weight: 600; color: #00d4ff;
     margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px;
   }
   .canvas-container {
     position: relative; display: inline-block; cursor: default;
-    border-radius: 6px; overflow: hidden; box-shadow: var(--shadow-lg);
+    border-radius: 6px; overflow: hidden; box-shadow: 0 4px 24px #00000066;
   }
   .canvas-container canvas { display: block; max-width: 100%; height: auto; }
   .canvas-container.dragging { cursor: grabbing; }
   .canvas-container.can-grab { cursor: grab; }
 
-  .preview-hint { font-size: 11px; color: var(--gris); margin-top: 8px; }
+  .preview-hint { font-size: 11px; color: #8b949e; margin-top: 8px; }
 
   .modal-overlay {
     display: none; position: fixed; inset: 0; background: #000000aa;
@@ -138,10 +126,10 @@
   }
   .modal-overlay.active { display: flex; }
   .modal {
-    background: white; border: 1px solid #E2E8F0;
+    background: #161b22; border: 1px solid #30363d;
     border-radius: 10px; padding: 20px; width: 90%; max-width: 380px;
   }
-  .modal h3 { margin-bottom: 14px; color: var(--negro); font-size: 15px; }
+  .modal h3 { margin-bottom: 14px; color: #e6edf3; font-size: 15px; }
   .modal-actions { display: flex; gap: 8px; margin-top: 14px; }
   .modal-actions button { flex: 1; }
 
@@ -151,7 +139,7 @@
     cursor: pointer; user-select: none;
   }
   .collapse-toggle .arrow {
-    font-size: 10px; color: var(--gris); transition: transform 0.2s;
+    font-size: 10px; color: #8b949e; transition: transform 0.2s;
   }
   .collapse-toggle.open .arrow { transform: rotate(90deg); }
   .collapse-body { display: none; margin-top: 10px; }
@@ -167,12 +155,12 @@
     text-transform: uppercase; letter-spacing: 0.3px;
   }
   .txt-row { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
-  .txt-row span { font-size: 10px; color: var(--gris); min-width: 28px; }
-  .txt-row input[type="range"] { flex: 1; accent-color: var(--celeste); margin-bottom: 0; }
-  .txt-row .val { font-size: 10px; color: var(--gris); min-width: 32px; text-align: right; }
+  .txt-row span { font-size: 10px; color: #8b949e; min-width: 28px; }
+  .txt-row input[type="range"] { flex: 1; accent-color: #00d4ff; margin-bottom: 0; }
+  .txt-row .val { font-size: 10px; color: #8b949e; min-width: 32px; text-align: right; }
   .txt-row select {
-    flex: 1; padding: 4px 6px; font-size: 12px; background: var(--gris-claro);
-    border: 1px solid #E2E8F0; border-radius: 4px; color: var(--negro); margin-bottom: 0;
+    flex: 1; padding: 4px 6px; font-size: 12px; background: #0d1117;
+    border: 1px solid #30363d; border-radius: 4px; color: #e6edf3; margin-bottom: 0;
   }
 
   /* Tabs */
@@ -180,11 +168,11 @@
     display: flex; gap: 0; margin-top: 14px; justify-content: center;
   }
   .tab {
-    padding: 10px 28px; font-size: 13px; font-weight: 600; color: var(--gris);
+    padding: 10px 28px; font-size: 13px; font-weight: 600; color: #8b949e;
     cursor: pointer; border-bottom: 3px solid transparent; transition: all 0.15s;
   }
-  .tab:hover { color: var(--negro); }
-  .tab.active { color: var(--celeste); border-bottom-color: var(--celeste); }
+  .tab:hover { color: #e6edf3; }
+  .tab.active { color: #00d4ff; border-bottom-color: #00d4ff; }
   .tab-panel { display: none; }
   .tab-panel.active { display: block; }
 
@@ -193,12 +181,12 @@
   .rembg-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 16px; }
   @media (max-width: 700px) { .rembg-grid { grid-template-columns: 1fr; } }
   .rembg-panel {
-    background: white; border: 1px solid #E2E8F0; border-radius: 10px;
+    background: #161b22; border: 1px solid #30363d; border-radius: 10px;
     padding: 16px; text-align: center; min-height: 300px;
     display: flex; flex-direction: column; align-items: center; justify-content: center;
   }
   .rembg-panel h3 {
-    font-size: 12px; font-weight: 600; color: var(--gris); text-transform: uppercase;
+    font-size: 12px; font-weight: 600; color: #8b949e; text-transform: uppercase;
     letter-spacing: 0.5px; margin-bottom: 12px; align-self: flex-start;
   }
   .rembg-panel img { max-width: 100%; max-height: 350px; border-radius: 6px; }
@@ -206,9 +194,9 @@
     border: 2px dashed #30363d; border-radius: 10px; padding: 40px 20px;
     cursor: pointer; transition: all 0.15s; position: relative; width: 100%;
   }
-  .rembg-upload:hover { border-color: #8b5cf6; background: rgba(0,165,212,0.06); }
+  .rembg-upload:hover { border-color: #8b5cf6; background: #8b5cf60a; }
   .rembg-upload .uz-icon { font-size: 40px; display: block; margin-bottom: 8px; }
-  .rembg-upload .uz-text { font-size: 13px; color: var(--gris); }
+  .rembg-upload .uz-text { font-size: 13px; color: #8b949e; }
   .rembg-upload input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
   .btn-purple { background: linear-gradient(135deg, #8b5cf6, #6d28d9); color: white; }
   .spinner-sm {
@@ -217,7 +205,7 @@
     animation: spin 0.8s linear infinite; margin: 16px auto;
   }
   @keyframes spin { to { transform: rotate(360deg); } }
-  .rembg-status { font-size: 13px; color: var(--gris); margin-top: 8px; }
+  .rembg-status { font-size: 13px; color: #8b949e; margin-top: 8px; }
   .rembg-status.error { color: #f85149; }
   .checker-bg {
     background-image:
@@ -234,8 +222,8 @@
 <body>
 
 <div class="header" style="padding-bottom:0;">
-  <h1>📱 Herramientas de Publicidad</h1>
-  <p>CeluCenter · <a href="../../" style="color: rgba(255,255,255,0.7); text-decoration: none; border-bottom: 1px dotted rgba(255,255,255,0.3);">celulink.mx</a> · sub-marca</p>
+  <h1>Herramientas de Publicidad</h1>
+  <p>Celucenter <span style="margin-left:8px;opacity:0.5;">|</span> <span id="visitCount" style="margin-left:8px;color:#58a6ff;font-size:11px;"></span></p>
   <div class="tabs">
     <div class="tab active" data-tab="generador" onclick="switchTab('generador')">Generador</div>
     <div class="tab" data-tab="rembg" onclick="switchTab('rembg')">Quitar Fondo</div>
@@ -435,31 +423,39 @@
 <!-- TAB 2: Quitar Fondo -->
 <div class="tab-panel" id="panel-rembg">
 <div class="rembg-layout">
-  <div class="card" style="text-align:center; margin-bottom: 16px;">
-    <h2>Quitar fondo de imagen</h2>
-    <p style="font-size:13px; color:#8b949e; margin-bottom: 14px;">
-      Sube una foto y el sistema remueve el fondo automaticamente con IA. Ideal para fotos de equipos antes de usarlas en el generador.
+  <div class="card" style="margin-bottom: 16px;">
+    <h2 style="text-align:center; margin-bottom:8px;">Quitar fondo de imagen</h2>
+    <p style="font-size:13px; color:#8b949e; margin-bottom: 14px; text-align:center;">
+      Sube la foto, ajusta la tolerancia y haz clic en el fondo para quitarlo. Ideal para renders de equipos.
     </p>
     <div class="rembg-upload" id="rembgUploadZone">
       <input type="file" accept="image/*" id="rembgInput">
       <span class="uz-icon">+</span>
       <span class="uz-text">Arrastra o selecciona imagen (JPG, PNG)</span>
     </div>
-    <button class="btn-action btn-purple" id="btnRemoveBg" onclick="removeBg()" disabled style="max-width: 400px; margin: 10px auto 0;">
-      Quitar fondo
-    </button>
+    <div id="rembgControls" style="display:none; margin-top:12px;">
+      <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap; justify-content:center;">
+        <label style="font-size:12px; color:#8b949e;">Tolerancia:</label>
+        <input type="range" id="bgTolerance" min="5" max="100" value="30" style="width:140px;">
+        <span id="bgToleranceVal" style="font-size:12px; color:#e6edf3; min-width:28px;">30</span>
+        <button class="btn-sm" onclick="undoRembg()" id="btnUndo" style="background:#21262d;" disabled>↩ Deshacer</button>
+        <button class="btn-sm" onclick="resetRembg()" style="background:#21262d;">↺ Reset</button>
+      </div>
+      <p style="font-size:11px; color:#8b949e; text-align:center; margin-top:8px;">
+        Haz clic en el fondo de la imagen para quitarlo. Puedes hacer clic varias veces en distintas áreas.
+      </p>
+    </div>
   </div>
   <div class="rembg-grid">
     <div class="rembg-panel" id="rembgOrigPanel">
-      <h3>Original</h3>
-      <img id="rembgOrigImg" style="display:none;">
+      <h3>Haz clic en el fondo</h3>
+      <canvas id="rembgCanvas" style="display:none; max-width:100%; max-height:350px; cursor:crosshair; border-radius:6px;"></canvas>
       <p class="rembg-status" id="rembgOrigStatus">Sube una imagen para comenzar</p>
     </div>
     <div class="rembg-panel" id="rembgResultPanel">
       <h3>Sin fondo</h3>
-      <div class="spinner-sm" id="rembgSpinner" style="display:none;"></div>
       <div class="checker-bg" id="rembgResultBg" style="display:none;">
-        <img id="rembgResultImg">
+        <img id="rembgResultImg" style="max-width:100%; max-height:350px; border-radius:6px;">
       </div>
       <p class="rembg-status" id="rembgResultStatus">Listo para procesar</p>
       <div id="rembgActions" style="display:none; margin-top:12px; width:100%;">
@@ -478,11 +474,11 @@
 <!-- Upload template modal -->
 <div class="modal-overlay" id="uploadModal">
   <div class="modal">
-    <h3>Agregar plantilla (solo esta sesion)</h3>
+    <h3>Agregar plantilla</h3>
     <label>Nombre</label>
     <input type="text" id="tplName" placeholder="ej: navidad, buen_fin...">
-    <label>Archivo PNG</label>
-    <input type="file" accept="image/png,image/jpeg" id="tplFile" style="padding:6px; margin-bottom:0;">
+    <label>Archivo PNG/JPG</label>
+    <input type="file" accept="image/png,image/jpeg,image/webp" id="tplFile" style="padding:6px; margin-bottom:0;">
     <div class="modal-actions">
       <button class="btn-sm" onclick="closeUploadModal()">Cancelar</button>
       <button class="btn-action btn-cyan" style="margin-top:0;width:auto;flex:1;" onclick="uploadTemplate()">Agregar</button>
@@ -513,16 +509,28 @@ let phonePosY = 54;
 const BASE = location.pathname.replace(/\/index\.html$/, '').replace(/\/$/, '');
 
 const BUILTIN_TEMPLATES = [
-  { name: 'cuadrado', builtin: true, path: BASE + '/plantillas/cuadrado.png' },
-  { name: 'story', builtin: true, path: BASE + '/plantillas/story.png' },
-  { name: 'verano_cuadrado', builtin: true, path: BASE + '/plantillas/verano_cuadrado.png' },
-  { name: 'verano_story', builtin: true, path: BASE + '/plantillas/verano_story.png' },
-  { name: 'verano2_cuadrado', builtin: true, path: BASE + '/plantillas/verano2_cuadrado.png' },
-  { name: 'verano2_story', builtin: true, path: BASE + '/plantillas/verano2_story.png' },
+  { name: 'cuadrado',          builtin: true, path: BASE + '/plantillas/cuadrado.png' },
+  { name: 'story',             builtin: true, path: BASE + '/plantillas/story.png' },
+  { name: 'verano_cuadrado',   builtin: true, path: BASE + '/plantillas/verano_cuadrado.png' },
+  { name: 'verano_story',      builtin: true, path: BASE + '/plantillas/verano_story.png' },
+  { name: 'verano2_cuadrado',  builtin: true, path: BASE + '/plantillas/verano2_cuadrado.png' },
+  { name: 'verano2_story',     builtin: true, path: BASE + '/plantillas/verano2_story.png' },
+  { name: 'regreso_cuadrado',  builtin: true, path: BASE + '/plantillas/regreso_cuadrado.png' },
+  { name: 'regreso_story',     builtin: true, path: BASE + '/plantillas/regreso_story.jpg' },
+  { name: 'regreso2_cuadrado', builtin: true, path: BASE + '/plantillas/regreso2_cuadrado.png' },
+  { name: 'regreso2_story',    builtin: true, path: BASE + '/plantillas/regreso2_story.png' },
 ];
 
-// Custom templates added in-session (not persisted)
-let customTemplates = [];
+// Custom templates — persisted in localStorage (por navegador)
+let customTemplates = (() => {
+  try { return JSON.parse(localStorage.getItem('celuFlyerTemplates') || '[]'); }
+  catch { return []; }
+})();
+
+function saveCustomTemplates() {
+  try { localStorage.setItem('celuFlyerTemplates', JSON.stringify(customTemplates)); }
+  catch(e) { console.warn('localStorage lleno:', e); }
+}
 
 function allTemplates() { return [...BUILTIN_TEMPLATES, ...customTemplates]; }
 
@@ -566,6 +574,28 @@ const LAYOUTS = {
 };
 LAYOUTS.verano2_cuadrado = LAYOUTS.verano_cuadrado;
 LAYOUTS.verano2_story = LAYOUTS.verano_story;
+
+LAYOUTS.regreso_cuadrado = {
+  phone: { x_frac: 0.03, y_center: 0.52, max_h_frac: 0.52, max_w_frac: 0.40 },
+  marca:  { x_frac: 0.54, y_frac: 0.38, size_frac: 0.048, color: '#ffffff', font: 'Arial Black' },
+  modelo: { x_frac: 0.52, y_frac: 0.45, size_frac: 0.090, color: '#ffd200', font: 'Impact' },
+  specs:  { x_frac: 0.54, y_frac: 0.63, size_frac: 0.032, color: '#ffffff', font: 'Arial Black' },
+  asolo:  { x_frac: 0.54, y_frac: 0.68, size_frac: 0.032, color: '#ffffff', font: 'Arial Black' },
+  precio: { x_frac: 0.54, y_frac: 0.73, size_frac: 0.075, color: '#ffffff', font: 'Impact',
+            badge_color: '#1a5fb4', badge_radius: 0.025, badge_px: 0.025, badge_py: 0.012 },
+};
+LAYOUTS.regreso2_cuadrado = LAYOUTS.regreso_cuadrado;
+
+LAYOUTS.regreso_story = {
+  phone: { x_frac: 0.03, y_center: 0.50, max_h_frac: 0.44, max_w_frac: 0.42 },
+  marca:  { x_frac: 0.53, y_frac: 0.38, size_frac: 0.040, color: '#ffffff', font: 'Arial Black' },
+  modelo: { x_frac: 0.51, y_frac: 0.44, size_frac: 0.078, color: '#ffd200', font: 'Impact' },
+  specs:  { x_frac: 0.53, y_frac: 0.60, size_frac: 0.028, color: '#ffffff', font: 'Arial Black' },
+  asolo:  { x_frac: 0.53, y_frac: 0.65, size_frac: 0.028, color: '#ffffff', font: 'Arial Black' },
+  precio: { x_frac: 0.53, y_frac: 0.70, size_frac: 0.062, color: '#ffffff', font: 'Impact',
+            badge_color: '#1a5fb4', badge_radius: 0.022, badge_px: 0.024, badge_py: 0.011 },
+};
+LAYOUTS.regreso2_story = LAYOUTS.regreso_story;
 
 const canvas = document.getElementById('preview');
 const ctx = canvas.getContext('2d');
@@ -634,6 +664,7 @@ function uploadTemplate() {
   const reader = new FileReader();
   reader.onload = e => {
     customTemplates.push({ name, builtin: false, path: e.target.result });
+    saveCustomTemplates();
     closeUploadModal();
     renderTemplateGrid();
     switchTemplate(name);
@@ -644,6 +675,7 @@ function uploadTemplate() {
 function deleteCustomTemplate(name, event) {
   event.stopPropagation();
   customTemplates = customTemplates.filter(t => t.name !== name);
+  saveCustomTemplates();
   if (currentFormat === name) switchTemplate('cuadrado');
   renderTemplateGrid();
 }
@@ -957,15 +989,22 @@ function downloadCanvas() {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// Rembg — Background removal (client-side)
+// Rembg — Magic wand background removal (flood-fill, no AI needed)
 // ═══════════════════════════════════════════════════════════════
-let rembgFile = null;
-let rembgResultBlob = null;
+let rembgOrigImageData = null;
+let rembgCurrentImageData = null;
+let rembgHistory = [];
 let rembgResultUrl = null;
-let bgRemovalModule = null;
+let rembgFileName = '';
 
 const rembgInput = document.getElementById('rembgInput');
 const rembgZone = document.getElementById('rembgUploadZone');
+const rembgCanvas = document.getElementById('rembgCanvas');
+const rembgCtx = rembgCanvas.getContext('2d', { willReadFrequently: true });
+
+document.getElementById('bgTolerance').addEventListener('input', e => {
+  document.getElementById('bgToleranceVal').textContent = e.target.value;
+});
 
 rembgInput.addEventListener('change', e => { if (e.target.files[0]) setRembgFile(e.target.files[0]); });
 rembgZone.addEventListener('dragover', e => { e.preventDefault(); rembgZone.classList.add('dragover'); });
@@ -975,59 +1014,136 @@ rembgZone.addEventListener('drop', e => {
   if (e.dataTransfer.files[0]) setRembgFile(e.dataTransfer.files[0]);
 });
 
+rembgCanvas.addEventListener('click', e => {
+  const rect = rembgCanvas.getBoundingClientRect();
+  const scaleX = rembgCanvas.width / rect.width;
+  const scaleY = rembgCanvas.height / rect.height;
+  const x = Math.round((e.clientX - rect.left) * scaleX);
+  const y = Math.round((e.clientY - rect.top) * scaleY);
+  const tolerance = parseInt(document.getElementById('bgTolerance').value);
+  floodFillRemove(x, y, tolerance);
+});
+
 function setRembgFile(file) {
-  rembgFile = file;
-  const reader = new FileReader();
-  reader.onload = e => {
-    document.getElementById('rembgOrigImg').src = e.target.result;
-    document.getElementById('rembgOrigImg').style.display = 'block';
-    document.getElementById('rembgOrigStatus').textContent = `${file.name} (${Math.round(file.size/1024)} KB)`;
-    document.getElementById('btnRemoveBg').disabled = false;
+  rembgFileName = file.name;
+  const img = new Image();
+  const url = URL.createObjectURL(file);
+  img.onload = () => {
+    rembgCanvas.width = img.naturalWidth;
+    rembgCanvas.height = img.naturalHeight;
+    rembgCtx.drawImage(img, 0, 0);
+    rembgOrigImageData = rembgCtx.getImageData(0, 0, rembgCanvas.width, rembgCanvas.height);
+    rembgCurrentImageData = new ImageData(new Uint8ClampedArray(rembgOrigImageData.data), rembgCanvas.width, rembgCanvas.height);
+    rembgHistory = [];
+    URL.revokeObjectURL(url);
+
+    rembgCanvas.style.display = 'block';
+    document.getElementById('rembgOrigStatus').textContent = 'Haz clic en el fondo para quitarlo';
+    document.getElementById('rembgControls').style.display = 'block';
     document.getElementById('rembgResultBg').style.display = 'none';
     document.getElementById('rembgActions').style.display = 'none';
     document.getElementById('rembgResultStatus').textContent = 'Listo para procesar';
+    document.getElementById('btnUndo').disabled = true;
   };
-  reader.readAsDataURL(file);
+  img.src = url;
 }
 
-async function removeBg() {
-  if (!rembgFile) return;
-  const btn = document.getElementById('btnRemoveBg');
-  const spinner = document.getElementById('rembgSpinner');
-  const status = document.getElementById('rembgResultStatus');
+function floodFillRemove(startX, startY, tolerance) {
+  // Save history snapshot
+  rembgHistory.push(new Uint8ClampedArray(rembgCurrentImageData.data));
+  if (rembgHistory.length > 10) rembgHistory.shift();
+  document.getElementById('btnUndo').disabled = false;
 
-  btn.disabled = true;
-  spinner.style.display = 'block';
-  document.getElementById('rembgResultBg').style.display = 'none';
-  document.getElementById('rembgActions').style.display = 'none';
+  const data = rembgCurrentImageData.data;
+  const w = rembgCanvas.width, h = rembgCanvas.height;
+  const idx = (startY * w + startX) * 4;
+  const sr = data[idx], sg = data[idx+1], sb = data[idx+2];
 
-  try {
-    if (!bgRemovalModule) {
-      status.textContent = 'Descargando modelo de IA (solo la primera vez)...';
-      bgRemovalModule = await import('https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.7.0/dist/index.mjs');
+  const visited = new Uint8Array(w * h);
+  const stack = [startX + startY * w];
+
+  while (stack.length) {
+    const pos = stack.pop();
+    const x = pos % w, y = Math.floor(pos / w);
+    if (x < 0 || x >= w || y < 0 || y >= h || visited[pos]) continue;
+    visited[pos] = 1;
+
+    const i = pos * 4;
+    if (data[i+3] === 0) continue; // already transparent
+
+    const dr = data[i] - sr, dg = data[i+1] - sg, db = data[i+2] - sb;
+    const dist = Math.sqrt(dr*dr + dg*dg + db*db);
+    if (dist > tolerance) continue;
+
+    // Make transparent
+    data[i+3] = 0;
+
+    if (x + 1 < w) stack.push(pos + 1);  // right (same row)
+    if (x - 1 >= 0) stack.push(pos - 1); // left  (same row)
+    stack.push(pos + w, pos - w);         // down, up
+  }
+
+  // Feather edges slightly
+  featherEdges(data, w, h);
+
+  rembgCtx.putImageData(rembgCurrentImageData, 0, 0);
+  updateResult();
+}
+
+function featherEdges(data, w, h) {
+  // Soften hard edges by blending alpha with neighbors
+  const alpha = new Float32Array(w * h);
+  for (let i = 0; i < w * h; i++) alpha[i] = data[i*4+3];
+  for (let y = 1; y < h-1; y++) {
+    for (let x = 1; x < w-1; x++) {
+      const pos = y*w+x;
+      if (alpha[pos] === 0) {
+        // Neighbor has content? Partial transparency
+        const neighbors = [alpha[pos-1], alpha[pos+1], alpha[pos-w], alpha[pos+w]];
+        const maxN = Math.max(...neighbors);
+        if (maxN > 0) data[pos*4+3] = Math.round(maxN * 0.3);
+      }
     }
-    status.textContent = 'Procesando imagen... (puede tardar unos segundos)';
-
-    const resultBlob = await bgRemovalModule.removeBackground(rembgFile);
-    rembgResultBlob = resultBlob;
-    rembgResultUrl = URL.createObjectURL(resultBlob);
-
-    document.getElementById('rembgResultImg').src = rembgResultUrl;
-    document.getElementById('rembgResultBg').style.display = 'inline-block';
-    document.getElementById('rembgActions').style.display = 'block';
-    status.textContent = 'Fondo removido correctamente';
-  } catch (e) {
-    status.textContent = 'Error: ' + e.message;
-    status.className = 'rembg-status error';
-  } finally {
-    spinner.style.display = 'none';
-    btn.disabled = false;
   }
 }
 
+function updateResult() {
+  const tmp = document.createElement('canvas');
+  tmp.width = rembgCanvas.width; tmp.height = rembgCanvas.height;
+  tmp.getContext('2d').putImageData(rembgCurrentImageData, 0, 0);
+  tmp.toBlob(blob => {
+    if (rembgResultUrl) URL.revokeObjectURL(rembgResultUrl);
+    rembgResultUrl = URL.createObjectURL(blob);
+    document.getElementById('rembgResultImg').src = rembgResultUrl;
+    document.getElementById('rembgResultBg').style.display = 'inline-block';
+    document.getElementById('rembgActions').style.display = 'block';
+    document.getElementById('rembgResultStatus').textContent = 'Fondo removido. Haz clic en más áreas si es necesario.';
+  }, 'image/png');
+}
+
+function undoRembg() {
+  if (!rembgHistory.length) return;
+  const prev = rembgHistory.pop();
+  rembgCurrentImageData.data.set(prev);
+  rembgCtx.putImageData(rembgCurrentImageData, 0, 0);
+  if (rembgHistory.length === 0) document.getElementById('btnUndo').disabled = true;
+  updateResult();
+}
+
+function resetRembg() {
+  if (!rembgOrigImageData) return;
+  rembgCurrentImageData = new ImageData(new Uint8ClampedArray(rembgOrigImageData.data), rembgCanvas.width, rembgCanvas.height);
+  rembgHistory = [];
+  rembgCtx.putImageData(rembgCurrentImageData, 0, 0);
+  document.getElementById('btnUndo').disabled = true;
+  document.getElementById('rembgResultBg').style.display = 'none';
+  document.getElementById('rembgActions').style.display = 'none';
+  document.getElementById('rembgResultStatus').textContent = 'Listo para procesar';
+}
+
 function downloadRembgResult() {
-  if (!rembgResultBlob) return;
-  const name = rembgFile ? rembgFile.name.replace(/\.\w+$/, '') + '_sin_fondo.png' : 'sin_fondo.png';
+  if (!rembgResultUrl) return;
+  const name = rembgFileName.replace(/\.\w+$/, '') + '_sin_fondo.png';
   const a = document.createElement('a'); a.href = rembgResultUrl; a.download = name; a.click();
 }
 
@@ -1044,6 +1160,12 @@ updateSliders();
 syncTxtSlidersToLayout();
 renderTemplateGrid();
 loadTemplateImage();
+
+// Visit counter
+fetch('https://api.counterapi.dev/v1/celucentermx-generador-flyers/visits/up')
+  .then(r => r.json())
+  .then(d => { document.getElementById('visitCount').textContent = d.count + ' visitas'; })
+  .catch(() => {});
 </script>
 </body>
 </html>
