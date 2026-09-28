@@ -361,6 +361,8 @@
     text-align: center; padding: 6px 16px; font-size: 12px; font-weight: 600;
     background: #e3f2fd; color: #1e3c72;
   }
+  .cart-lista-badge.lista-2x { background: #fce4ec; color: #c62828; }
+  .cart-lista-badge.lista-f { background: #e3f2fd; color: #1565c0; }
   .cart-lista-badge.lista-m { background: #e8f5e9; color: #2e7d32; }
   .cart-lista-badge.lista-g { background: #fff3e0; color: #e65100; }
   .cart-envio-note { background: #e8f5e9; color: #2e7d32; text-align: center; padding: 6px 12px; font-size: 12px; font-weight: 600; }
@@ -549,8 +551,9 @@ const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzzS-Mc4YFlrfgc
 const TOKEN = 'CELUCENTER_EQUIPOS_2026';
 const WHATSAPP_NUMBER = '5213413300001';
 const STORAGE_KEY = 'celu_equipos_session';
-const UMBRAL_G = 15000;
-const UMBRAL_M = 30000;
+const UMBRAL_F = 15000;
+const UMBRAL_G = 30000;
+const UMBRAL_M = 50000;
 const UMBRAL_ENVIO = 50000;
 
 // ============================================================
@@ -719,7 +722,7 @@ function applyFilters() {
         if (lista === 'G') return p.listaG;
         if (lista === 'F') return p.listaF;
         if (lista === 'CRISTIAN') return precioCristian(p.listaF);
-        return p.listaF || p.precioPublico;
+        return precio2X(p.listaF) || p.precioPublico;
     };
 
     filteredProducts = allProducts.filter(p => {
@@ -779,6 +782,11 @@ function getProductImage(codigo) {
 // ============================================================
 // PRICING
 // ============================================================
+function precio2X(listaF) {
+    if (!listaF || listaF <= 0) return null;
+    return Math.round(listaF * 1.15 * 100) / 100;
+}
+
 function precioCristian(listaF) {
     if (!listaF || listaF <= 0) return null;
     if (listaF < 500) return listaF + 50;
@@ -796,7 +804,7 @@ function getProductPrice(p) {
     if (lista === 'G') return p.listaG;
     if (lista === 'F') return p.listaF;
     if (lista === 'CRISTIAN') return precioCristian(p.listaF);
-    return p.listaF || p.precioPublico;
+    return precio2X(p.listaF) || p.precioPublico;
 }
 
 function getUnitPriceForList(product, lista) {
@@ -804,7 +812,8 @@ function getUnitPriceForList(product, lista) {
     if (lista === 'G') return product.listaG || product.listaF || product.precioPublico || 0;
     if (lista === 'F') return product.listaF || product.precioPublico || 0;
     if (lista === 'CRISTIAN') return precioCristian(product.listaF) || product.precioPublico || 0;
-    return product.precioPublico || 0;
+    // '2X' default: Lista F + 15%
+    return precio2X(product.listaF) || product.precioPublico || 0;
 }
 
 function getCartTotalAtList(lista) {
@@ -816,6 +825,8 @@ function getCartTotalAtList(lista) {
 function getCartLista() {
     const u = (userSession && userSession.lista || '').toUpperCase();
     if (['TODAS', 'CRISTIAN', 'M', 'G'].includes(u)) return u;
+    // Escalonado: 2X → F ($15k) → G ($30k) → M ($50k)
+    if (getCartTotalAtList('2X') < UMBRAL_F) return '2X';
     if (getCartTotalAtList('F') < UMBRAL_G) return 'F';
     if (getCartTotalAtList('G') < UMBRAL_M) return 'G';
     return 'M';
@@ -823,7 +834,10 @@ function getCartLista() {
 
 function getCartListaLabel() {
     const l = getCartLista();
-    return l === 'TODAS' ? 'Todas' : l === 'CRISTIAN' ? 'Cristian' : 'Lista ' + l;
+    if (l === 'TODAS') return 'Todas';
+    if (l === 'CRISTIAN') return 'Cristian';
+    if (l === '2X') return 'Menudeo (2X)';
+    return 'Lista ' + l;
 }
 
 function getProductPriceForCart(product) {
@@ -922,7 +936,7 @@ function renderCartModal() {
     // Lista badge
     const lb = document.getElementById('cartListaBadge');
     if (!items.length) { lb.textContent = 'Agrega productos'; lb.className = 'cart-lista-badge'; }
-    else { lb.textContent = (lista === 'M' ? '🏆 ' : '📋 ') + getCartListaLabel(); lb.className = 'cart-lista-badge lista-' + lista.toLowerCase(); }
+    else { lb.textContent = (lista === 'M' ? '🏆 ' : lista === '2X' ? '🏷️ ' : '📋 ') + getCartListaLabel(); lb.className = 'cart-lista-badge lista-' + lista.toLowerCase(); }
 
     // Envío
     document.getElementById('cartEnvioNote').style.display = (lista === 'CRISTIAN' || (lista === 'M' && getCartTotal() >= UMBRAL_ENVIO)) ? 'block' : 'none';
@@ -931,7 +945,8 @@ function renderCartModal() {
     const hint = document.getElementById('cartMayoreoHint');
     hint.style.display = 'none';
     if (items.length && !['TODAS','CRISTIAN','M','G'].includes(uLista)) {
-        if (lista === 'F') { const f = UMBRAL_G - getCartTotalAtList('F'); if (f > 0) { hint.innerHTML = '💡 Agrega <strong>' + formatMXN(f) + '</strong> más para Lista G'; hint.style.display = 'block'; } }
+        if (lista === '2X') { const f = UMBRAL_F - getCartTotalAtList('2X'); if (f > 0) { hint.innerHTML = '💡 Agrega <strong>' + formatMXN(f) + '</strong> más para Lista F (mayoreo)'; hint.style.display = 'block'; } }
+        else if (lista === 'F') { const f = UMBRAL_G - getCartTotalAtList('F'); if (f > 0) { hint.innerHTML = '💡 Agrega <strong>' + formatMXN(f) + '</strong> más para Lista G'; hint.style.display = 'block'; } }
         else if (lista === 'G') { const f = UMBRAL_M - getCartTotalAtList('G'); if (f > 0) { hint.innerHTML = '💡 Agrega <strong>' + formatMXN(f) + '</strong> más para Lista M'; hint.style.display = 'block'; } }
         else if (lista === 'M') { const f = UMBRAL_ENVIO - getCartTotal(); if (f > 0) { hint.innerHTML = '🚚 Agrega <strong>' + formatMXN(f) + '</strong> más para envío gratis'; hint.style.display = 'block'; } }
     }
@@ -994,7 +1009,8 @@ function renderCard(p) {
     } else if (lista === 'TODAS') {
         const rows = [
             { n: 'M', v: fmt(p.listaM) }, { n: 'G', v: fmt(p.listaG) },
-            { n: 'F', v: fmt(p.listaF) }, { n: 'Cristian', v: fmt(precioCristian(p.listaF)) }
+            { n: 'F', v: fmt(p.listaF) }, { n: '2X', v: fmt(precio2X(p.listaF)) },
+            { n: 'Cristian', v: fmt(precioCristian(p.listaF)) }
         ].filter(r => r.v);
         const pub = fmt(p.precioPublico);
         if (rows.length) {
