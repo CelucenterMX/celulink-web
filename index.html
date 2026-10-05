@@ -196,6 +196,127 @@ body {
   backdrop-filter: blur(4px);
 }
 
+/* CATEGORIAS */
+.cats {
+  background: var(--gris-claro);
+  padding: 60px 20px;
+}
+.cats-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+}
+.cats-heading {
+  text-align: center;
+  margin-bottom: 40px;
+}
+.cats-heading .section-label {
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--celeste);
+  display: block;
+  margin-bottom: 10px;
+}
+.cats-heading h2 {
+  font-size: clamp(1.6rem, 3vw, 2.2rem);
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  color: var(--negro);
+}
+.cats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+.cat-card {
+  position: relative;
+  border-radius: 18px;
+  overflow: hidden;
+  text-decoration: none;
+  display: block;
+  height: 380px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+  transition: transform 0.22s, box-shadow 0.22s;
+}
+.cat-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 20px 48px rgba(0,0,0,0.26);
+}
+.cat-card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.4s;
+}
+.cat-card:hover img {
+  transform: scale(1.05);
+}
+.cat-card-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, rgba(11,37,69,0.88) 0%, rgba(11,37,69,0.2) 55%, transparent 100%);
+}
+.cat-card-body {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 28px 26px;
+  color: white;
+}
+.cat-card-tag {
+  display: inline-block;
+  background: var(--celeste);
+  color: white;
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: 20px;
+  margin-bottom: 10px;
+}
+.cat-card-body h3 {
+  font-size: 1.55rem;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  margin-bottom: 8px;
+}
+.cat-card-body p {
+  font-size: 0.88rem;
+  opacity: 0.85;
+  margin-bottom: 16px;
+  line-height: 1.45;
+}
+.cat-card-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: white;
+  color: var(--marino);
+  font-size: 0.82rem;
+  font-weight: 800;
+  padding: 9px 18px;
+  border-radius: 100px;
+  transition: background 0.15s;
+}
+.cat-card:hover .cat-card-btn {
+  background: var(--naranja);
+  color: white;
+}
+.cat-card.eq .cat-card-tag  { background: var(--verde); }
+.cat-card.suc .cat-card-tag { background: var(--naranja); }
+
+@media (max-width: 768px) {
+  .cats-grid {
+    grid-template-columns: 1fr;
+  }
+  .cat-card { height: 300px; }
+}
+
 /* MAIN */
 main {
   flex: 1;
@@ -478,6 +599,55 @@ footer {
     <div class="hero-cta">
       <a class="btn btn-primary" href="https://wa.me/523413300001?text=Hola%2C%20me%20interesa%20un%20equipo" target="_blank" rel="noopener">WhatsApp Ventas →</a>
       <a class="btn btn-secondary" href="./catalogos/accesorios/">Ver catálogo</a>
+    </div>
+  </div>
+</section>
+
+<!-- ======= MÓDULO CATEGORÍAS ======= -->
+<section class="cats">
+  <div class="cats-inner">
+    <div class="cats-heading">
+      <span class="section-label">Explora nuestro catálogo</span>
+      <h2>¿Qué estás buscando?</h2>
+    </div>
+    <div class="cats-grid">
+
+      <!-- EQUIPOS -->
+      <a class="cat-card eq" href="./catalogos/equipos/">
+        <img src="https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=800&q=80" alt="Equipos celulares" loading="lazy">
+        <div class="cat-card-overlay"></div>
+        <div class="cat-card-body">
+          <span class="cat-card-tag">Catálogo</span>
+          <h3>Equipos</h3>
+          <p>Smartphones BM, Ecom y LAFT. Precios actualizados, stock real.</p>
+          <span class="cat-card-btn">Ver equipos →</span>
+        </div>
+      </a>
+
+      <!-- ACCESORIOS -->
+      <a class="cat-card acc" href="./catalogos/accesorios/">
+        <img src="https://images.unsplash.com/photo-1585792180666-f7347c490ee2?w=800&q=80" alt="Accesorios celular" loading="lazy">
+        <div class="cat-card-overlay"></div>
+        <div class="cat-card-body">
+          <span class="cat-card-tag">Mayoreo</span>
+          <h3>Accesorios</h3>
+          <p>Cables, fundas, audífonos y más — con sistema de listas de precios.</p>
+          <span class="cat-card-btn">Ver accesorios →</span>
+        </div>
+      </a>
+
+      <!-- SUCURSALES -->
+      <a class="cat-card suc" href="https://wa.me/523413300001?text=Hola%2C%20quiero%20saber%20d%C3%B3nde%20est%C3%A1n%20sus%20sucursales" target="_blank" rel="noopener">
+        <img src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=800&q=80" alt="Sucursales CeluCenter" loading="lazy">
+        <div class="cat-card-overlay"></div>
+        <div class="cat-card-body">
+          <span class="cat-card-tag">Visítanos</span>
+          <h3>Sucursales</h3>
+          <p>Varias ubicaciones en Jalisco. Te decimos la más cercana.</p>
+          <span class="cat-card-btn">¿Dónde estamos? →</span>
+        </div>
+      </a>
+
     </div>
   </div>
 </section>
