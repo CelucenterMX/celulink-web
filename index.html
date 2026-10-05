@@ -230,91 +230,110 @@ body {
   gap: 20px;
 }
 .cat-card {
-  position: relative;
-  border-radius: 18px;
+  border-radius: 20px;
   overflow: hidden;
   text-decoration: none;
-  display: block;
-  height: 380px;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.14);
   transition: transform 0.22s, box-shadow 0.22s;
+  background: white;
 }
 .cat-card:hover {
   transform: translateY(-6px);
-  box-shadow: 0 20px 48px rgba(0,0,0,0.26);
+  box-shadow: 0 20px 48px rgba(0,0,0,0.22);
 }
-.cat-card img {
+/* Zona de foto superior */
+.cat-card-photo {
+  position: relative;
+  height: 240px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+.cat-card.eq   .cat-card-photo { background: linear-gradient(145deg, #0B2545 0%, #00A5D4 100%); }
+.cat-card.acc  .cat-card-photo { background: linear-gradient(145deg, #00A5D4 0%, #7AB800 100%); }
+.cat-card.suc  .cat-card-photo { background: linear-gradient(145deg, #0B2545 0%, #1a3a6b 100%); }
+/* foto producto flotante */
+.cat-card-photo .prod-img {
+  max-height: 200px;
+  max-width: 85%;
+  object-fit: contain;
+  display: block;
+  filter: drop-shadow(0 12px 28px rgba(0,0,0,0.35));
+  transition: transform 0.35s;
+}
+.cat-card:hover .prod-img { transform: translateY(-8px) scale(1.04); }
+/* foto sucursal full-bleed */
+.cat-card-photo .bg-img {
   width: 100%;
   height: 100%;
   object-fit: cover;
   display: block;
   transition: transform 0.4s;
 }
-.cat-card:hover img {
-  transform: scale(1.05);
-}
-.cat-card-overlay {
+.cat-card:hover .bg-img { transform: scale(1.06); }
+.cat-card-photo .bg-overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(to top, rgba(11,37,69,0.88) 0%, rgba(11,37,69,0.2) 55%, transparent 100%);
+  background: linear-gradient(to bottom, rgba(11,37,69,0.25) 0%, rgba(11,37,69,0.55) 100%);
 }
+/* Zona de texto inferior */
 .cat-card-body {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  padding: 28px 26px;
-  color: white;
+  padding: 22px 24px 24px;
+  background: white;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 .cat-card-tag {
   display: inline-block;
   background: var(--celeste);
   color: white;
-  font-size: 0.65rem;
+  font-size: 0.62rem;
   font-weight: 800;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  padding: 4px 10px;
+  padding: 3px 10px;
   border-radius: 20px;
-  margin-bottom: 10px;
+  width: fit-content;
 }
+.cat-card.eq  .cat-card-tag { background: var(--verde); }
+.cat-card.suc .cat-card-tag { background: var(--naranja); }
 .cat-card-body h3 {
-  font-size: 1.55rem;
+  font-size: 1.35rem;
   font-weight: 900;
   letter-spacing: -0.02em;
-  line-height: 1.1;
-  margin-bottom: 8px;
+  color: var(--negro);
+  margin-top: 2px;
 }
 .cat-card-body p {
-  font-size: 0.88rem;
-  opacity: 0.85;
-  margin-bottom: 16px;
-  line-height: 1.45;
+  font-size: 0.86rem;
+  color: var(--gris);
+  line-height: 1.5;
+  flex: 1;
 }
 .cat-card-btn {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: white;
-  color: var(--marino);
+  background: var(--marino);
+  color: white;
   font-size: 0.82rem;
   font-weight: 800;
-  padding: 9px 18px;
+  padding: 10px 20px;
   border-radius: 100px;
+  margin-top: 8px;
+  width: fit-content;
   transition: background 0.15s;
 }
-.cat-card:hover .cat-card-btn {
-  background: var(--naranja);
-  color: white;
-}
-.cat-card.eq .cat-card-tag  { background: var(--verde); }
-.cat-card.suc .cat-card-tag { background: var(--naranja); }
+.cat-card:hover .cat-card-btn { background: var(--naranja); }
 
 @media (max-width: 768px) {
-  .cats-grid {
-    grid-template-columns: 1fr;
-  }
-  .cat-card { height: 300px; }
+  .cats-grid { grid-template-columns: 1fr; }
+  .cat-card-photo { height: 200px; }
 }
 
 /* MAIN */
@@ -614,8 +633,9 @@ footer {
 
       <!-- EQUIPOS -->
       <a class="cat-card eq" href="./catalogos/equipos/">
-        <img src="https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=800&q=80" alt="Equipos celulares" loading="lazy">
-        <div class="cat-card-overlay"></div>
+        <div class="cat-card-photo">
+          <img class="prod-img" src="https://raw.githubusercontent.com/piztian/samsung-s25/main/imagenes/productos/Iphone%2013.jpg" alt="iPhone 13" loading="lazy">
+        </div>
         <div class="cat-card-body">
           <span class="cat-card-tag">Catálogo</span>
           <h3>Equipos</h3>
@@ -626,20 +646,23 @@ footer {
 
       <!-- ACCESORIOS -->
       <a class="cat-card acc" href="./catalogos/accesorios/">
-        <img src="https://images.unsplash.com/photo-1585792180666-f7347c490ee2?w=800&q=80" alt="Accesorios celular" loading="lazy">
-        <div class="cat-card-overlay"></div>
+        <div class="cat-card-photo">
+          <img class="prod-img" src="https://raw.githubusercontent.com/piztian/Accesorios-Celucenter/main/fotos/BOCINA%20%20ALEXE%20PRO%20MAX%2015X.jpeg" alt="Bocina Alexe Pro Max" loading="lazy">
+        </div>
         <div class="cat-card-body">
           <span class="cat-card-tag">Mayoreo</span>
           <h3>Accesorios</h3>
-          <p>Cables, fundas, audífonos y más — con sistema de listas de precios.</p>
+          <p>Cables, bocinas, fundas, audífonos y más — con listas de precios.</p>
           <span class="cat-card-btn">Ver accesorios →</span>
         </div>
       </a>
 
       <!-- SUCURSALES -->
       <a class="cat-card suc" href="https://wa.me/523413300001?text=Hola%2C%20quiero%20saber%20d%C3%B3nde%20est%C3%A1n%20sus%20sucursales" target="_blank" rel="noopener">
-        <img src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=800&q=80" alt="Sucursales CeluCenter" loading="lazy">
-        <div class="cat-card-overlay"></div>
+        <div class="cat-card-photo">
+          <img class="bg-img" src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=800&q=80" alt="Sucursales CeluCenter" loading="lazy">
+          <div class="bg-overlay"></div>
+        </div>
         <div class="cat-card-body">
           <span class="cat-card-tag">Visítanos</span>
           <h3>Sucursales</h3>
