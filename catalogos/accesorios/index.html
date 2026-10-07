@@ -2183,11 +2183,11 @@
         // CARRITO DE COMPRAS
         // ============================================================
         const WHATSAPP_PEDIDO_NUMERO = '5213413300001'; // sin "+", formato wa.me
-        // Sistema escalonado de precios: 2X → F → G → M. Envío incluido desde $6,000.
-        const UMBRAL_F = 2500;  // desde $2,500 → Lista F (mayoreo)
-        const UMBRAL_G = 3500;  // desde $3,500 → Lista G
-        const UMBRAL_M = 5000;  // desde $5,000 → Lista M (mejor precio)
-        const UMBRAL_ENVIO = 6000; // desde $6,000 → envío incluido en pedido
+        // Sistema escalonado de precios: 2X → F → G → M. Envío incluido desde $10,000.
+        const UMBRAL_F = 3000;  // desde $3,000 → Lista F (mayoreo)
+        const UMBRAL_G = 6000;  // desde $6,000 → Lista G
+        const UMBRAL_M = 9000;  // desde $9,000 → Lista M (mejor precio)
+        const UMBRAL_ENVIO = 10000; // desde $10,000 → envío incluido en pedido
 
         let cart = {}; // { codigo: { product, qty } }
 
@@ -2250,11 +2250,11 @@
 
         // Decide la lista aplicable: escalonado 2X → F → G → M
         function getCartLista() {
-            // Empieza en 2X. Si el total a precio 2X >= 2.5k → sube a F.
+            // Empieza en 2X. Si el total a precio 2X >= 3k → sube a F.
             if (getCartTotalAtList('2X') < UMBRAL_F) return '2X';
-            // Ya en F. Si total a precio F >= 3.5k → sube a G.
+            // Ya en F. Si total a precio F >= 6k → sube a G.
             if (getCartTotalAtList('F') < UMBRAL_G) return 'F';
-            // Ya en G. Si total a precio G >= 5k → sube a M (tope final).
+            // Ya en G. Si total a precio G >= 9k → sube a M (tope final).
             if (getCartTotalAtList('G') < UMBRAL_M) return 'G';
             return 'M'; // tope: Lista M (mejor precio)
         }
@@ -2441,7 +2441,7 @@
             document.getElementById('cartSummaryTotal').textContent = formatMXN(getCartTotal());
             document.getElementById('btnWhatsAppOrder').disabled = false;
 
-            // Hint escalonado: 2X → F → G → M. Envío incluido desde $6k.
+            // Hint escalonado: 2X → F → G → M. Envío incluido desde $10k.
             if (lista === 'M') {
                 // En M: si total < $6k falta para envío, si >= $6k envío incluido
                 const total = getCartTotal();
