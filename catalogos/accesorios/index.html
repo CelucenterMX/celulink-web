@@ -1995,10 +1995,13 @@
                 // (2X si total < $3k, F si ≥ $3k, G si ≥ $6k, M si ≥ $9k)
                 // precioPublico solo se muestra como referencia tachada
                 const listaActiva = getCartLista();
-                const buyFmt = formatMXN(getUnitPriceForList(product, listaActiva));
+                const buyPrice = getUnitPriceForList(product, listaActiva);
+                const buyFmt = formatMXN(buyPrice);
+                const pubNum = parsePrice(product.precioPublico);
                 const pubFmt = formatMXN(product.precioPublico);
                 if (buyFmt) {
-                    const pubRef = (pubFmt && pubFmt !== buyFmt) ? `<span class="price-public">P. público ${pubFmt}</span>` : '';
+                    // Solo mostrar tachado si precioPublico es estrictamente mayor al precio de venta
+                    const pubRef = (pubNum && buyPrice && pubNum > buyPrice) ? `<span class="price-public">P. público ${pubFmt}</span>` : '';
                     pricingHtml = `<div class="product-pricing"><div class="price-yours"><span class="price-label">Lista ${listaActiva}</span><span class="price-value">${buyFmt}</span>${pubRef}</div></div>`;
                 } else if (pubFmt) {
                     pricingHtml = `<div class="product-pricing"><div class="price-yours"><span class="price-label">Precio público</span><span class="price-value">${pubFmt}</span></div></div>`;
@@ -2024,24 +2027,25 @@
                     return !isNaN(n) ? '$' + n.toFixed(2) : null;
                 };
 
-                // Precio publico tachado
-                let publicHtml = '';
+                // Precio publico: solo tachado cuando es mayor al precio de venta
                 const pubFmt = fmt(product.precioPublico);
-                if (pubFmt) {
-                    publicHtml = `<span class="price-public">P. Público ${pubFmt}</span>`;
-                }
+                const pubNum = parsePrice(product.precioPublico) || 0;
 
                 if (lista === 'TODAS') {
                     // Mostrar TODAS las listas
-                    const allLists = [
-                        { name: 'Lista M', value: formatMXN(product.listaM) },
-                        { name: 'Lista G', value: formatMXN(product.listaG) },
-                        { name: 'Lista F', value: formatMXN(product.listaF) },
-                        { name: 'Lista 2X', value: formatMXN(product.lista2x) },
+                    const allListsRaw = [
+                        { name: 'Lista M', value: formatMXN(product.listaM), num: parsePrice(product.listaM) || 0 },
+                        { name: 'Lista G', value: formatMXN(product.listaG), num: parsePrice(product.listaG) || 0 },
+                        { name: 'Lista F', value: formatMXN(product.listaF), num: parsePrice(product.listaF) || 0 },
+                        { name: 'Lista 2X', value: formatMXN(product.lista2x), num: parsePrice(product.lista2x) || 0 },
                     ].filter(l => l.value);
 
-                    if (allLists.length) {
-                        const rowsHtml = allLists.map(l =>
+                    // Máximo real de las listas visibles
+                    const maxListPrice = allListsRaw.reduce((mx, l) => Math.max(mx, l.num), 0);
+                    const showPubTodas = pubNum > 0 && maxListPrice > 0 && pubNum > maxListPrice;
+
+                    if (allListsRaw.length) {
+                        const rowsHtml = allListsRaw.map(l =>
                             `<div style="display:flex;justify-content:space-between;font-size:12px;padding:2px 0;">
                                 <span style="color:#666;">${l.name}</span>
                                 <span style="font-weight:600;color:#1a1a1a;">${l.value}</span>
@@ -2051,7 +2055,7 @@
                             <div class="product-pricing">
                                 <div style="background:#f5f5f5;padding:6px 10px;border-radius:6px;">
                                     ${rowsHtml}
-                                    ${publicHtml ? `<div style="display:flex;justify-content:space-between;font-size:11px;padding-top:4px;border-top:1px solid #ddd;margin-top:4px;"><span style="color:#999;">Público</span><span style="color:#999;text-decoration:line-through;">${pubFmt}</span></div>` : ''}
+                                    ${showPubTodas ? `<div style="display:flex;justify-content:space-between;font-size:11px;padding-top:4px;border-top:1px solid #ddd;margin-top:4px;"><span style="color:#999;">Público</span><span style="color:#999;text-decoration:line-through;">${pubFmt}</span></div>` : ''}
                                 </div>
                             </div>`;
                     } else {
@@ -2076,6 +2080,9 @@
                     }
 
                     const formatted = fmt(price);
+                    const priceNum = parsePrice(price) || 0;
+                    const showPubSingle = pubNum > 0 && priceNum > 0 && pubNum > priceNum;
+                    const publicHtml = showPubSingle ? `<span class="price-public">P. Público ${pubFmt}</span>` : '';
                     if (formatted) {
                         pricingHtml = `
                             <div class="product-pricing">
@@ -2295,15 +2302,17 @@
                 const cod = btn.getAttribute('data-codigo');
                 const product = allProducts.find(p => p.codigo === cod);
                 if (!product) return;
-                const buyFmt = formatMXN(getUnitPriceForList(product, listaActiva));
-                const pubFmt = formatMXN(product.precioPublico);
+                const buyPrice = getUnitPriceForList(product, listaActiva);
+                const buyFmt = formatMXN(buyPrice);
+                const pubNum = parsePrice(product.precioPublico) || 0;
                 const priceLabel = cardEl.querySelector('.price-label');
                 const priceValue = cardEl.querySelector('.price-value');
                 const pricePublic = cardEl.querySelector('.price-public');
                 if (priceLabel) priceLabel.textContent = 'Lista ' + listaActiva;
                 if (priceValue) priceValue.textContent = buyFmt;
-                if (pubFmt && pubFmt !== buyFmt) {
-                    if (pricePublic) { pricePublic.textContent = 'P. público ' + pubFmt; }
+                // Solo mostrar tachado si precioPublico es estrictamente mayor
+                if (pubNum > 0 && buyPrice > 0 && pubNum > buyPrice) {
+                    if (pricePublic) { pricePublic.textContent = 'P. público ' + formatMXN(product.precioPublico); }
                 } else {
                     if (pricePublic) { pricePublic.remove(); }
                 }
