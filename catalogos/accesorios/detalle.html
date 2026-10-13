@@ -6,6 +6,8 @@
     <title>Detalle de Producto - Celucenter</title>
     <link rel="icon" type="image/x-icon" href="favicon.ico">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../../assets/css/tokens.css">
+    <link rel="stylesheet" href="../../assets/css/chrome.css">
     <style>
         :root {
             --celucenter-red: #E31837;
@@ -912,8 +914,8 @@
     </style>
 </head>
 <body>
-    <!-- Header -->
-    <header class="header">
+    <!-- Header HERMES oculto (referencias JS preservadas para no romper cartIconBtn/sessionInfo) -->
+    <header class="header clk-hide" style="display:none">
         <div class="header-left">
             <a href="index.html" class="logo">
                 <img src="celucenter_logo.png" alt="CeluCenter">
@@ -927,6 +929,28 @@
                 <span class="cart-icon-badge" id="cartIconBadge" style="display:none">0</span>
             </button>
         </div>
+    </header>
+
+    <!-- Header PREMIUM (visible) -->
+    <header class="clk-nav">
+      <div class="clk-nav-inner">
+        <a class="clk-brand" href="../../">
+          <img src="../../assets/icono-celucenter.png" alt="Celulink">
+          <span>Celulink</span>
+        </a>
+        <nav>
+          <ul class="clk-nav-links">
+            <li><a href="../../">Inicio</a></li>
+            <li><a href="../equipos/">Smartphones</a></li>
+            <li><a href="../accesorios/" style="background:var(--color-bg-alt);color:var(--celeste-oscuro);">Accesorios</a></li>
+            <li><a href="../../menu/">Menú</a></li>
+          </ul>
+        </nav>
+        <div class="clk-nav-cta">
+          <a class="clk-btn clk-btn-ghost" href="index.html" style="font-size:0.85rem;">← Volver al catálogo</a>
+          <a class="clk-btn clk-btn-primary" href="https://wa.me/523413300001?text=Hola%2C%20me%20interesa%20un%20accesorio" target="_blank" rel="noopener">WhatsApp</a>
+        </div>
+      </div>
     </header>
 
     <div class="container">
