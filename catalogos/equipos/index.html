@@ -7,21 +7,47 @@
 <link rel="icon" type="image/x-icon" href="favicon.ico">
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f5f5; color: #222; }
+  body { 
+    font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
+    background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+    background-attachment: fixed;
+    color: #1e3c72; 
+    min-height: 100vh;
+}
 
   /* ===== HEADER (Hermes style) ===== */
   .app-header {
-    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+    background: linear-gradient(135deg, #0B2545 0%, #1e3c72 50%, #2a5298 100%);
     color: white;
-    padding: 20px 32px;
+    padding: 24px 32px;
     display: flex;
     justify-content: space-between;
     align-items: center;
     flex-wrap: wrap;
-    gap: 12px;
+    gap: 16px;
+    box-shadow: 0 4px 20px rgba(11, 37, 69, 0.15);
+    position: relative;
+    overflow: hidden;
   }
-  .app-header .left h1 { font-size: 22px; margin-bottom: 2px; }
-  .app-header .left p { opacity: 0.85; font-size: 13px; }
+  .app-header::before {
+    content: '';
+    position: absolute;
+    top: 0; right: 0; bottom: 0; left: 0;
+    background: radial-gradient(circle at 90% 50%, rgba(0, 165, 212, 0.15) 0%, transparent 50%);
+    pointer-events: none;
+  }
+  .app-header > * { position: relative; z-index: 1; }
+  .app-header .left h1 { 
+    font-size: 26px; 
+    margin-bottom: 4px; 
+    font-weight: 700;
+    letter-spacing: -0.3px;
+  }
+  .app-header .left p { 
+    opacity: 0.9; 
+    font-size: 14px; 
+    font-weight: 500;
+  }
   .app-header .stats { display: flex; gap: 12px; margin-top: 8px; font-size: 12px; flex-wrap: wrap; }
   .app-header .stats span { background: rgba(255,255,255,0.15); padding: 3px 10px; border-radius: 12px; }
   .app-header .right { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
@@ -159,19 +185,7 @@
   .card .img-wrapper {
     position: relative;
   }
-  .card .img-wrapper .almacen-tag {
-    position: absolute;
-    top: 8px;
-    right: 8px;
-    font-size: 9px;
-    font-weight: 700;
-    padding: 2px 8px;
-    border-radius: 4px;
-    text-transform: uppercase;
-  }
-  .almacen-bm { background: #1e3c72; color: #fff; }
-  .almacen-ecom { background: #f57c00; color: #fff; }
-  .almacen-laft { background: #c62828; color: #fff; }
+  /* Badges de almacén ocultados al cliente (Fase 1 — Oct 2026) */
   .card .img-wrapper .agotado-overlay {
     position: absolute;
     inset: 0;
@@ -382,7 +396,6 @@
   .cart-item-info { flex: 1; min-width: 0; }
   .cart-item-name { font-size: 12px; font-weight: 600; line-height: 1.3; }
   .cart-item-code { font-size: 9px; color: #999; font-family: monospace; }
-  .cart-item-almacen { font-size: 9px; color: #888; }
   .cart-item-price { font-size: 13px; font-weight: 700; color: #1e3c72; margin-top: 2px; }
   .cart-item-price .unit { font-size: 10px; font-weight: 400; color: #999; margin-left: 4px; }
   .cart-item-controls { display: flex; flex-direction: column; align-items: center; gap: 3px; }
@@ -421,6 +434,8 @@
     .grid { grid-template-columns: 1fr; }
   }
 </style>
+<link rel="stylesheet" href="../../assets/css/tokens.css">
+<link rel="stylesheet" href="../../assets/css/chrome.css">
 </head>
 <body>
 
@@ -428,7 +443,7 @@
 <div class="login-screen" id="loginScreen">
     <img src="https://piztian.github.io/samsung-s25/imagenes/Celucenter-500x260.png" alt="Celucenter">
     <h2>Catálogo de Equipos</h2>
-    <p>Precios mayoristas · BM · Ecom · LAFT</p>
+    <p>Precios mayoristas (escalonado por monto)</p>
     <div class="form-tabs">
         <button class="form-tab active" onclick="showTab('login')" id="tabLogin">Iniciar sesión</button>
         <button class="form-tab" onclick="showTab('register')" id="tabRegister">Registrarme</button>
@@ -453,8 +468,8 @@
 <!-- APP (hidden until login) -->
 <div id="appContainer" style="display:none;">
 
-<!-- HEADER -->
-<div class="app-header">
+<!-- HEADER REDISEÑO 2026 (oculta el .app-header viejo) -->
+<div class="app-header clk-hide" style="display:none">
     <div class="left">
         <h1>📱 Catálogo CeluCenter</h1>
         <p>Celulares y tablets · Precios mayorista</p>
@@ -471,6 +486,78 @@
         <button class="btn-header" onclick="logout()">Salir</button>
     </div>
 </div>
+
+<header class="clk-nav">
+  <div class="clk-nav-inner">
+    <a class="clk-brand" href="../../">
+      <img src="../../assets/icono-celucenter.png" alt="Celulink">
+      <span>Celulink</span>
+    </a>
+    <nav>
+      <ul class="clk-nav-links">
+        <li><a href="../../">Inicio</a></li>
+        <li><a href="../equipos/" style="background:var(--color-bg-alt);color:var(--celeste-oscuro);">Smartphones</a></li>
+        <li><a href="../accesorios/">Accesorios</a></li>
+        <li><a href="../../menu/">Menú</a></li>
+      </ul>
+    </nav>
+    <div class="clk-nav-cta">
+      <span class="user-name-badge" id="userNameNav" style="background:var(--color-bg-alt);color:var(--color-texto);border:1px solid var(--color-borde);padding:7px 14px;border-radius:var(--radius-pill);font-size:0.85rem;font-weight:600;"></span>
+      <span class="user-lista-badge" id="userListaNav" style="background:var(--color-bg-alt);color:var(--color-texto);border:1px solid var(--color-borde);padding:7px 14px;border-radius:var(--radius-pill);font-size:0.85rem;font-weight:600;"></span>
+      <a class="clk-btn clk-btn-wa" href="https://wa.me/523413300001" target="_blank">💬 WhatsApp</a>
+    </div>
+  </div>
+</header>
+
+<section class="clk-catalog-header">
+  <div class="clk-container">
+    <div class="clk-catalog-header-left">
+      <img src="https://piztian.github.io/samsung-s25/imagenes/Celucenter-500x260.png" alt="Celucenter">
+      <div>
+        <h1>Catálogo de Equipos</h1>
+        <p>Celulares y tablets · precios escalonados por monto</p>
+        <div class="clk-catalog-header-stats">
+          <span id="statTotalHeader">📦 Cargando...</span>
+          <span id="statMarcasHeader">🏷 —</span>
+          <span id="statStockHeader">📊 —</span>
+        </div>
+      </div>
+    </div>
+    <div class="clk-catalog-header-right">
+      <a class="clk-btn" style="background:rgba(255,255,255,0.15);color:white;border:1px solid rgba(255,255,255,0.3);" href="#" onclick="refreshLista();return false;">📊 Actualizar lista</a>
+      <a class="clk-btn" style="background:rgba(255,255,255,0.15);color:white;border:1px solid rgba(255,255,255,0.3);" href="#" onclick="logout();return false;">Salir</a>
+    </div>
+  </div>
+</section>
+<script>
+// Espejo de los badges de usuario en el header nuevo
+(function(){
+  const src=document.getElementById('userName');
+  const dst=document.getElementById('userNameNav');
+  if(src&&dst){
+    const sync=()=>{ dst.textContent = src.textContent || ''; };
+    new MutationObserver(sync).observe(src,{childList:true,characterData:true,subtree:true});
+    sync();
+  }
+  const srcL=document.getElementById('userLista');
+  const dstL=document.getElementById('userListaNav');
+  if(srcL&&dstL){
+    const sync=()=>{ dstL.textContent = srcL.textContent || ''; };
+    new MutationObserver(sync).observe(srcL,{childList:true,characterData:true,subtree:true});
+    sync();
+  }
+  // Espejo de stats en el header nuevo
+  const sTotal=document.getElementById('statTotal');
+  const sTotalH=document.getElementById('statTotalHeader');
+  if(sTotal&&sTotalH){ const sync=()=>{ sTotalH.textContent = sTotal.textContent || ''; }; new MutationObserver(sync).observe(sTotal,{childList:true,characterData:true,subtree:true}); sync(); }
+  const sMarcas=document.getElementById('statMarcas');
+  const sMarcasH=document.getElementById('statMarcasHeader');
+  if(sMarcas&&sMarcasH){ const sync=()=>{ sMarcasH.textContent = sMarcas.textContent || ''; }; new MutationObserver(sync).observe(sMarcas,{childList:true,characterData:true,subtree:true}); sync(); }
+  const sStock=document.getElementById('statStock');
+  const sStockH=document.getElementById('statStockHeader');
+  if(sStock&&sStockH){ const sync=()=>{ sStockH.textContent = sStock.textContent || ''; }; new MutationObserver(sync).observe(sStock,{childList:true,characterData:true,subtree:true}); sync(); }
+})();
+</script>
 
 <!-- FILTERS -->
 <div class="filters">
@@ -570,10 +657,8 @@ let cart = {};
 // INIT
 // ============================================================
 window.addEventListener('DOMContentLoaded', () => {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) {
-        try { userSession = JSON.parse(saved); enterApp(); } catch (e) {}
-    }
+    // Cotización pública: cargar catálogo directamente sin login
+    enterApp();
 });
 
 // ============================================================
@@ -648,10 +733,18 @@ async function refreshLista() {
 }
 
 function enterApp() {
+    // Cotización pública: el catálogo es accesible sin login
     document.getElementById('loginScreen').style.display = 'none';
     document.getElementById('appContainer').style.display = 'block';
-    document.getElementById('userName').textContent = userSession.name || '';
-    document.getElementById('userLista').textContent = userSession.lista ? 'Lista ' + userSession.lista : 'Sin lista';
+    // Intentar restaurar sesión SOLO si existe (no se requiere)
+    try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) userSession = JSON.parse(saved);
+    } catch (e) {}
+    if (userSession) {
+        document.getElementById('userName').textContent = userSession.name || '';
+        document.getElementById('userLista').textContent = userSession.lista ? 'Lista ' + userSession.lista : 'Sin lista';
+    }
     loadCatalog();
     initCart();
 }
@@ -799,12 +892,10 @@ function precioCristian(listaF) {
 function getCartKey(p) { return p.codigo + '_' + p.almacen; }
 
 function getProductPrice(p) {
-    const lista = (userSession && userSession.lista || '').toUpperCase();
-    if (lista === 'M') return p.listaM;
-    if (lista === 'G') return p.listaG;
-    if (lista === 'F') return p.listaF;
-    if (lista === 'CRISTIAN') return precioCristian(p.listaF);
-    return precio2X(p.listaF) || p.precioPublico;
+    // Cotización pública: usar la lista activa calculada por monto del carrito (2X/F/G/M)
+    // Sin depender de userSession.lista
+    const l = getCartLista();
+    return l === 'TODAS' ? (p.listaF || p.precioPublico) : getUnitPriceForList(p, l);
 }
 
 function getUnitPriceForList(product, lista) {
@@ -823,8 +914,7 @@ function getCartTotalAtList(lista) {
 }
 
 function getCartLista() {
-    const u = (userSession && userSession.lista || '').toUpperCase();
-    if (['TODAS', 'CRISTIAN', 'M', 'G'].includes(u)) return u;
+    // Cotización pública: SIEMPRE por monto del carrito, sin depender de userSession
     // Escalonado: 2X → F ($15k) → G ($30k) → M ($50k)
     if (getCartTotalAtList('2X') < UMBRAL_F) return '2X';
     if (getCartTotalAtList('F') < UMBRAL_G) return 'F';
@@ -966,7 +1056,7 @@ function renderCartModal() {
         const img = getProductImage(p.codigo);
         html += '<div class="cart-item">' +
             '<div class="cart-item-img">' + (img ? '<img src="'+escapeHtml(img)+'" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'">' : '') + '<span class="ph" '+(img?'style="display:none"':'')+'>📱</span></div>' +
-            '<div class="cart-item-info"><div class="cart-item-name">'+escapeHtml(p.producto)+'</div><div class="cart-item-code">'+escapeHtml(p.codigo)+'</div><div class="cart-item-almacen">'+escapeHtml(p.almacen)+'</div><div class="cart-item-price">'+formatMXN(sub)+'<span class="unit">('+formatMXN(up)+' c/u)</span></div></div>' +
+            '<div class="cart-item-info"><div class="cart-item-name">'+escapeHtml(p.producto)+'</div><div class="cart-item-code">'+escapeHtml(p.codigo)+'</div><div class="cart-item-price">'+formatMXN(sub)+'<span class="unit">('+formatMXN(up)+' c/u)</span></div></div>' +
             '<div class="cart-item-controls"><div class="cart-qty-controls"><button class="cart-qty-btn" data-cart-action="dec" data-cart-key="'+escapeHtml(key)+'">−</button><span class="cart-qty-value">'+item.qty+'</span><button class="cart-qty-btn" data-cart-action="inc" data-cart-key="'+escapeHtml(key)+'">+</button></div><button class="cart-remove-btn" data-cart-action="remove" data-cart-key="'+escapeHtml(key)+'">Quitar</button></div>' +
             '</div>';
     });
@@ -984,7 +1074,7 @@ function sendWhatsAppOrder() {
     let msg = '🛒 *Hola CeluCenter!* Quiero pedir:\n\n';
     items.forEach(i => {
         const p = i.product, up = getProductPriceForCart(p) || 0;
-        msg += '• *' + p.codigo + '* — ' + p.producto + '\n   ' + p.almacen + ' | Cant: ' + i.qty + ' | ' + formatMXN(up) + ' c/u = *' + formatMXN(up * i.qty) + '*\n\n';
+        msg += '• *' + p.codigo + '* — ' + p.producto + '\n   Cant: ' + i.qty + ' | ' + formatMXN(up) + ' c/u = *' + formatMXN(up * i.qty) + '*\n\n';
     });
     msg += '━━━━━━━━━━━━━━━━━\n💰 *Total: ' + formatMXN(getCartTotal()) + '*\n📋 ' + label + '\n📦 ' + getCartItemCount() + ' pieza(s)\n';
     if (lista === 'CRISTIAN') msg += '🚚 Envío incluido\n';
@@ -997,15 +1087,22 @@ function sendWhatsAppOrder() {
 // RENDER CARD (Hermes style)
 // ============================================================
 function renderCard(p) {
-    const lista = (userSession.lista || '').toUpperCase();
+    // Cotización pública: la lista activa se calcula por monto del carrito (2X/F/G/M)
+    const lista = getCartLista();
     const isOut = p.existencias <= 0;
     const imgUrl = getProductImage(p.codigo);
     const cartKey = getCartKey(p);
 
     // Pricing HTML
     let priceHtml = '';
-    if (!lista) {
-        priceHtml = '<div class="price-pending">Pendiente de asignar lista</div>';
+    if (!lista || lista === '2X') {
+        const price = getUnitPriceForList(p, '2X') || p.precioPublico;
+        const pub = fmt(p.precioPublico);
+        const pf = fmt(price);
+        if (pf) {
+            priceHtml = '<div class="price-row"><span class="price">' + pf + '</span>' + (pub && pub !== pf ? '<span class="price-public">' + pub + '</span>' : '') + '</div>';
+            priceHtml += '<div style="font-size:10px;color:var(--muted);text-align:center;padding:0 12px 4px;">Lista 2X (menudeo) · Sube a $15k → Lista F</div>';
+        } else { priceHtml = '<div class="price-pending">Sin precio</div>'; }
     } else if (lista === 'TODAS') {
         const rows = [
             { n: 'M', v: fmt(p.listaM) }, { n: 'G', v: fmt(p.listaG) },
@@ -1048,7 +1145,7 @@ function renderCard(p) {
 
     return '<div class="card' + (isOut ? ' agotado' : '') + '">' +
         '<div class="img-wrapper">' +
-            '<span class="almacen-tag almacen-' + p.almacen.toLowerCase() + '">' + escapeHtml(p.almacen) + '</span>' +
+            
             imgHtml +
             '<div class="img-placeholder" ' + (imgUrl ? 'style="display:none"' : '') + '>📱</div>' +
             (isOut ? '<div class="agotado-overlay">AGOTADO</div>' : '') +
@@ -1069,5 +1166,6 @@ function renderCard(p) {
 document.querySelector('#marcaButtons .filter-btn[data-marca=""]').onclick = () => { selectedMarca = ''; document.querySelectorAll('#marcaButtons .filter-btn').forEach(b => { if (!b.dataset.special) b.classList.toggle('active', b.dataset.marca === ''); }); applyFilters(); };
 document.getElementById('btnAgotados').onclick = toggleAgotados;
 </script>
+<a class="clk-wa" href="https://wa.me/523413300001" target="_blank" aria-label="WhatsApp">💬</a>
 </body>
 </html>

@@ -19,7 +19,11 @@
 
         body {
             font-family: 'Poppins', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: #F8F9FA;
+            background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+            background-attachment: fixed;
+            color: #1A1A1A;
+            line-height: 1.5;
+            min-height: 100vh;
             color: #1A1A1A;
             line-height: 1.5;
             min-height: 100vh;
@@ -29,10 +33,17 @@
 
         /* ===== HEADER ===== */
         .header {
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            background: #fff;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: linear-gradient(135deg, #0B2545 0%, #1e3c72 50%, #2a5298 100%);
+    box-shadow: 0 4px 24px rgba(11, 37, 69, 0.18);
+    padding: 0 40px;
+    height: 72px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    color: white;
             box-shadow: 0 2px 20px rgba(0,0,0,0.06);
             padding: 0 40px;
             height: 72px;
@@ -58,18 +69,12 @@
             padding: 8px 18px;
             border-radius: 22px;
             font-size: 13px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            border: 1.5px solid #E0E0E0;
-            background: transparent;
-            color: #666;
-            font-family: 'Poppins', sans-serif;
-            text-decoration: none;
-            white-space: nowrap;
+            background: rgba(255,255,255,0.15);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.25);
+            transition: all 0.2s;
         }
-        .btn-back:hover { background: #F5F5F5; border-color: var(--celucenter-blue); color: var(--celucenter-blue); }
-
+        .btn-back:hover { background: rgba(255,255,255,0.25); }
         .header-right {
             display: flex;
             align-items: center;
@@ -170,22 +175,112 @@
             }
         }
 
+        /* ===== CARRUSEL ===== */
         .detail-image-wrapper {
             position: relative;
             background: #F8F9FA;
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
             min-height: 300px;
-            max-height: 450px;
+        }
+
+        .carousel-main {
+            position: relative;
+            width: 100%;
+            overflow: hidden;
+            min-height: 300px;
+            max-height: 420px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .carousel-slide {
+            display: none;
+            width: 100%;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .carousel-slide.active {
+            display: flex;
         }
 
         .detail-image {
             width: 100%;
-            height: 100%;
             object-fit: contain;
             padding: 20px;
-            max-height: 450px;
+            max-height: 420px;
+        }
+
+        .carousel-arrow {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255,255,255,0.92);
+            border: 1.5px solid #ddd;
+            border-radius: 50%;
+            width: 38px;
+            height: 38px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 3;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+            transition: all 0.2s;
+            font-size: 16px;
+            color: #555;
+            user-select: none;
+        }
+
+        .carousel-arrow:hover {
+            background: #fff;
+            border-color: var(--celucenter-blue);
+            color: var(--celucenter-blue);
+            box-shadow: 0 4px 14px rgba(42,172,226,0.18);
+        }
+
+        .carousel-arrow.prev { left: 10px; }
+        .carousel-arrow.next { right: 10px; }
+        .carousel-arrow.hidden { display: none; }
+
+        .carousel-thumbs {
+            display: flex;
+            gap: 8px;
+            padding: 10px 16px 14px;
+            overflow-x: auto;
+            justify-content: center;
+            background: #F8F9FA;
+            width: 100%;
+        }
+
+        .carousel-thumbs::-webkit-scrollbar { height: 4px; }
+        .carousel-thumbs::-webkit-scrollbar-track { background: transparent; }
+        .carousel-thumbs::-webkit-scrollbar-thumb { background: #ccc; border-radius: 2px; }
+
+        .carousel-thumb {
+            width: 56px;
+            height: 56px;
+            border-radius: 10px;
+            border: 2px solid #e0e0e0;
+            object-fit: contain;
+            background: white;
+            cursor: pointer;
+            padding: 4px;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            flex-shrink: 0;
+        }
+
+        .carousel-thumb.active {
+            border-color: var(--celucenter-blue);
+            box-shadow: 0 0 0 3px rgba(42,172,226,0.18);
+        }
+
+        .carousel-thumb:hover:not(.active) {
+            border-color: #bbb;
         }
 
         .detail-image-placeholder {
@@ -201,7 +296,7 @@
             border-radius: 12px;
             font-size: 10px;
             font-weight: 700;
-            z-index: 2;
+            z-index: 5;
         }
 
         .detail-nuevo-badge {
@@ -215,7 +310,7 @@
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 0.5px;
-            z-index: 2;
+            z-index: 5;
             box-shadow: 0 2px 8px rgba(92,184,92,0.4);
             animation: pulse-nuevo 2s ease-in-out infinite;
         }
@@ -903,8 +998,11 @@
         const TOKEN = 'CELUCENTER_SECURE_2025';
         const PHOTO_BASE_URL = 'https://raw.githubusercontent.com/piztian/Accesorios-Celucenter/main/fotos/';
         const WHATSAPP_PEDIDO_NUMERO = '5213413300001';
-        const UMBRAL_F = 3000;
-        const UMBRAL_G = 7000;
+        // Umbrales consistentes con catalogos/accesorios/index.html
+        const UMBRAL_F = 3000;      // desde $3,000 → Lista F (mayoreo)
+        const UMBRAL_G = 6000;      // desde $6,000 → Lista G
+        const UMBRAL_M = 9000;      // desde $9,000 → Lista M (mejor precio)
+        const UMBRAL_ENVIO = 10000; // desde $10,000 → envío incluido
 
         const ALMACEN_COLORS = [
             { bg: '#E31837', light: '#ff4757' },
@@ -1064,6 +1162,7 @@
         }
 
         function getUnitPriceForList(product, lista) {
+            if (lista === 'M') return parsePrice(product.listaM) || parsePrice(product.listaG) || parsePrice(product.listaF) || parsePrice(product.lista2x) || parsePrice(product.precioPublico) || 0;
             if (lista === 'G') return parsePrice(product.listaG) || parsePrice(product.listaF) || parsePrice(product.lista2x) || parsePrice(product.precioPublico) || 0;
             if (lista === 'F') return parsePrice(product.listaF) || parsePrice(product.lista2x) || parsePrice(product.precioPublico) || 0;
             return parsePrice(product.lista2x) || parsePrice(product.listaF) || parsePrice(product.precioPublico) || 0;
@@ -1078,7 +1177,8 @@
         function getCartLista() {
             if (getCartTotalAtList('2X') < UMBRAL_F) return '2X';
             if (getCartTotalAtList('F') < UMBRAL_G) return 'F';
-            return 'G';
+            if (getCartTotalAtList('G') < UMBRAL_M) return 'G';
+            return 'M';
         }
 
         function getProductPriceForCart(product) {
@@ -1318,8 +1418,12 @@
         // PRODUCT DETAIL RENDER
         // ============================================================
         function getProductCodeFromHash() {
-            const hash = window.location.hash.slice(1);
-            return hash ? decodeURIComponent(hash) : null;
+            // Tomar solo el primer segmento del hash (antes de '&' o '?')
+            // Ej: #CE-CL2024&t=123 -> CE-CL2024
+            const raw = window.location.hash.slice(1);
+            if (!raw) return null;
+            const code = raw.split('&')[0].split('?')[0];
+            return decodeURIComponent(code) || null;
         }
 
         function refreshDetailCartUI(codigo) {
@@ -1363,6 +1467,145 @@
             }
         }
 
+        // ============================================================
+        // CARRUSEL
+        // ============================================================
+        function buildCarouselHtml(product) {
+            if (!product.imagenUrl) {
+                return `<div class="carousel-main"><div class="detail-image-placeholder" style="display:flex;align-items:center;justify-content:center;width:100%;height:300px;">📦</div></div>`;
+            }
+
+            // Construir URLs de fotos secundarias: CODIGO-2.png, CODIGO-3.png ... CODIGO-6.png
+            // El archivo base viene en product.archivo (ej: "GAR142.png")
+            const archivoBase = product.archivo ? product.archivo.replace(/([0-9])[A-Z](\.png)$/i, '$1$2') : '';
+            const extraUrls = [];
+            if (archivoBase) {
+                const dotIdx = archivoBase.lastIndexOf('.');
+                const baseName = dotIdx >= 0 ? archivoBase.substring(0, dotIdx) : archivoBase;
+                const ext = dotIdx >= 0 ? archivoBase.substring(dotIdx) : '.png';
+                for (let i = 2; i <= 6; i++) {
+                    extraUrls.push(`${PHOTO_BASE_URL}${baseName}-${i}${ext}`);
+                }
+            }
+
+            // Slide principal
+            let slidesHtml = `
+                <div class="carousel-slide active" data-idx="0">
+                    <img src="${escapeHtml(product.imagenUrl)}" alt="${escapeHtml(product.nombre)}" class="detail-image"
+                         onerror="this.closest('.carousel-slide').remove(); carouselReindex();">
+                </div>`;
+
+            // Slides secundarios (se auto-eliminan si la imagen no existe)
+            extraUrls.forEach((url, i) => {
+                slidesHtml += `
+                <div class="carousel-slide" data-idx="${i + 1}">
+                    <img src="${escapeHtml(url)}" alt="${escapeHtml(product.nombre)} foto ${i + 2}" class="detail-image"
+                         onerror="this.closest('.carousel-slide').remove(); carouselReindex();">
+                </div>`;
+            });
+
+            // Thumbnails (uno por foto; los que fallen se eliminan via onerror)
+            let thumbsHtml = `
+                <img class="carousel-thumb active" data-idx="0"
+                     src="${escapeHtml(product.imagenUrl)}" alt="Foto 1"
+                     onclick="carouselGoTo(0)"
+                     onerror="this.remove(); carouselReindex();">`;
+            extraUrls.forEach((url, i) => {
+                thumbsHtml += `
+                <img class="carousel-thumb" data-idx="${i + 1}"
+                     src="${escapeHtml(url)}" alt="Foto ${i + 2}"
+                     onclick="carouselGoTo(${i + 1})"
+                     onerror="this.remove(); carouselReindex();">`;
+            });
+
+            return `
+                <div class="carousel-main" id="carouselMain">
+                    ${slidesHtml}
+                    <button class="carousel-arrow prev hidden" id="carouselPrev" onclick="carouselStep(-1)">&#8249;</button>
+                    <button class="carousel-arrow next hidden" id="carouselNext" onclick="carouselStep(1)">&#8250;</button>
+                </div>
+                <div class="carousel-thumbs" id="carouselThumbs" style="display:none;">
+                    ${thumbsHtml}
+                </div>`;
+        }
+
+        let _carouselCurrent = 0;
+
+        function carouselReindex() {
+            const main = document.getElementById('carouselMain');
+            const thumbsEl = document.getElementById('carouselThumbs');
+            if (!main) return;
+
+            const slides = main.querySelectorAll('.carousel-slide');
+            const thumbs = thumbsEl ? thumbsEl.querySelectorAll('.carousel-thumb') : [];
+
+            // Re-asignar indices
+            slides.forEach((s, i) => s.dataset.idx = i);
+            thumbs.forEach((t, i) => t.dataset.idx = i);
+
+            const total = slides.length;
+
+            // Si solo hay 1 foto: ocultar flechas y thumbnails
+            if (total <= 1) {
+                document.getElementById('carouselPrev').classList.add('hidden');
+                document.getElementById('carouselNext').classList.add('hidden');
+                if (thumbsEl) thumbsEl.style.display = 'none';
+            } else {
+                document.getElementById('carouselPrev').classList.remove('hidden');
+                document.getElementById('carouselNext').classList.remove('hidden');
+                if (thumbsEl) thumbsEl.style.display = 'flex';
+            }
+
+            // Si el slide actual fue eliminado, ir al primero
+            if (_carouselCurrent >= total) {
+                _carouselCurrent = 0;
+            }
+            carouselGoTo(_carouselCurrent);
+        }
+
+        function carouselGoTo(idx) {
+            const main = document.getElementById('carouselMain');
+            const thumbsEl = document.getElementById('carouselThumbs');
+            if (!main) return;
+
+            const slides = main.querySelectorAll('.carousel-slide');
+            const thumbs = thumbsEl ? thumbsEl.querySelectorAll('.carousel-thumb') : [];
+            const total = slides.length;
+            if (total === 0) return;
+
+            if (idx < 0) idx = total - 1;
+            if (idx >= total) idx = 0;
+            _carouselCurrent = idx;
+
+            slides.forEach((s, i) => s.classList.toggle('active', i === idx));
+            thumbs.forEach((t, i) => t.classList.toggle('active', i === idx));
+        }
+
+        function carouselStep(dir) {
+            const main = document.getElementById('carouselMain');
+            if (!main) return;
+            const total = main.querySelectorAll('.carousel-slide').length;
+            carouselGoTo((_carouselCurrent + dir + total) % total);
+        }
+
+        // Swipe tactil para movil
+        let _touchStartX = 0;
+        document.addEventListener('touchstart', function(e) {
+            const main = document.getElementById('carouselMain');
+            if (main && main.contains(e.target)) {
+                _touchStartX = e.changedTouches[0].clientX;
+            }
+        }, { passive: true });
+        document.addEventListener('touchend', function(e) {
+            const main = document.getElementById('carouselMain');
+            if (!main || !main.contains(e.target)) return;
+            const dx = e.changedTouches[0].clientX - _touchStartX;
+            if (Math.abs(dx) > 40) carouselStep(dx < 0 ? 1 : -1);
+        }, { passive: true });
+
+        // ============================================================
+        // RENDER PRODUCT DETAIL
+        // ============================================================
         function renderProductDetail(product) {
             const color = getAlmacenColor(product.almacen);
             const content = document.getElementById('mainContent');
@@ -1370,7 +1613,26 @@
             // Build pricing HTML
             let pricingHtml = '';
             if (!userSession) {
-                pricingHtml = '<div class="detail-price-register">Registrate en el catalogo para ver precios</div>';
+                // Cotización pública: el precio de compra es el de la lista activa del carrito
+                // (2X si total < $3k, F si ≥ $3k, G si ≥ $6k, M si ≥ $9k)
+                // precioPublico solo se muestra como referencia tachada
+                const listaActiva = (typeof getCartLista === 'function') ? getCartLista() : '2X';
+                const buyFmt = fmt(getUnitPriceForList(product, listaActiva));
+                const pubFmt = fmt(product.precioPublico);
+                if (buyFmt) {
+                    const pubRef = (pubFmt && pubFmt !== buyFmt) ? `<span class="detail-price-public">P. público ${pubFmt}</span>` : '';
+                    pricingHtml = `
+                        <div class="detail-price-tag">
+                            <span class="detail-price-label">Lista ${listaActiva}</span>
+                            <span class="detail-price-value">${buyFmt}</span>
+                            ${pubRef}
+                        </div>
+                        <div style="font-size:0.8rem;color:var(--muted);margin-top:6px;">Sube el carrito a $3,000 → Lista F · $6,000 → G · $9,000 → M</div>`;
+                } else if (pubFmt) {
+                    pricingHtml = `<div class="detail-price-tag"><span class="detail-price-label">Precio público</span><span class="detail-price-value">${pubFmt}</span></div>`;
+                } else {
+                    pricingHtml = '<div class="detail-price-register">Cotiza por WhatsApp al <a href="https://wa.me/523413300001" target="_blank" rel="noopener">+52 341 330 0001</a></div>';
+                }
             } else if (!userSession.lista) {
                 pricingHtml = '<div class="detail-price-pending">Pendiente de aprobacion de precios</div>';
             } else {
@@ -1417,17 +1679,17 @@
                 }
             }
 
+            _carouselCurrent = 0;
+
             content.innerHTML = `
                 <div class="product-detail">
                     <div class="detail-grid">
                         <div class="detail-image-wrapper">
-                            ${product.imagenUrl
-                                ? `<img src="${escapeHtml(product.imagenUrl)}" alt="${escapeHtml(product.nombre)}" class="detail-image" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">`
-                                : ''
-                            }
-                            <div class="detail-image-placeholder" style="display:${product.imagenUrl ? 'none' : 'flex'}">📦</div>
-                            <span class="detail-almacen-badge" style="background:${color.bg}">${escapeHtml(product.almacen)}</span>
-                            ${product.nuevo ? '<span class="detail-nuevo-badge">NUEVO</span>' : ''}
+                            <div style="position:relative;width:100%;">
+                                ${buildCarouselHtml(product)}
+                                <!-- Badge de almacén ocultado al cliente (Oct 2026) -->
+                                ${product.nuevo ? '<span class="detail-nuevo-badge">NUEVO</span>' : ''}
+                            </div>
                         </div>
                         <div class="detail-info">
                             <span class="detail-category-badge">${escapeHtml(product.categoria)}</span>

@@ -13,17 +13,12 @@
             --celucenter-accent: #F5A623;
             --nuevo-green: #5CB85C;
             --nuevo-green-light: #6FCF6F;
-            --almacen-laft: #607D8B;
-            --almacen-laft-light: #ECEFF1;
-            --almacen-bodega: #1E88E5;
-            --almacen-bodega-light: #E3F2FD;
+/* Variables de colores de almacén removidas (Oct 2026) */
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
-        body {
-            font-family: 'Poppins', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: #F8F9FA;
+        body { background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%); background-attachment: fixed; color: #1e3c72; min-height: 100vh; font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             color: #1A1A1A;
             line-height: 1.5;
             min-height: 100vh;
@@ -34,7 +29,7 @@
             position: sticky;
             top: 0;
             z-index: 100;
-            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            background: linear-gradient(135deg, #0B2545 0%, #1e3c72 50%, #2a5298 100%);
             box-shadow: 0 2px 20px rgba(0,0,0,0.15);
             padding: 0 40px;
             height: 72px;
@@ -112,6 +107,27 @@
             color: #fff;
             font-size: 12px;
         }
+
+        .header-pricing-note {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            padding: 6px 12px;
+            border-radius: 18px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #fff;
+            background: rgba(67, 160, 71, 0.92);
+            border: 1px solid rgba(255,255,255,0.35);
+            text-decoration: none;
+            white-space: nowrap;
+            font-family: 'Poppins', sans-serif;
+            transition: background 0.3s ease;
+            line-height: 1;
+            min-width: 0;
+        }
+        .header-pricing-note:hover { background: rgba(67, 160, 71, 1); color: #fff; }
 
         .btn-logout {
             padding: 8px 16px;
@@ -237,39 +253,9 @@
         .category-select:focus { border-color: #1e3c72; }
 
         /* Almacen Filter */
-        .almacen-filter {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            flex-wrap: wrap;
-            margin: 0;
-        }
-        .almacen-filter-label { display: none; }
+/* Oculto Oct 2026 — bodegas fuera de UI */
 
-        .almacen-btns {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-
-        .almacen-btn {
-            padding: 6px 14px;
-            border-radius: 16px;
-            font-size: 12px;
-            font-weight: 500;
-            border: 1px solid #ddd;
-            background: #fff;
-            color: #444;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            font-family: 'Poppins', sans-serif;
-        }
-        .almacen-btn:hover { background: #f0f0f0; }
-        .almacen-btn.active {
-            background: #1e3c72;
-            border-color: #1e3c72;
-            color: #fff;
-        }
+/* Oculto Oct 2026 — bodegas fuera de UI */
 
         /* Nuevo filter - toggle switch */
         .nuevo-filter {
@@ -381,31 +367,7 @@
 
         .error { color: var(--celucenter-red); }
 
-        /* ===== ALMACEN SECTION HEADER ===== */
-        .almacen-header {
-            grid-column: 1 / -1;
-            color: white;
-            padding: 12px 20px;
-            border-radius: 12px;
-            font-size: 0.9rem;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-top: 8px;
-        }
-        .almacen-header:first-child { margin-top: 0; }
-        .almacen-header.header-laft { background: linear-gradient(135deg, var(--almacen-laft) 0%, #78909C 100%); }
-        .almacen-header.header-bodega { background: linear-gradient(135deg, var(--almacen-bodega) 0%, #42A5F5 100%); }
-        .almacen-header .count {
-            background: rgba(255,255,255,0.25);
-            padding: 3px 10px;
-            border-radius: 15px;
-            font-size: 0.75rem;
-            font-weight: 500;
-        }
-
-        /* ===== PRODUCTS GRID ===== */
+        /* ===== ALMACEN SECTION HEADER ===== *//* ===== PRODUCTS GRID ===== */
         .products-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
@@ -428,6 +390,18 @@
         @media (max-width: 420px) {
             .products-grid, .products-grid.grid-3, .products-grid.grid-2, .products-grid.grid-5 { grid-template-columns: repeat(2, 1fr); gap: 10px; }
             .products-grid.grid-list { grid-template-columns: 1fr; }
+        }
+
+        /* ===== CLK-NAV responsive (fix overflow mobile) ===== */
+        @media (max-width: 640px) {
+            body { overflow-x: hidden; }
+            .clk-nav-links { display: none; }
+            .clk-nav-cta > div { display: none; } /* oculta search input con min-width 200px */
+            .clk-nav-inner { gap: 8px; padding: 8px 12px; }
+            .clk-brand span { display: none; } /* solo icono en mobile */
+            .clk-nav-cta { gap: 6px; }
+            .filters-section { padding: 10px 8px; }
+            .results-count { font-size: 11px; }
         }
 
         /* ===== PRODUCT CARD ===== */
@@ -503,23 +477,7 @@
         @keyframes pulse-nuevo {
             0%, 100% { box-shadow: 0 2px 8px rgba(92,184,92,0.4); }
             50% { box-shadow: 0 0 0 8px rgba(92,184,92,0); }
-        }
-
-        .product-almacen-badge {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            color: white;
-            padding: 5px 12px;
-            border-radius: 12px;
-            font-size: 10px;
-            font-weight: 700;
-            z-index: 2;
-        }
-        .product-almacen-badge.badge-laft { background: var(--almacen-laft); }
-        .product-almacen-badge.badge-bodega { background: var(--almacen-bodega); }
-
-        /* Card info */
+        }/* Card info */
         .product-info {
             padding: 8px 12px 12px;
             flex-grow: 1;
@@ -616,19 +574,7 @@
             padding: 6px 0;
             z-index: 4;
             pointer-events: none;
-        }
-
-        .almacen-btn-agotado {
-            border-color: #EF9A9A !important;
-            color: #C62828 !important;
-        }
-        .almacen-btn-agotado.active {
-            background: #C62828 !important;
-            border-color: #C62828 !important;
-            color: #fff !important;
-        }
-
-        .product-name {
+        }.product-name {
             font-size: 13px;
             font-weight: 500;
             color: #333;
@@ -821,8 +767,7 @@
         .grid-list .product-info { padding: 15px; }
         .grid-list .product-name { font-size: 14px; }
         .grid-list .product-category-badge { font-size: 10px; padding: 3px 8px; }
-        .grid-list .product-almacen-badge { font-size: 9px; padding: 3px 8px; }
-        .grid-list .product-pricing { padding-top: 6px; margin-top: auto; }
+        .grid-list.grid-list .product-pricing { padding-top: 6px; margin-top: auto; }
         .grid-list .price-tag { gap: 1px; }
         .grid-list .price-yours { font-size: 11px; }
         .grid-list .price-label { font-size: 8px; }
@@ -842,8 +787,7 @@
         .grid-3 .product-name { font-size: 13px; }
         .grid-3 .product-code { font-size: 10px; padding: 3px 8px; }
         .grid-3 .product-category-badge { font-size: 10px; padding: 3px 10px; }
-        .grid-3 .product-almacen-badge { font-size: 9px; }
-        .grid-3 .price-value { font-size: 18px; }
+        .grid-3.grid-3 .price-value { font-size: 18px; }
         .grid-3 .cart-add-btn { height: 36px; font-size: 13px; }
         .grid-3 .card-qty-control { height: 36px; }
         .grid-3 .card-qty-btn { height: 36px; width: 32px; font-size: 16px; }
@@ -854,8 +798,7 @@
         .grid-5 .product-name { font-size: 11px; line-height: 1.3; }
         .grid-5 .product-code { font-size: 9px; padding: 2px 7px; margin-bottom: 6px; }
         .grid-5 .product-category-badge { font-size: 9px; padding: 2px 7px; }
-        .grid-5 .product-almacen-badge { font-size: 8px; padding: 3px 7px; top: 6px; right: 6px; }
-        .grid-5 .badge-nuevo { font-size: 8px; padding: 3px 8px; top: 6px; left: 6px; }
+        .grid-5.grid-5 .badge-nuevo { font-size: 8px; padding: 3px 8px; top: 6px; left: 6px; }
         .grid-5 .price-value { font-size: 14px; }
         .grid-5 .price-label { font-size: 9px; }
         .grid-5 .price-public { font-size: 10px; }
@@ -871,8 +814,7 @@
             .products-grid .product-name { font-size: 12px; }
             .products-grid .product-code { font-size: 9px; padding: 3px 7px; margin-bottom: 6px; }
             .products-grid .product-category-badge { font-size: 9px; padding: 2px 7px; }
-            .products-grid .product-almacen-badge { font-size: 9px; padding: 3px 7px; }
-            .products-grid .price-value { font-size: 16px; }
+            .products-grid.products-grid .price-value { font-size: 16px; }
             .products-grid .cart-add-btn { height: 34px; font-size: 12px; }
         }
 
@@ -1001,9 +943,7 @@
         .last-update { text-align: center; margin-top: 10px; color: #999; font-size: 0.8rem; }
 
         /* ===== CART ADD BTN - RESPONSIVE ===== */
-        @media (max-width: 480px) {
-            .almacen-btn { padding: 6px 14px; font-size: 12px; }
-        }
+        @media (max-width: 480px) {}
 
         /* ===== STICKY CART BAR ===== */
         .cart-bar {
@@ -1334,17 +1274,19 @@
             .search-bar { display: none; }
             .mobile-search-btn { display: flex; }
             .container { padding: 16px; }
-            .filters-section { gap: 8px; padding: 12px 16px; top: 60px; }
-            .almacen-btns { overflow-x: auto; flex-wrap: nowrap; padding-bottom: 4px; }
-            .almacen-btn { flex-shrink: 0; }
-            .filter-right { margin-left: 0; width: 100%; justify-content: space-between; }
+            .filters-section { gap: 8px; padding: 12px 16px; top: 60px; }.filter-right { margin-left: 0; width: 100%; justify-content: space-between; }
             .category-select { min-width: 120px; font-size: 11px; }
         }
     </style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../../assets/css/tokens.css">
+<link rel="stylesheet" href="../../assets/css/chrome.css">
 </head>
 <body>
-    <!-- Header -->
-    <header class="header">
+    <!-- Header REDISEÑO 2026 (oculta el .header viejo) -->
+    <header class="header clk-hide" style="display:none">
         <a href="#" class="logo">
             <img src="celucenter_logo.png" alt="CeluCenter">
         </a>
@@ -1356,10 +1298,65 @@
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
         </button>
         <div class="header-actions" id="headerActions">
-            <button class="btn-auth btn-open-modal">Registrate para ver precios</button>
+            <a class="header-pricing-note" href="https://wa.me/523413300001?text=Hola%2C%20me%20interesa%20cotizar%20accesorios%20por%20volumen" target="_blank" rel="noopener" title="Cotiza por WhatsApp">📲 Cotizar</a>
         </div>
     </header>
-    <div class="user-status" id="userStatus"></div>
+
+    <header class="clk-nav">
+      <div class="clk-nav-inner">
+        <a class="clk-brand" href="../../">
+          <img src="../../assets/icono-celucenter.png" alt="Celulink">
+          <span>Celulink</span>
+        </a>
+        <nav>
+          <ul class="clk-nav-links">
+            <li><a href="../../">Inicio</a></li>
+            <li><a href="../equipos/">Smartphones</a></li>
+            <li><a href="../accesorios/" style="background:var(--color-bg-alt);color:var(--celeste-oscuro);">Accesorios</a></li>
+            <li><a href="../../menu/">Menú</a></li>
+          </ul>
+        </nav>
+        <div class="clk-nav-cta">
+          <div style="flex:1;min-width:200px;position:relative;">
+            <input type="text" id="searchInputNav" placeholder="🔍 Buscar accesorios..." oninput="document.getElementById('searchInput').value=this.value;filterProducts();" style="width:100%;padding:9px 16px;border:1px solid var(--color-borde);border-radius:var(--radius-pill);font-family:inherit;font-size:0.9rem;background:var(--color-bg-alt);">
+          </div>
+          <span id="headerActionsNav"></span>
+        </div>
+      </div>
+    </header>
+
+    <section class="clk-catalog-header">
+      <div class="clk-container">
+        <div class="clk-catalog-header-left">
+          <img src="celucenter_logo.png" alt="Celucenter">
+          <div>
+            <h1>Catálogo de Accesorios</h1>
+            <p>Micas, cargadores, audio y más · precios mayorista (2X / F / G)</p>
+            <div class="clk-catalog-header-stats">
+              <span>📦 Catálogo completo</span>
+              <span>🏷️ 8 categorías</span>
+              <span>🟢 Stock en tiempo real</span>
+            </div>
+          </div>
+        </div>
+        <div class="clk-catalog-header-right">
+          <a class="clk-btn" style="background:rgba(255,255,255,0.15);color:white;border:1px solid rgba(255,255,255,0.3);" href="https://wa.me/523413300001" target="_blank">💬 WhatsApp</a>
+        </div>
+      </div>
+    </section>
+    <script>
+    // Espejo del headerActions original (login/registro/logout) en el header nuevo
+    (function(){
+      const src=document.getElementById('headerActions');
+      const dst=document.getElementById('headerActionsNav');
+      if(src&&dst){
+        const sync=()=>{ dst.innerHTML = src.innerHTML; };
+        new MutationObserver(sync).observe(src,{childList:true,characterData:true,subtree:true});
+        sync();
+      }
+    })();
+    </script>
+    <div class="user-status" id="userStatus" style="display:none"></div>
 
     <!-- Mobile Search Overlay -->
     <div class="search-mobile-overlay" id="searchOverlay">
@@ -1375,8 +1372,8 @@
         <div class="auth-panel" id="authPanel">
             <div class="auth-panel-header">
                 <button class="auth-panel-close" id="btnClosePanel">&times;</button>
-                <h2>Acceso a Precios</h2>
-                <p>Registrate o inicia sesion para ver precios</p>
+                <h2>Funciones avanzadas</h2>
+                <p>Inicia sesión para guardar pedidos, ver historial o registrarte como cliente frecuente. Los precios se cotizan públicamente por volumen.</p>
             </div>
             <div class="auth-tabs">
                 <button class="auth-tab active" id="tabRegister">Registrarse</button>
@@ -1417,11 +1414,7 @@
                 <option value="">Todas las categorias</option>
             </select>
 
-            <div class="almacen-filter">
-                <div class="almacen-btns" id="almacenBtns">
-                    <button class="almacen-btn active" data-almacen="">Todos</button>
-                </div>
-            </div>
+            <!-- Filtro de almacén ocultado al cliente (Oct 2026) -->
 
             <div class="filter-right">
                 <button class="btn-nuevo-filter" id="btnNuevoFilter">
@@ -1458,8 +1451,47 @@
             </div>
         </div>
 
-        <!-- Footer -->
-        <div class="footer">
+        <!-- Footer REDISEÑO 2026 -->
+        <footer class="clk-footer" style="position:relative;left:auto;bottom:auto;padding-top:var(--space-7);">
+          <div class="clk-container">
+            <div class="clk-footer-grid">
+              <div class="clk-footer-about">
+                <div class="clk-footer-brand-row">
+                  <img src="../../assets/icono-celucenter.png" alt="Celulink">
+                  <strong style="font-size:1.3rem;">Celulink</strong>
+                </div>
+                <p>Celulink.mx es una plataforma de CeluCenter. Distribuidor Autorizado Telcel.</p>
+                <p class="clk-footer-tagline">"Conectando México, uno celular a la vez."</p>
+              </div>
+              <div>
+                <h4>Productos</h4>
+                <ul>
+                  <li><a href="../equipos/">Smartphones</a></li>
+                  <li><a href="../accesorios/">Accesorios</a></li>
+                </ul>
+              </div>
+              <div>
+                <h4>Acceso</h4>
+                <ul>
+                  <li><a href="#" onclick="openModal();return false;">Iniciar sesión</a></li>
+                  <li><a href="#" onclick="openModal();return false;">Registrarse</a></li>
+                </ul>
+              </div>
+              <div>
+                <h4>Legal</h4>
+                <ul>
+                  <li><a href="#">Aviso de privacidad</a></li>
+                  <li><a href="#">Cookies</a></li>
+                </ul>
+              </div>
+            </div>
+            <div class="clk-footer-bottom">
+              <span>© 2026 CeluCenter · Distribuidor Autorizado Telcel · Última actualización: <span id="lastUpdateNew">-</span></span>
+              <div class="legal"><a href="#">Aviso de privacidad</a><a href="#">Términos</a></div>
+            </div>
+          </div>
+        </footer>
+        <div class="footer clk-hide" style="display:none">
             <p>&copy; 2025 <span class="celucenter-logo">CELUCENTER</span> - Todos los derechos reservados</p>
             <p class="last-update">Ultima actualizacion: <span id="lastUpdate">-</span></p>
         </div>
@@ -1527,7 +1559,9 @@
         const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyIMh3orFnX-huWtsWPYX3Olb-QGNg8U70SsFWrpHRhqCTTCl5sv-b0Ly7g7YJlYFzCYw/exec';
         const TOKEN = 'CELUCENTER_SECURE_2025';
         const PHOTO_BASE_URL = 'https://raw.githubusercontent.com/piztian/Accesorios-Celucenter/main/fotos/';
-        const DETAIL_PAGE_URL = 'https://celucentermx.github.io/accesorios-mayoreo/detalle.html';
+        // Cotización pública: ruta relativa del mismo proyecto (celulink-web)
+        // Funciona tanto en localhost como en celulink.mx
+        const DETAIL_PAGE_URL = 'detalle.html';
 
         // ============================================================
         // STATE
@@ -1595,8 +1629,9 @@
                 `;
                 status.textContent = listaText;
             } else {
+                // Política vigente: cotización pública sin login. Sin CTA agresiva de registro.
                 actions.innerHTML = `
-                    <button class="btn-auth btn-open-modal">Registrate para ver precios</button>
+                    <a class="header-pricing-note" href="https://wa.me/523413300001?text=Hola%2C%20me%20interesa%20cotizar%20por%20volumen" target="_blank" rel="noopener" title="Cotiza por WhatsApp">📲 Cotizar</a>
                 `;
                 status.textContent = '';
             }
@@ -1751,7 +1786,7 @@
                     }, 1500);
                 } else {
                     msgEl.className = 'form-message error';
-                    msgEl.textContent = 'Telefono no registrado. Registrate primero.';
+                    msgEl.textContent = 'Teléfono no registrado. Cotiza por WhatsApp y con gusto te apoyamos.';
                 }
             } catch (e) {
                 msgEl.className = 'form-message error';
@@ -1826,45 +1861,22 @@
         // DYNAMIC ALMACEN BUTTONS
         // ============================================================
         function buildAlmacenButtons() {
-            const container = document.getElementById('almacenBtns');
-            // LAFT siempre primero, luego el resto ordenado
-            const rest = Array.from(almacenes).filter(a => a !== 'LAFT' && a !== 'AGOTADO').sort();
-            const sorted = almacenes.has('LAFT') ? ['LAFT', ...rest] : rest;
-
-            // Assign colors (LAFT = rojo, luego azul, verde, negro...)
-            sorted.forEach(function(name, i) {
+            // FASE 0 Oct 2026: el filtro de almacén ya no se renderiza en la UI.
+            // Esta función solo conserva los colores de almacén internamente.
+            // Si en el futuro se quiere re-habilitar el filtro, restaurar el HTML del contenedor #almacenBtns.
+            const allAlmacenes = new Set();
+            // Se asume que allProducts ya está poblado al llamar a esta función.
+            if (typeof allProducts !== 'undefined' && allProducts) {
+                allProducts.forEach(function(p) {
+                    if (p.almacen) allAlmacenes.add(p.almacen);
+                });
+            }
+            // Asignar colores internamente (preserva la lógica para mensajes WhatsApp)
+            const sortedAlmacenes = Array.from(allAlmacenes);
+            sortedAlmacenes.forEach(function(name, i) {
                 almacenColorMap[name] = ALMACEN_COLORS[i % ALMACEN_COLORS.length];
             });
-
-            // Add buttons for each almacen
-            sorted.forEach(function(name) {
-                var btn = document.createElement('button');
-                btn.className = 'almacen-btn';
-                btn.setAttribute('data-almacen', name);
-                btn.textContent = name === 'BODEGA MAYOREO' ? 'BM' : name;
-                btn.addEventListener('click', function() {
-                    setAlmacenFilter(this, name);
-                });
-                container.appendChild(btn);
-            });
-
-            // Add "Agotado" filter button
-            var agotadoCount = allProducts.filter(p => p.existencias <= 0).length;
-            if (agotadoCount > 0) {
-                var btnAgotado = document.createElement('button');
-                btnAgotado.className = 'almacen-btn almacen-btn-agotado';
-                btnAgotado.setAttribute('data-almacen', 'AGOTADO');
-                btnAgotado.textContent = 'Agotado (' + agotadoCount + ')';
-                btnAgotado.addEventListener('click', function() {
-                    setAlmacenFilter(this, 'AGOTADO');
-                });
-                container.appendChild(btnAgotado);
-            }
-
-            // Re-bind "Todos" button
-            container.querySelector('[data-almacen=""]').addEventListener('click', function() {
-                setAlmacenFilter(this, '');
-            });
+            // NO renderiza botones: el filtro de almacén está oculto al cliente.
         }
 
         function getAlmacenColor(name) {
@@ -1898,7 +1910,8 @@
                 btn.style.borderColor = c.bg;
                 btn.style.color = 'white';
             }
-            currentAlmacenFilter = almacen;
+            // FASE 0 Oct 2026: filtro de almacén removido. Siempre se muestran todos los productos.
+            currentAlmacenFilter = '';
             filterAndRender();
         }
 
@@ -1959,23 +1972,9 @@
                     grouped[key].push(p);
                 });
 
-                // Render each group with header
-                const order = ['LAFT', 'Bodega Mayoreo'];
-                const allKeys = [...new Set([...order.filter(k => grouped[k]), ...Object.keys(grouped).filter(k => !order.includes(k))])];
-
-                allKeys.forEach(almacen => {
-                    const group = grouped[almacen];
-                    if (!group || group.length === 0) return;
-
-                    var color = getAlmacenColor(almacen);
-                    html += `<div class="almacen-header" style="background:linear-gradient(135deg, ${color.bg} 0%, ${color.light} 100%)">
-                        <span>📦 ${escapeHtml(almacen)}</span>
-                        <span class="count">${group.length} productos</span>
-                    </div>`;
-
-                    group.forEach(product => {
-                        html += renderProductCard(product);
-                    });
+                // Sin headers de almacén (ocultos al cliente, Oct 2026)
+                products.forEach(product => {
+                    html += renderProductCard(product);
                 });
             } else {
                 products.forEach(product => {
@@ -1992,8 +1991,20 @@
             let pricingHtml = '';
 
             if (!userSession) {
-                // Not logged in - no price section
-                pricingHtml = '';
+                // Cotización pública: el precio de compra es el de la lista activa del carrito
+                // (2X si total < $3k, F si ≥ $3k, G si ≥ $6k, M si ≥ $9k)
+                // precioPublico solo se muestra como referencia tachada
+                const listaActiva = getCartLista();
+                const buyFmt = formatMXN(getUnitPriceForList(product, listaActiva));
+                const pubFmt = formatMXN(product.precioPublico);
+                if (buyFmt) {
+                    const pubRef = (pubFmt && pubFmt !== buyFmt) ? `<span class="price-public">P. público ${pubFmt}</span>` : '';
+                    pricingHtml = `<div class="product-pricing"><div class="price-yours"><span class="price-label">Lista ${listaActiva}</span><span class="price-value">${buyFmt}</span>${pubRef}</div></div>`;
+                } else if (pubFmt) {
+                    pricingHtml = `<div class="product-pricing"><div class="price-yours"><span class="price-label">Precio público</span><span class="price-value">${pubFmt}</span></div></div>`;
+                } else {
+                    pricingHtml = '';
+                }
             } else if (!userSession.lista) {
                 // Logged in but no list assigned
                 pricingHtml = `
@@ -2023,10 +2034,10 @@
                 if (lista === 'TODAS') {
                     // Mostrar TODAS las listas
                     const allLists = [
-                        { name: 'Lista M', value: fmt(product.listaM) },
-                        { name: 'Lista G', value: fmt(product.listaG) },
-                        { name: 'Lista F', value: fmt(product.listaF) },
-                        { name: 'Lista 2X', value: fmt(product.lista2x) },
+                        { name: 'Lista M', value: formatMXN(product.listaM) },
+                        { name: 'Lista G', value: formatMXN(product.listaG) },
+                        { name: 'Lista F', value: formatMXN(product.listaF) },
+                        { name: 'Lista 2X', value: formatMXN(product.lista2x) },
                     ].filter(l => l.value);
 
                     if (allLists.length) {
@@ -2107,7 +2118,7 @@
                         <div class="product-image-placeholder" style="display: ${product.imagenUrl ? 'none' : 'flex'}">
                             📦
                         </div>
-                        <span class="product-almacen-badge" style="background:${color.bg}">${product.almacen === 'BODEGA MAYOREO' ? 'BM' : escapeHtml(product.almacen)}</span>
+                        <!-- Badge de almacén ocultado al cliente -->
                         ${product.nuevo ? '<span class="badge-nuevo">NUEVO</span>' : ''}
                     </div>
                     <div class="product-info">
@@ -2275,6 +2286,30 @@
             return Object.values(cart).reduce((sum, item) => sum + item.qty, 0);
         }
 
+        // Re-pintar los precios de todas las cards cuando cambia el nivel del carrito
+        function updateAllCardPrices() {
+            const listaActiva = getCartLista();
+            document.querySelectorAll('.product-card').forEach(cardEl => {
+                const btn = cardEl.querySelector('.cart-add-btn[data-codigo]');
+                if (!btn) return;
+                const cod = btn.getAttribute('data-codigo');
+                const product = allProducts.find(p => p.codigo === cod);
+                if (!product) return;
+                const buyFmt = formatMXN(getUnitPriceForList(product, listaActiva));
+                const pubFmt = formatMXN(product.precioPublico);
+                const priceLabel = cardEl.querySelector('.price-label');
+                const priceValue = cardEl.querySelector('.price-value');
+                const pricePublic = cardEl.querySelector('.price-public');
+                if (priceLabel) priceLabel.textContent = 'Lista ' + listaActiva;
+                if (priceValue) priceValue.textContent = buyFmt;
+                if (pubFmt && pubFmt !== buyFmt) {
+                    if (pricePublic) { pricePublic.textContent = 'P. público ' + pubFmt; }
+                } else {
+                    if (pricePublic) { pricePublic.remove(); }
+                }
+            });
+        }
+
         function cartAdd(codigo) {
             const product = allProducts.find(p => p.codigo === codigo);
             if (!product) return;
@@ -2286,6 +2321,7 @@
             saveCart();
             refreshCartBar();
             updateCardCartButton(codigo);
+            updateAllCardPrices();
             if (document.getElementById('cartModal').classList.contains('active')) {
                 renderCart();
             }
@@ -2296,6 +2332,7 @@
             saveCart();
             refreshCartBar();
             updateCardCartButton(codigo);
+            updateAllCardPrices();
             renderCart();
         }
 
@@ -2306,6 +2343,7 @@
             cart[codigo].qty = qty;
             saveCart();
             refreshCartBar();
+            updateAllCardPrices();
             renderCart();
         }
 
@@ -2317,6 +2355,7 @@
             saveCart();
             refreshCartBar();
             codigos.forEach(updateCardCartButton);
+            updateAllCardPrices();
             renderCart();
         }
 
@@ -2801,5 +2840,6 @@
 
         document.addEventListener('DOMContentLoaded', init);
     </script>
+<a class="clk-wa" href="https://wa.me/523413300001" target="_blank" aria-label="WhatsApp">💬</a>
 </body>
 </html>

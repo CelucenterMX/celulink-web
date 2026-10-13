@@ -6,593 +6,37 @@
 <title>celulink.mx — Tecnología para todos | Sub-marca de CeluCenter</title>
 <meta name="description" content="celulink.mx — La forma más fácil y confiable de estrenar tecnología. +1000 productos. Envíos a todo México en 24-48h.">
 <link rel="icon" type="image/png" href="./assets/favicon-celucenter.png">
-<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Nunito:wght@600;700&display=swap" rel="stylesheet">
-<style>
-/* ===========================================
-   celulink.mx — sub-marca de CeluCenter
-   Brand DNA v2.1 (paleta oficial Julio 2026)
-   =========================================== */
-
-:root {
-  /* Paleta oficial CeluCenter v2.1 */
-  --celeste: #00A5D4;
-  --verde:   #7AB800;
-  --marino:  #0B2545;
-  --naranja: #F5A623;
-  --rojo:    #E53935;
-  --gris-claro: #F4F6F9;
-  --gris:    #8A94A6;
-  --blanco:  #FFFFFF;
-  --negro:   #1A1A2E;
-
-  /* Gradientes oficiales */
-  --grad-hero: linear-gradient(135deg, #0B2545 0%, #00A5D4 100%);
-  --grad-marca: linear-gradient(135deg, #00A5D4 0%, #7AB800 100%);
-  --grad-promo: linear-gradient(135deg, #F5A623 0%, #E53935 100%);
-
-  /* Tokens */
-  --radius: 14px;
-  --radius-sm: 8px;
-  --radius-lg: 20px;
-  --shadow-sm: 0 1px 3px rgba(0,0,0,.08);
-  --shadow-md: 0 2px 8px rgba(0,0,0,.1);
-  --shadow-lg: 0 8px 32px rgba(0,0,0,.15);
-}
-
-* { margin: 0; padding: 0; box-sizing: border-box; }
-
-body {
-  font-family: 'Montserrat', -apple-system, sans-serif;
-  background: white;
-  color: var(--negro);
-  line-height: 1.5;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-}
-
-/* NAV */
-.nav {
-  background: var(--marino);
-  color: white;
-  padding: 14px 20px;
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  box-shadow: var(--shadow-md);
-}
-.nav-inner {
-  max-width: 1100px;
-  margin: 0 auto;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 20px;
-}
-.nav-brand {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  text-decoration: none;
-  color: white;
-}
-.nav-brand-logo {
-  height: 32px;
-  width: 32px;
-  border-radius: 50%;
-  background: white;
-  padding: 4px;
-}
-.nav-brand-text {
-  font-weight: 800;
-  font-size: 1.15rem;
-  letter-spacing: -0.02em;
-}
-.nav-brand-text .link { color: var(--celeste); }
-.nav-links { display: flex; gap: 8px; }
-.nav-links a {
-  color: rgba(255,255,255,0.75);
-  text-decoration: none;
-  font-size: 0.85rem;
-  font-weight: 600;
-  padding: 8px 14px;
-  border-radius: 20px;
-  transition: background 0.15s;
-}
-.nav-links a:hover { background: rgba(255,255,255,0.1); color: white; }
-.nav-tag {
-  background: var(--celeste);
-  color: white;
-  padding: 4px 10px;
-  border-radius: 20px;
-  font-size: 0.65rem;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-}
-
-/* HERO */
-.hero {
-  background: var(--grad-hero);
-  color: white;
-  padding: 100px 20px 110px;
-  text-align: center;
-  position: relative;
-  overflow: hidden;
-}
-.hero::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background:
-    radial-gradient(circle at 25% 30%, rgba(122,184,0,0.15) 0%, transparent 50%),
-    radial-gradient(circle at 75% 70%, rgba(245,166,35,0.12) 0%, transparent 50%);
-  pointer-events: none;
-}
-.hero-inner {
-  position: relative;
-  max-width: 760px;
-  margin: 0 auto;
-}
-.hero-badge {
-  display: inline-block;
-  background: rgba(245,166,35,0.15);
-  border: 1px solid rgba(245,166,35,0.4);
-  color: var(--naranja);
-  padding: 6px 16px;
-  border-radius: 100px;
-  font-size: 0.7rem;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  margin-bottom: 24px;
-}
-.hero h1 {
-  font-size: clamp(2.2rem, 5vw, 3.6rem);
-  font-weight: 900;
-  letter-spacing: -0.03em;
-  line-height: 1.05;
-  margin-bottom: 20px;
-}
-.hero h1 .verde { color: var(--verde); }
-.hero h1 .naranja { color: var(--naranja); }
-.hero p {
-  font-size: clamp(1rem, 2.2vw, 1.2rem);
-  opacity: 0.92;
-  margin-bottom: 36px;
-  max-width: 580px;
-  margin-left: auto;
-  margin-right: auto;
-}
-.hero-cta {
-  display: inline-flex;
-  gap: 12px;
-  flex-wrap: wrap;
-  justify-content: center;
-}
-.btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 16px 30px;
-  border-radius: 100px;
-  font-weight: 700;
-  text-decoration: none;
-  font-size: 0.95rem;
-  font-family: 'Nunito', sans-serif;
-  transition: transform 0.15s, box-shadow 0.15s;
-  border: none;
-  cursor: pointer;
-}
-.btn:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
-.btn-primary {
-  background: var(--naranja);
-  color: white;
-}
-.btn-secondary {
-  background: rgba(255,255,255,0.15);
-  color: white;
-  border: 1.5px solid rgba(255,255,255,0.4);
-  backdrop-filter: blur(4px);
-}
-
-/* CATEGORIAS */
-.cats {
-  background: var(--gris-claro);
-  padding: 60px 20px;
-}
-.cats-inner {
-  max-width: 1100px;
-  margin: 0 auto;
-}
-.cats-heading {
-  text-align: center;
-  margin-bottom: 40px;
-}
-.cats-heading .section-label {
-  font-size: 0.7rem;
-  font-weight: 800;
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
-  color: var(--celeste);
-  display: block;
-  margin-bottom: 10px;
-}
-.cats-heading h2 {
-  font-size: clamp(1.6rem, 3vw, 2.2rem);
-  font-weight: 900;
-  letter-spacing: -0.02em;
-  color: var(--negro);
-}
-.cats-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 20px;
-}
-.cat-card {
-  border-radius: 20px;
-  overflow: hidden;
-  text-decoration: none;
-  display: flex;
-  flex-direction: column;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.14);
-  transition: transform 0.22s, box-shadow 0.22s;
-  background: white;
-}
-.cat-card:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 20px 48px rgba(0,0,0,0.22);
-}
-/* Zona de foto superior */
-.cat-card-photo {
-  position: relative;
-  height: 240px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-}
-.cat-card.eq   .cat-card-photo { background: linear-gradient(145deg, #0B2545 0%, #00A5D4 100%); }
-.cat-card.acc  .cat-card-photo { background: linear-gradient(145deg, #00A5D4 0%, #7AB800 100%); }
-.cat-card.suc  .cat-card-photo { background: linear-gradient(145deg, #0B2545 0%, #1a3a6b 100%); }
-/* foto producto flotante */
-.cat-card-photo .prod-img {
-  max-height: 200px;
-  max-width: 85%;
-  object-fit: contain;
-  display: block;
-  filter: drop-shadow(0 12px 28px rgba(0,0,0,0.35));
-  transition: transform 0.35s;
-}
-.cat-card:hover .prod-img { transform: translateY(-8px) scale(1.04); }
-/* foto sucursal full-bleed */
-.cat-card-photo .bg-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-  transition: transform 0.4s;
-}
-.cat-card:hover .bg-img { transform: scale(1.06); }
-.cat-card-photo .bg-overlay {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(to bottom, rgba(11,37,69,0.25) 0%, rgba(11,37,69,0.55) 100%);
-}
-/* Zona de texto inferior */
-.cat-card-body {
-  padding: 22px 24px 24px;
-  background: white;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-.cat-card-tag {
-  display: inline-block;
-  background: var(--celeste);
-  color: white;
-  font-size: 0.62rem;
-  font-weight: 800;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  padding: 3px 10px;
-  border-radius: 20px;
-  width: fit-content;
-}
-.cat-card.eq  .cat-card-tag { background: var(--verde); }
-.cat-card.suc .cat-card-tag { background: var(--naranja); }
-.cat-card-body h3 {
-  font-size: 1.35rem;
-  font-weight: 900;
-  letter-spacing: -0.02em;
-  color: var(--negro);
-  margin-top: 2px;
-}
-.cat-card-body p {
-  font-size: 0.86rem;
-  color: var(--gris);
-  line-height: 1.5;
-  flex: 1;
-}
-.cat-card-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  background: var(--marino);
-  color: white;
-  font-size: 0.82rem;
-  font-weight: 800;
-  padding: 10px 20px;
-  border-radius: 100px;
-  margin-top: 8px;
-  width: fit-content;
-  transition: background 0.15s;
-}
-.cat-card:hover .cat-card-btn { background: var(--naranja); }
-
-@media (max-width: 768px) {
-  .cats-grid { grid-template-columns: 1fr; }
-  .cat-card-photo { height: 200px; }
-}
-
-/* MAIN */
-main {
-  flex: 1;
-  padding: 80px 20px;
-  background: white;
-}
-.container {
-  max-width: 1100px;
-  margin: 0 auto;
-}
-.section { margin-bottom: 72px; }
-.section-label {
-  font-size: 0.7rem;
-  font-weight: 800;
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
-  color: var(--celeste);
-  margin-bottom: 12px;
-}
-.section-title {
-  font-size: clamp(1.5rem, 3vw, 2rem);
-  font-weight: 900;
-  letter-spacing: -0.02em;
-  color: var(--negro);
-  margin-bottom: 12px;
-  line-height: 1.2;
-}
-.section-desc {
-  color: var(--gris);
-  font-size: 1.05rem;
-  max-width: 600px;
-  margin-bottom: 36px;
-}
-
-/* STATS */
-.stats {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 16px;
-}
-.stat {
-  background: var(--gris-claro);
-  padding: 28px 20px;
-  border-radius: var(--radius);
-  text-align: center;
-  border-bottom: 3px solid transparent;
-  transition: transform 0.15s, border-color 0.15s;
-}
-.stat:hover {
-  transform: translateY(-3px);
-  border-bottom-color: var(--celeste);
-}
-.stat .num {
-  font-size: 2.4rem;
-  font-weight: 900;
-  color: var(--marino);
-  line-height: 1;
-  letter-spacing: -0.02em;
-}
-.stat .num.celeste { color: var(--celeste); }
-.stat .num.verde { color: var(--verde); }
-.stat .num.naranja { color: var(--naranja); }
-.stat .label {
-  font-size: 0.85rem;
-  color: var(--gris);
-  margin-top: 8px;
-  font-weight: 500;
-}
-
-/* FEATURES */
-.features {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 20px;
-}
-.feature {
-  background: white;
-  border: 1px solid #E2E8F0;
-  border-radius: var(--radius);
-  padding: 28px;
-  text-decoration: none;
-  color: inherit;
-  transition: all 0.2s;
-  display: block;
-}
-.feature:hover {
-  transform: translateY(-3px);
-  border-color: var(--celeste);
-  box-shadow: 0 12px 28px rgba(0,165,212,0.12);
-}
-.feature .icon-box {
-  width: 48px;
-  height: 48px;
-  border-radius: 12px;
-  background: linear-gradient(135deg, var(--celeste), #1d8fb8);
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.4rem;
-  margin-bottom: 16px;
-}
-.feature.cat .icon-box { background: linear-gradient(135deg, var(--celeste), #1d8fb8); }
-.feature.promo .icon-box { background: var(--grad-promo); }
-.feature.admin .icon-box { background: var(--marino); }
-.feature h3 {
-  font-size: 1.05rem;
-  font-weight: 800;
-  margin-bottom: 6px;
-  color: var(--negro);
-}
-.feature p {
-  font-size: 0.9rem;
-  color: var(--gris);
-  line-height: 1.5;
-}
-.feature .arrow {
-  display: inline-block;
-  margin-top: 12px;
-  color: var(--celeste);
-  font-weight: 700;
-  font-size: 0.85rem;
-}
-
-/* DESTACADO: catálogo de accesorios */
-.feature-highlight {
-  background: var(--grad-marca);
-  border: none;
-  color: white;
-  position: relative;
-  overflow: hidden;
-}
-.feature-highlight::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(circle at 80% 20%, rgba(255,255,255,0.15) 0%, transparent 50%);
-}
-.feature-highlight > * { position: relative; }
-.feature-highlight .icon-box { background: rgba(255,255,255,0.2); }
-.feature-highlight h3 { color: white; }
-.feature-highlight p { color: rgba(255,255,255,0.9); }
-.feature-highlight .arrow { color: white; }
-
-/* CONTACT */
-.contact {
-  background: var(--grad-hero);
-  color: white;
-  padding: 56px 36px;
-  border-radius: var(--radius-lg);
-  text-align: center;
-  position: relative;
-  overflow: hidden;
-}
-.contact::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(circle at 20% 80%, rgba(122,184,0,0.15) 0%, transparent 50%);
-  pointer-events: none;
-}
-.contact > * { position: relative; }
-.contact h3 {
-  font-size: 1.4rem;
-  font-weight: 800;
-  margin-bottom: 8px;
-}
-.contact p {
-  opacity: 0.85;
-  margin-bottom: 28px;
-  font-size: 0.95rem;
-}
-.contact-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 14px;
-  max-width: 720px;
-  margin: 0 auto;
-}
-.contact-item {
-  background: white;
-  color: var(--negro);
-  padding: 18px 16px;
-  border-radius: var(--radius);
-  text-decoration: none;
-  font-size: 0.9rem;
-  transition: transform 0.15s;
-  display: block;
-}
-.contact-item:hover { transform: translateY(-2px); }
-.contact-item strong {
-  display: block;
-  color: var(--celeste);
-  font-size: 0.8rem;
-  font-weight: 700;
-  margin-bottom: 4px;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-}
-.contact-item span {
-  font-family: 'Nunito', sans-serif;
-  font-weight: 600;
-}
-
-/* FOOTER */
-footer {
-  background: var(--marino);
-  color: rgba(255,255,255,0.7);
-  padding: 36px 20px 24px;
-}
-.footer-inner {
-  max-width: 1100px;
-  margin: 0 auto;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 20px;
-}
-.footer-brand {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-.footer-brand img {
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  background: white;
-  padding: 3px;
-}
-.footer-brand-text {
-  font-size: 0.85rem;
-}
-.footer-brand-text strong { color: white; }
-.footer-brand-text small { display: block; opacity: 0.7; font-size: 0.75rem; }
-.footer-links {
-  display: flex;
-  gap: 24px;
-  font-size: 0.85rem;
-}
-.footer-links a {
-  color: rgba(255,255,255,0.7);
-  text-decoration: none;
-}
-.footer-links a:hover { color: white; }
-
-@media (max-width: 640px) {
-  .nav-links { display: none; }
-  .nav-tag { display: none; }
-  .features { grid-template-columns: 1fr !important; }
-}
-</style>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/tokens.css">
+<link rel="stylesheet" href="assets/css/chrome.css">
+<link rel="stylesheet" href="assets/css/home.css">
 </head>
 <body>
 
-<nav class="nav">
+<!-- ===== HEADER REDISEÑO 2026 ===== -->
+<header class="clk-nav">
+  <div class="clk-nav-inner">
+    <a class="clk-brand" href="./">
+      <img src="assets/icono-celucenter.png" alt="Celulink">
+      <span>Celulink</span>
+      <span class="clk-sub">de CeluCenter</span>
+    </a>
+    <nav>
+      <ul class="clk-nav-links">
+        <li><a href="./">Inicio</a></li>
+        <li><a href="catalogos/equipos/">Smartphones</a></li>
+        <li><a href="catalogos/accesorios/">Accesorios</a></li>
+        <li><a href="menu/">Menú</a></li>
+      </ul>
+    </nav>
+    <div class="clk-nav-cta">
+      <a class="clk-btn clk-btn-ghost" href="catalogos/equipos/">Acceso clientes</a>
+      <a class="clk-btn clk-btn-primary" href="https://wa.me/523413300001" target="_blank">WhatsApp</a>
+    </div>
+  </div>
+</header>
+
+<nav class="nav clk-hide">
   <div class="nav-inner">
     <a href="./" class="nav-brand">
       <img class="nav-brand-logo" src="https://raw.githubusercontent.com/piztian/celulink/main/fotos/Celulink%20logo%20(2).png" alt="CeluLink">
@@ -608,110 +52,316 @@ footer {
 </nav>
 
 
-<!-- ======= MÓDULO CATEGORÍAS ======= -->
-<section class="cats">
-  <div class="cats-inner">
-    <div class="cats-heading">
-      <span class="section-label">Explora nuestro catálogo</span>
-      <h2>¿Qué estás buscando?</h2>
+<!-- ======= HERO PREMIUM (REDISEÑO 2026) ======= -->
+<section class="hero" id="inicio">
+  <div class="container">
+    <div class="hero-grid">
+    <div>
+      <span class="hero-pre">Distribuidor Autorizado Telcel</span>
+      <h1>El celular que necesitas,<br><span class="accent">cerca de ti.</span></h1>
+      <p class="hero-sub">
+        28 tiendas en occidente de México. Variedad real, financiamiento flexible
+        y gente que te conoce por tu nombre. Sin letras chiquitas.
+      </p>
+      <div class="hero-ctas">
+        <a class="clk-btn clk-btn-primary clk-btn-lg" href="./catalogos/equipos/">Ver smartphones</a>
+        <a class="clk-btn clk-btn-ghost clk-btn-lg" href="https://wa.me/523413300001" target="_blank" rel="noopener">Escríbenos por WhatsApp</a>
+      </div>
     </div>
-    <div class="cats-grid">
-
-      <!-- EQUIPOS -->
-      <a class="cat-card eq" href="./catalogos/equipos/">
-        <div class="cat-card-photo">
-          <img class="prod-img" src="https://raw.githubusercontent.com/piztian/samsung-s25/main/imagenes/productos/Iphone%2013.jpg" alt="iPhone 13" loading="lazy">
+    <div class="hero-visual">
+      <div class="hero-floating hero-floating-1">
+        <div class="icon">★</div>
+        <div>
+          <strong>Distribuidor Telcel</strong>
+          <span>+10 años de experiencia</span>
         </div>
-        <div class="cat-card-body">
-          <span class="cat-card-tag">Catálogo</span>
-          <h3>Equipos</h3>
-          <p>Smartphones BM, Ecom y LAFT. Precios actualizados, stock real.</p>
-          <span class="cat-card-btn">Ver equipos →</span>
+      </div>
+      <div class="hero-phone">
+        <img src="assets/xiaomi-redmi-15c-frente.png" alt="Xiaomi Redmi 15C 128GB Azul">
+      </div>
+      <div class="hero-floating hero-floating-2">
+        <div class="icon">28</div>
+        <div>
+          <strong>28 tiendas</strong>
+          <span>4 estados · occidente</span>
         </div>
-      </a>
-
-      <!-- ACCESORIOS -->
-      <a class="cat-card acc" href="./catalogos/accesorios/">
-        <div class="cat-card-photo">
-          <img class="prod-img" src="https://raw.githubusercontent.com/piztian/Accesorios-Celucenter/main/fotos/BOCINA%20%20ALEXE%20PRO%20MAX%2015X.jpeg" alt="Bocina Alexe Pro Max" loading="lazy">
+      </div>
+      <div class="hero-floating hero-floating-3">
+        <div class="icon">✓</div>
+        <div>
+          <strong>Garantía</strong>
+          <span>Fábrica + servicio técnico</span>
         </div>
-        <div class="cat-card-body">
-          <span class="cat-card-tag">Mayoreo</span>
-          <h3>Accesorios</h3>
-          <p>Cables, bocinas, fundas, audífonos y más — con listas de precios.</p>
-          <span class="cat-card-btn">Ver accesorios →</span>
-        </div>
-      </a>
-
+      </div>
     </div>
   </div>
 </section>
 
-<main>
+<!-- ======= STRIP DE CONFIANZA ======= -->
+<section class="trust-strip">
   <div class="container">
-
-    <section class="section">
-      <div class="stats" style="grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); max-width: 600px; margin: 0 auto;">
-        <div class="stat">
-          <div class="num naranja">+1000</div>
-          <div class="label">Productos disponibles</div>
-        </div>
-        <div class="stat">
-          <div class="num celeste">24-48h</div>
-          <div class="label">Envíos a todo México</div>
+    <div class="trust-grid">
+      <div class="trust-item">
+        <div class="trust-icon">📍</div>
+        <div class="trust-text">
+          <strong>28 tiendas en 4 estados</strong>
+          <span>Jalisco · Colima · Michoacán · Sinaloa</span>
         </div>
       </div>
-    </section>
-
-    <section class="section" id="ofertas">
-      <div class="section-label">Lo que te ofrecemos</div>
-      <h2 class="section-title">Tu próxima tecnología empieza aquí</h2>
-      <p class="section-desc">Variedad real, financiamiento flexible y gente que te conoce por tu nombre.</p>
-
-      <div class="features" style="grid-template-columns: repeat(2, 1fr); max-width: 860px;">
-
-        <a class="feature feature-highlight" href="./catalogos/accesorios/" style="padding: 40px 36px;">
-          <div class="icon-box" style="width:60px;height:60px;font-size:1.8rem;border-radius:16px;margin-bottom:20px;">📱</div>
-          <h3 style="font-size:1.25rem;margin-bottom:10px;">Catálogo de Accesorios</h3>
-          <p style="font-size:0.95rem;line-height:1.6;">Cables, fundas, audífonos y más. Precios mayoreo con sistema de listas.</p>
-          <span class="arrow" style="font-size:0.95rem;margin-top:20px;display:block;">Ver catálogo →</span>
-        </a>
-
-        <a class="feature cat" href="./catalogos/equipos/" style="padding: 40px 36px;">
-          <div class="icon-box" style="width:60px;height:60px;font-size:1.8rem;border-radius:16px;margin-bottom:20px;">📲</div>
-          <h3 style="font-size:1.25rem;margin-bottom:10px;">Equipos CeluCenter</h3>
-          <p style="font-size:0.95rem;line-height:1.6;">BM, Ecom y LAFT — el catálogo completo de equipos con precios actualizados.</p>
-          <span class="arrow" style="font-size:0.95rem;margin-top:20px;display:block;">Ver equipos →</span>
-        </a>
-
-      </div>
-    </section>
-
-    <section class="section" id="contacto">
-      <div class="contact">
-        <h3>¿Necesitas ayuda o un producto?</h3>
-        <p>Te atendemos en WhatsApp — directo, sin rodeos.</p>
-        <div class="contact-grid">
-          <a class="contact-item" href="https://wa.me/523413300001" target="_blank" rel="noopener">
-            <strong>WhatsApp Ventas</strong>
-            <span>+52 341 330 0001</span>
-          </a>
-          <a class="contact-item" href="mailto:ventas@celulink.mx">
-            <strong>Email</strong>
-            <span>ventas@celulink.mx</span>
-          </a>
-          <a class="contact-item" href="tel:+523414386105">
-            <strong>Atención directa</strong>
-            <span>+52 341 438 6105</span>
-          </a>
+      <div class="trust-item">
+        <div class="trust-icon">★</div>
+        <div class="trust-text">
+          <strong>Distribuidor Autorizado Telcel</strong>
+          <span>Más de 10 años en la región</span>
         </div>
       </div>
-    </section>
-
+      <div class="trust-item">
+        <div class="trust-icon">🛡️</div>
+        <div class="trust-text">
+          <strong>Garantía y servicio técnico</strong>
+          <span>Resolvemos en tu tienda, no por call center</span>
+        </div>
+      </div>
+      <div class="trust-item">
+        <div class="trust-icon">💳</div>
+        <div class="trust-text">
+          <strong>Financiamiento flexible</strong>
+          <span>Paguitos semanales sin buró</span>
+        </div>
+      </div>
+    </div>
   </div>
-</main>
+</section>
 
-<footer>
+<!-- ======= ESCAPARATE DE EQUIPOS ======= -->
+<section class="section">
+  <div class="container">
+    <div class="section-head-row">
+      <div class="left">
+        <span class="section-eyebrow">Equipos destacados</span>
+        <h2 class="section-title">Smartphones que ya están girando</h2>
+        <p class="section-sub">
+          Selección de los modelos con mayor rotación en la red. Fotografía real
+          de cada uno, precio y disponibilidad en tienda.
+        </p>
+      </div>
+      <a class="clk-btn clk-btn-dark" href="./catalogos/equipos/">Ver catálogo completo →</a>
+    </div>
+
+    <div class="product-grid">
+      <article class="product-card">
+        <div class="product-image">
+          <div class="product-badges"><span class="badge badge-new">Destacado</span></div>
+          <img src="assets/xiaomi-redmi-15c-frente.png" alt="Xiaomi Redmi 15C 128GB Azul">
+        </div>
+        <div class="product-body">
+          <span class="product-brand">Xiaomi</span>
+          <h3 class="product-name">Redmi 15C 128GB</h3>
+          <span class="product-variant">Azul · 4 GB RAM</span>
+          <span class="product-sku">SKU: 6932554456016</span>
+          <a class="product-cta" href="https://wa.me/523413300001" target="_blank" rel="noopener">
+            <span class="clk-btn clk-btn-wa">Preguntar en tienda</span>
+          </a>
+        </div>
+      </article>
+
+      <article class="product-card">
+        <div class="product-image">
+          <div class="product-badges"><span class="badge badge-new">Destacado</span></div>
+          <img src="assets/infinix-smart-20-frente.png" alt="Infinix Smart 20 64GB Negro">
+        </div>
+        <div class="product-body">
+          <span class="product-brand">Infinix</span>
+          <h3 class="product-name">Smart 20 64GB</h3>
+          <span class="product-variant">Negro · 4+4 GB RAM</span>
+          <span class="product-sku">SKU: 4894947116520</span>
+          <a class="product-cta" href="https://wa.me/523413300001" target="_blank" rel="noopener">
+            <span class="clk-btn clk-btn-wa">Preguntar en tienda</span>
+          </a>
+        </div>
+      </article>
+
+      <article class="product-card">
+        <div class="product-image">
+          <div class="product-badges"><span class="badge badge-new">Destacado</span></div>
+          <img src="assets/samsung-a17-frente.png" alt="Samsung Galaxy A17 128GB Negro">
+        </div>
+        <div class="product-body">
+          <span class="product-brand">Samsung</span>
+          <h3 class="product-name">Galaxy A17 128GB</h3>
+          <span class="product-variant">Negro · 4 GB RAM</span>
+          <span class="product-sku">SKU: 8806097666882</span>
+          <a class="product-cta" href="https://wa.me/523413300001" target="_blank" rel="noopener">
+            <span class="clk-btn clk-btn-wa">Preguntar en tienda</span>
+          </a>
+        </div>
+      </article>
+
+      <article class="product-card">
+        <div class="product-image">
+          <div class="product-badges"><span class="badge badge-new">Destacado</span></div>
+          <img src="assets/blu-g75-frente.png" alt="BLU G75 256GB Azul">
+        </div>
+        <div class="product-body">
+          <span class="product-brand">BLU</span>
+          <h3 class="product-name">G75 256GB</h3>
+          <span class="product-variant">Azul · 4+10 GB RAM</span>
+          <span class="product-sku">SKU: 48958044758</span>
+          <a class="product-cta" href="https://wa.me/523413300001" target="_blank" rel="noopener">
+            <span class="clk-btn clk-btn-wa">Preguntar en tienda</span>
+          </a>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ======= CATEGORÍAS VISUALES ======= -->
+<section class="section section-soft">
+  <div class="container">
+    <div class="cat-grid">
+      <a href="./catalogos/equipos/" class="cat-card cat-phones">
+        <img class="preview" src="assets/samsung-a17-frente.png" alt="">
+        <div>
+          <h3>Smartphones</h3>
+          <p>Equipos nuevos y reacondicionados de todas las marcas, con garantía de fábrica.</p>
+          <span class="arrow">Explorar catálogo →</span>
+        </div>
+      </a>
+      <a href="./catalogos/accesorios/" class="cat-card cat-acc">
+        <img class="preview" src="assets/samsung-a17-atras.png" alt="" style="transform:rotate(-12deg);">
+        <div>
+          <h3>Accesorios</h3>
+          <p>Micas, cargadores, audio y más para tu equipo. Mismo lenguaje visual que smartphones.</p>
+          <span class="arrow">Explorar catálogo →</span>
+        </div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ======= MARCAS ======= -->
+<section class="section">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-eyebrow">Marcas oficiales</span>
+      <h2 class="section-title">Distribuidor autorizado de las marcas que ya conoces</h2>
+      <p class="section-sub">Cada equipo se entrega con su caja original, accesorios y la garantía de fábrica correspondiente.</p>
+    </div>
+    <div class="brands-grid">
+      <div class="brand-chip">Samsung</div>
+      <div class="brand-chip">Apple</div>
+      <div class="brand-chip">Xiaomi</div>
+      <div class="brand-chip">Motorola</div>
+      <div class="brand-chip">Infinix</div>
+      <div class="brand-chip">Honor</div>
+      <div class="brand-chip">Oppo</div>
+      <div class="brand-chip">ZTE</div>
+      <div class="brand-chip">TCL</div>
+      <div class="brand-chip">Hisense</div>
+      <div class="brand-chip">BLU</div>
+      <div class="brand-chip">Google</div>
+      <div class="brand-chip">Realme</div>
+    </div>
+  </div>
+</section>
+
+<!-- ======= SUCURSALES ======= -->
+<section class="section section-soft" id="sucursales">
+  <div class="container">
+    <div class="section-header">
+      <span class="section-eyebrow">Presencia local</span>
+      <h2 class="section-title">28 tiendas en 4 estados</h2>
+      <p class="section-sub">Si hay un problema, vienes a la tienda y lo resolvemos cara a cara. No te mandamos a un call center.</p>
+    </div>
+    <div class="states-grid">
+      <div class="state-card">
+        <span class="state-num">14</span>
+        <div class="state-name">Jalisco</div>
+        <div class="state-cap">Tamazula, Zapotiltic, Jocotepec y más</div>
+      </div>
+      <div class="state-card">
+        <span class="state-num">8</span>
+        <div class="state-name">Michoacán</div>
+        <div class="state-cap">Jiquilpan, Cotija y más</div>
+      </div>
+      <div class="state-card">
+        <span class="state-num">4</span>
+        <div class="state-name">Colima</div>
+        <div class="state-cap">Tecomán y zonas conurbadas</div>
+      </div>
+      <div class="state-card">
+        <span class="state-num">2</span>
+        <div class="state-name">Sinaloa</div>
+        <div class="state-cap">Presencia inicial</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ======= CTA WHATSAPP Y CONTACTO ======= -->
+<section class="section" id="contacto">
+  <div class="container" style="max-width:900px;text-align:center;">
+    <span class="section-eyebrow">¿Necesitas ayuda?</span>
+    <h2 class="section-title" style="margin-bottom:var(--space-4);">Te atendemos en WhatsApp — directo, sin rodeos.</h2>
+    <p class="section-sub" style="margin-bottom:var(--space-6);">
+      Más de 28 tiendas en occidente de México. Conoce a tu gerente y resuelve
+      cualquier duda sin pasar por call centers.
+    </p>
+    <div style="display:flex;gap:var(--space-3);justify-content:center;flex-wrap:wrap;">
+      <a class="clk-btn clk-btn-wa clk-btn-lg" href="https://wa.me/523413300001" target="_blank" rel="noopener">💬 WhatsApp Ventas · 341 330 0001</a>
+      <a class="clk-btn clk-btn-dark clk-btn-lg" href="tel:+523414386105">📞 Atención directa · 341 438 6105</a>
+      <a class="clk-btn clk-btn-ghost clk-btn-lg" href="mailto:ventas@celulink.mx">✉️ Email</a>
+    </div>
+  </div>
+</section>
+
+<!-- ===== FOOTER REDISEÑO 2026 ===== -->
+<footer class="clk-footer">
+  <div class="clk-container">
+    <div class="clk-footer-grid">
+      <div class="clk-footer-about">
+        <div class="clk-footer-brand-row">
+          <img src="assets/icono-celucenter.png" alt="Celulink">
+          <strong style="font-size:1.3rem;">Celulink</strong>
+        </div>
+        <p>Celulink.mx es una plataforma de CeluCenter. Distribuidor Autorizado Telcel con presencia en occidente de México.</p>
+        <p class="clk-footer-tagline">"Conectando México, uno celular a la vez."</p>
+      </div>
+      <div>
+        <h4>Productos</h4>
+        <ul>
+          <li><a href="catalogos/equipos/">Smartphones</a></li>
+          <li><a href="catalogos/accesorios/">Accesorios</a></li>
+          <li><a href="#">Open Box</a></li>
+          <li><a href="#">Marcas</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Catálogo</h4>
+        <ul>
+          <li><a href="catalogos/equipos/">Acceso clientes</a></li>
+          <li><a href="catalogos/accesorios/">Acceso clientes</a></li>
+          <li><a href="menu/">Menú completo</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Legal</h4>
+        <ul>
+          <li><a href="#">Aviso de privacidad</a></li>
+          <li><a href="#">PROFECO</a></li>
+          <li><a href="#">Cookies</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="clk-footer-bottom">
+      <span>© 2026 CeluCenter · Distribuidor Autorizado Telcel</span>
+      <div class="legal"><a href="#">Aviso de privacidad</a><a href="#">Términos</a></div>
+    </div>
+  </div>
+</footer>
+<!-- ===== /FOOTER REDISEÑO 2026 ===== -->
+<footer class="clk-hide" style="display:none">
   <div class="footer-inner">
     <div class="footer-brand">
       <img src="https://raw.githubusercontent.com/piztian/celulink/main/fotos/Celulink%20logo%20(2).png" alt="CeluLink">
@@ -728,5 +378,6 @@ footer {
   </div>
 </footer>
 
+<!-- ===== /HEADER REDISEÑO 2026 ===== -->
 </body>
 </html>
