@@ -1,0 +1,276 @@
+/* =============================================
+   celulink.mx — REDISEÑO 2026 · CHROME
+   Solo header, footer, cards, badges, WhatsApp.
+   Específico para no romper las cards nativas de los
+   catálogos. NO incluye estilos de secciones del home
+   (hero, trust-strip, product-grid, etc.) — esos van
+   en home.css y se cargan SOLO en index.html.
+   ============================================= */
+
+/* =========================================
+   1. HEADER COMPARTIDO
+   ========================================= */
+.clk-nav {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: saturate(180%) blur(14px);
+  -webkit-backdrop-filter: saturate(180%) blur(14px);
+  height: 72px;
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid var(--color-borde);
+  font-family: var(--font-body);
+}
+.clk-nav .clk-nav-inner {
+  max-width: var(--container-max);
+  margin: 0 auto;
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  width: 100%;
+}
+.clk-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.25rem;
+  letter-spacing: -0.02em;
+  color: var(--marino);
+  text-decoration: none;
+}
+.clk-brand img { height: 32px; width: auto; }
+.clk-brand .clk-sub {
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: var(--gris);
+  margin-left: 8px;
+  padding-left: 12px;
+  border-left: 1px solid var(--color-borde);
+}
+.clk-nav-links {
+  display: flex;
+  gap: 8px;
+  list-style: none;
+}
+.clk-nav-links a {
+  color: var(--color-texto);
+  font-size: 0.9rem;
+  font-weight: 600;
+  padding: 8px 12px;
+  border-radius: 8px;
+  transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  text-decoration: none;
+}
+.clk-nav-links a:hover { background: #F8FAFC; color: var(--celeste-oscuro); }
+.clk-nav-cta { display: flex; gap: 12px; align-items: center; }
+
+.clk-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  border-radius: 100px;
+  font-family: var(--font-cta);
+  font-weight: 700;
+  font-size: 0.9rem;
+  transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  border: 2px solid transparent;
+  white-space: nowrap;
+  text-decoration: none;
+  line-height: 1;
+}
+.clk-btn-ghost { color: var(--marino); border-color: var(--color-borde); background: transparent; }
+.clk-btn-ghost:hover { border-color: var(--marino); background: #F8FAFC; }
+.clk-btn-primary { background: var(--celeste); color: white; box-shadow: 0 6px 18px rgba(0, 165, 212, 0.35); }
+.clk-btn-primary:hover { background: var(--celeste-oscuro); transform: translateY(-1px); box-shadow: 0 10px 24px rgba(0, 165, 212, 0.45); }
+.clk-btn-wa { background: #25D366; color: white; }
+.clk-btn-wa:hover { background: #1EBE57; }
+.clk-btn-dark { background: var(--marino); color: white; }
+.clk-btn-dark:hover { background: var(--marino-claro); transform: translateY(-1px); }
+.clk-btn-lg { padding: 16px 32px; font-size: 1rem; }
+
+/* Ocultar headers viejos cuando coexisten con el nuevo */
+.nav, .app-header, header.clk-hide { display: none !important; }
+
+/* =========================================
+   2. FOOTER COMPARTIDO
+   ========================================= */
+.clk-footer {
+  background: var(--marino);
+  color: white;
+  padding: 64px 0 24px;
+  font-family: var(--font-body);
+  margin-top: auto;
+}
+.clk-footer .clk-container {
+  max-width: var(--container-max);
+  margin: 0 auto;
+  padding: 0 24px;
+}
+.clk-footer-grid {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr 1fr 1fr;
+  gap: 48px;
+  margin-bottom: 48px;
+}
+.clk-footer h4 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.85rem;
+  margin-bottom: 16px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--celeste);
+}
+.clk-footer ul { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+.clk-footer a { color: rgba(255,255,255,0.7); font-size: 0.9rem; transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); text-decoration: none; }
+.clk-footer a:hover { color: white; }
+.clk-footer-about p { color: rgba(255,255,255,0.7); font-size: 0.9rem; margin: 12px 0; line-height: 1.6; max-width: 360px; }
+.clk-footer-tagline { font-family: var(--font-cta); font-style: italic; color: var(--celeste); font-size: 0.9rem; margin-top: 12px; }
+.clk-footer-brand-row { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+.clk-footer-brand-row img { height: 36px; }
+.clk-footer-bottom {
+  border-top: 1px solid rgba(255,255,255,0.1);
+  padding-top: 24px;
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-size: 0.8rem;
+  color: rgba(255,255,255,0.5);
+}
+.clk-footer-bottom .legal { display: flex; gap: 16px; }
+.clk-footer-bottom a:hover { color: white; }
+footer.clk-hide { display: none !important; }
+
+/* =========================================
+   3. HEADER DE CATÁLOGO
+   ========================================= */
+.clk-catalog-header {
+  background: var(--grad-hero);
+  color: white;
+  padding: 32px 0;
+  position: relative;
+  overflow: hidden;
+}
+.clk-catalog-header::before {
+  content: '';
+  position: absolute;
+  top: -100px; right: -100px;
+  width: 400px; height: 400px;
+  background: radial-gradient(circle, rgba(122, 184, 0, 0.15) 0%, transparent 60%);
+  border-radius: 50%;
+  pointer-events: none;
+}
+.clk-catalog-header .clk-container {
+  max-width: var(--container-max);
+  margin: 0 auto;
+  padding: 0 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  position: relative;
+  z-index: 1;
+}
+.clk-catalog-header-left { display: flex; align-items: center; gap: 12px; }
+.clk-catalog-header-left img { height: 44px; filter: brightness(0) invert(1); }
+.clk-catalog-header-left h1 {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.5rem;
+  margin: 0 0 2px;
+  letter-spacing: -0.01em;
+}
+.clk-catalog-header-left p { font-size: 0.85rem; opacity: 0.85; margin: 0; }
+.clk-catalog-header-stats { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+.clk-catalog-header-stats span {
+  background: rgba(255,255,255,0.15);
+  padding: 5px 12px;
+  border-radius: 100px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  backdrop-filter: blur(8px);
+}
+.clk-catalog-header-right { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.clk-user-badge {
+  font-size: 0.85rem;
+  background: rgba(255,255,255,0.15);
+  padding: 7px 14px;
+  border-radius: 100px;
+  backdrop-filter: blur(8px);
+  font-weight: 600;
+}
+
+/* =========================================
+   4. WHATSAPP FLOTANTE
+   ========================================= */
+.clk-wa {
+  position: fixed !important;
+  right: 24px !important;
+  bottom: 24px !important;
+  width: 64px !important;
+  height: 64px !important;
+  border-radius: 50% !important;
+  background: #25D366 !important;
+  color: white !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 1.9rem !important;
+  box-shadow: 0 10px 28px rgba(37, 211, 102, 0.45) !important;
+  z-index: 99 !important;
+  transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  text-decoration: none !important;
+}
+.clk-wa:hover { transform: scale(1.08); box-shadow: 0 14px 36px rgba(37, 211, 102, 0.55); }
+
+/* =========================================
+   5. EYEBROW DEL PROTOTIPO (solo en prototipo)
+   ========================================= */
+.eyebrow-prototipo {
+  position: fixed; top: 0; left: 0; right: 0;
+  background: var(--naranja);
+  color: var(--marino);
+  text-align: center;
+  padding: 6px;
+  font-family: var(--font-cta);
+  font-weight: 700;
+  font-size: 0.8rem;
+  z-index: 200;
+  letter-spacing: 0.02em;
+}
+.eyebrow-prototipo a { color: var(--marino); text-decoration: underline; margin-left: 8px; }
+body.has-eyebrow { padding-top: 28px; }
+body.has-eyebrow .clk-nav { top: 28px; }
+
+/* =========================================
+   6. RESPONSIVE
+   ========================================= */
+@media (max-width: 1024px) {
+  .clk-catalog-header-stats { display: none; }
+  .clk-footer-grid { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 720px) {
+  .clk-nav-links { display: none; }
+  .clk-nav-cta .clk-btn-ghost { display: none; }
+  .clk-footer-grid { grid-template-columns: 1fr; }
+}
+
+/* =========================================
+   7. CONTAINER GENÉRICO (usado por hero,
+      trust-strip, secciones, etc. del home)
+   ========================================= */
+.container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 24px;
+}

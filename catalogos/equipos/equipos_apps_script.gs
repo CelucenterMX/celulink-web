@@ -156,7 +156,6 @@ function getCatalog() {
         precioPublico: cleanPrice(row[cfg.cols.precioPublico]),
         telmovPay: cfg.cols.telmovPay >= 0 ? String(row[cfg.cols.telmovPay] || '').trim().toUpperCase() === 'SI' : false,
         payjoy: cfg.cols.payjoy >= 0 ? String(row[cfg.cols.payjoy] || '').trim().toUpperCase() === 'SI' : false,
-        costo: cfg.cols.costo >= 0 ? cleanPrice(row[cfg.cols.costo]) : null
       };
 
       products.push(item);
