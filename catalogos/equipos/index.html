@@ -177,10 +177,11 @@
     aspect-ratio: 1/1;
     background: #fafafa;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    font-size: 56px;
-    color: #ddd;
+    gap: 8px;
+    color: #ccc;
   }
   .card .img-wrapper {
     position: relative;
@@ -1095,24 +1096,28 @@ function renderCard(p) {
 
     // Pricing HTML
     let priceHtml = '';
+    // Precio público: solo mostrar tachado cuando precioPublico > precio de venta
+    const pubVal = p.precioPublico || 0;
     if (!lista || lista === '2X') {
         const price = getUnitPriceForList(p, '2X') || p.precioPublico;
-        const pub = fmt(p.precioPublico);
         const pf = fmt(price);
+        const showStrike = pubVal > 0 && price > 0 && pubVal > price;
         if (pf) {
-            priceHtml = '<div class="price-row"><span class="price">' + pf + '</span>' + (pub && pub !== pf ? '<span class="price-public">' + pub + '</span>' : '') + '</div>';
+            priceHtml = '<div class="price-row"><span class="price">' + pf + '</span>' + (showStrike ? '<span class="price-public">' + fmt(pubVal) + '</span>' : '') + '</div>';
             priceHtml += '<div style="font-size:10px;color:var(--muted);text-align:center;padding:0 12px 4px;">Lista 2X (menudeo) · Sube a $15k → Lista F</div>';
         } else { priceHtml = '<div class="price-pending">Sin precio</div>'; }
     } else if (lista === 'TODAS') {
-        const rows = [
-            { n: 'M', v: fmt(p.listaM) }, { n: 'G', v: fmt(p.listaG) },
-            { n: 'F', v: fmt(p.listaF) }, { n: '2X', v: fmt(precio2X(p.listaF)) },
-            { n: 'Cristian', v: fmt(precioCristian(p.listaF)) }
-        ].filter(r => r.v);
-        const pub = fmt(p.precioPublico);
-        if (rows.length) {
-            priceHtml = '<div class="price-all">' + rows.map(r => '<div class="price-all-row"><span>' + r.n + '</span><span>' + r.v + '</span></div>').join('') +
-                (pub ? '<div class="price-all-row pub"><span>Público</span><span>' + pub + '</span></div>' : '') + '</div>';
+        const rowsData = [
+            { n: 'M', v: p.listaM }, { n: 'G', v: p.listaG },
+            { n: 'F', v: p.listaF }, { n: '2X', v: precio2X(p.listaF) },
+            { n: 'Cristian', v: precioCristian(p.listaF) }
+        ].filter(r => r.v && r.v > 0);
+        // El máximo de las listas mostradas es el precio más alto visible al usuario
+        const maxListPrice = rowsData.reduce((mx, r) => Math.max(mx, r.v || 0), 0);
+        const showStrikeTodas = pubVal > 0 && maxListPrice > 0 && pubVal > maxListPrice;
+        if (rowsData.length) {
+            priceHtml = '<div class="price-all">' + rowsData.map(r => '<div class="price-all-row"><span>' + r.n + '</span><span>' + fmt(r.v) + '</span></div>').join('') +
+                (showStrikeTodas ? '<div class="price-all-row pub"><span>Público</span><span>' + fmt(pubVal) + '</span></div>' : '') + '</div>';
         } else { priceHtml = '<div class="price-pending">Sin precio</div>'; }
     } else {
         let price = null, ln = '';
@@ -1120,9 +1125,10 @@ function renderCard(p) {
         else if (lista === 'G') { price = p.listaG; ln = 'Lista G'; }
         else if (lista === 'F') { price = p.listaF; ln = 'Lista F'; }
         else if (lista === 'CRISTIAN') { price = precioCristian(p.listaF); ln = 'Cristian'; }
-        const pf = fmt(price), pub = fmt(p.precioPublico);
+        const pf = fmt(price);
+        const showStrikeList = pubVal > 0 && price > 0 && pubVal > price;
         if (pf) {
-            priceHtml = '<div class="price-row"><span class="price">' + pf + '</span>' + (pub && pub !== pf ? '<span class="price-public">' + pub + '</span>' : '') + '</div>';
+            priceHtml = '<div class="price-row"><span class="price">' + pf + '</span>' + (showStrikeList ? '<span class="price-public">' + fmt(pubVal) + '</span>' : '') + '</div>';
         } else { priceHtml = '<div class="price-pending">Sin precio</div>'; }
     }
 
@@ -1147,7 +1153,7 @@ function renderCard(p) {
         '<div class="img-wrapper">' +
             
             imgHtml +
-            '<div class="img-placeholder" ' + (imgUrl ? 'style="display:none"' : '') + '>📱</div>' +
+            '<div class="img-placeholder" ' + (imgUrl ? 'style="display:none"' : '') + '><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#ccc" stroke-width="1.5"><rect x="7" y="2" width="10" height="20" rx="2"/><line x1="12" y1="18" x2="12" y2="18.01" stroke-width="2"/></svg><span style="font-size:11px;color:#bbb;">Imagen pendiente</span></div>' +
             (isOut ? '<div class="agotado-overlay">AGOTADO</div>' : '') +
         '</div>' +
         '<div class="brand">' + escapeHtml(p.nombreCategoria || '') + '</div>' +
