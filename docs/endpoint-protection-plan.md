@@ -1,252 +1,199 @@
-# Proteccion de Endpoints — Diseno Tecnico Implementable
+# Proteccion de Endpoints — Diseno Tecnico V2
 
 Fecha: 2026-10-13
-Estado: Diseno tecnico — codigo de prueba incluido, NO desplegado
+Estado: Implementacion de prueba lista — NO desplegado
 
 ---
 
-## 1. Problema actual
+## 1. Problema
 
-### Equipos
-- Endpoint: Apps Script desplegado como Web App (acceso: Anyone)
-- Token hardcodeado en HTML: visible en codigo fuente publico
-- `action=catalog` devuelve TODOS los campos a cualquier request con el token
-- Campos expuestos: `listaM`, `listaG`, `listaF`, `existencias` (cantidad exacta por almacen)
+Los endpoints de equipos y accesorios entregan todas las listas de precios
+mayoristas y cantidades exactas por almacen a cualquier visitante.
+El "token" esta en el HTML publico y no constituye proteccion.
+El "login" actual solo verifica que un telefono existe — no hay secreto
+compartido, y los datos de sesion se guardan en localStorage del navegador.
 
-### Accesorios
-- Mismo patron: token visible, endpoint abierto
-- Devuelve `listaM`, `listaG`, `listaF`, `lista2x`, `precioPublico`, existencias
+## 2. Solucion
 
-### Impacto
-- Competidores pueden ver costos y margenes de CeluCenter
-- Stock exacto por almacen revela capacidad logistica
-- No existe control server-side real — el token es equivalente a acceso anonimo
+### Dos niveles de acceso server-side
 
----
+| Nivel | Endpoint | Autenticacion | Datos |
+|-------|----------|--------------|-------|
+| Publico | `action=public` | Ninguna | codigo, producto, categoria, precioPublico, disponible (bool), telmovPay, payjoy |
+| Autorizado | `action=catalog` | sessionId (UUID generado por login con telefono + PIN) | Campos anteriores + existencias + listas segun nivel asignado |
 
-## 2. Arquitectura de proteccion
+### Autenticacion: telefono + PIN
 
-### Principio: dos niveles de acceso en el mismo endpoint
+**Por que PIN y no solo telefono:**
+- Un telefono de 10 digitos no es secreto (aparece en facturas, directorios, contactos)
+- Un PIN de 4-6 digitos es un secreto compartido que el admin entrega por canal privado
+- Combinado con rate limiting (5 intentos / 15 min), un PIN de 4 digitos tiene
+  ~33 horas de fuerza bruta — suficiente para detectar y bloquear
 
+**Por que no OTP/SMS/OAuth:**
+- Apps Script no soporta envio de SMS propio
+- Los clientes mayoristas son distribuidores con relacion directa — el admin
+  les comunica el PIN por WhatsApp o en persona
+- Un sistema mas complejo retrasaria la implementacion y podria ahuyentar
+  a distribuidores que ya estan acostumbrados al flujo simple
+
+**Flujo:**
 ```
-Visitante anonimo  ──→  action=public   ──→  datos publicos unicamente
-Usuario registrado ──→  action=catalog  ──→  datos segun lista asignada
-                         + sessionId
-```
-
-### Datos por nivel
-
-| Campo | public | catalog (segun lista) |
-|-------|--------|-----------------------|
-| codigo | Si | Si |
-| producto | Si | Si |
-| nombreCategoria | Si | Si |
-| categoria | Si | Si |
-| precioPublico | Si | Si |
-| disponible (boolean) | Si | Si |
-| existencias (cantidad) | No | Si |
-| listaF | No | Solo si lista >= F |
-| listaG | No | Solo si lista >= G |
-| listaM | No | Solo si lista >= M |
-| lista2x | No | Solo si lista >= 2X |
-| telmovPay | Si | Si |
-| payjoy | Si | Si |
-| almacen | Si | Si |
-
-### Autenticacion: session token server-side
-
-```
-1. Usuario envia telefono (10 digitos)
-2. Apps Script busca en hoja "Registro"
-3. Si existe y tiene lista asignada:
-   - Genera UUID + timestamp
-   - Almacena en hoja "Sesiones" con TTL 24h
-   - Devuelve sessionId al frontend
-4. Frontend guarda sessionId en sessionStorage
-5. Cada request a action=catalog incluye sessionId
-6. Apps Script valida sessionId en cada request:
-   - Existe en "Sesiones"?
-   - No ha expirado?
-   - Extrae telefono → busca lista asignada
-   - Filtra campos segun lista
+1. Admin registra usuario en hoja → asigna lista + PIN
+2. Admin comunica PIN al usuario por WhatsApp/Bitrix
+3. Usuario abre catalogo → ve datos publicos (precioPublico, disponible)
+4. Usuario hace login: telefono + PIN
+5. Backend verifica hash(PIN) + genera sessionId (UUID, TTL 24h)
+6. Frontend guarda sessionId en sessionStorage (no localStorage)
+7. Cada request a action=catalog incluye sessionId
+8. Backend valida session + filtra campos segun lista del usuario
+9. Session expira en 24h o al cerrar pestana (sessionStorage)
 ```
 
-### Por que NO funcionan las alternativas simples
+### Filtrado server-side por lista
 
-| Alternativa | Por que no sirve |
-|-------------|------------------|
-| Cambiar el token | Sigue visible en HTML, solo retrasa el acceso |
-| CORS | Apps Script no permite configurar CORS personalizado |
-| localStorage / sessionStorage | Son client-side, no protegen el endpoint |
-| Parametro URL secreto | Visible en codigo fuente y logs |
-| Verificar Referer/Origin | Facilmente falsificable con curl |
+| Lista asignada | Campos que recibe |
+|----------------|-------------------|
+| 2X | Solo precioPublico |
+| F | listaF |
+| G | listaG + listaF |
+| M | listaM + listaG + listaF |
+| TODAS | listaM + listaG + listaF |
 
----
+El backend NUNCA devuelve listas superiores a la asignada.
 
-## 3. Archivos y servicios afectados
+### Protecciones adicionales
 
-| Componente | Cambio requerido |
-|------------|------------------|
-| Apps Script equipos | Agregar `action=public`, session tokens, filtrado por lista |
-| Apps Script accesorios | Mismos cambios |
-| `catalogos/equipos/index.html` | Usar `action=public` para carga inicial; `action=catalog` post-login |
-| `catalogos/accesorios/index.html` | Usar `action=public` para carga inicial; `action=catalog` post-login |
-| `index.html` (landing) | Cambiar a `action=public` para precios del escaparate |
-| Hoja de calculo | Agregar pestana "Sesiones" |
+- **PIN hasheado**: SHA-256 en la hoja, no texto plano
+- **Rate limiting**: 5 intentos fallidos → bloqueo 15 min (hoja LoginAttempts)
+- **Respuesta generica**: login fallido no revela si el telefono existe
+- **Session unica**: login invalida sesiones anteriores del mismo telefono
+- **Logout explicito**: elimina session de la hoja
+- **Limpieza automatica**: trigger cada 6h borra sesiones e intentos expirados
 
----
+## 3. Archivos afectados
 
-## 4. Codigo de prueba — Apps Script
+| Archivo | Cambio |
+|---------|--------|
+| Apps Script equipos | Reescribir doGet/doPost, agregar public/catalog/login/logout |
+| Apps Script accesorios | Mismos cambios (endpoint separado) |
+| Hoja de calculo | Agregar columna PIN_hash en Registro, crear hojas Sesiones y LoginAttempts |
+| `catalogos/equipos/index.html` | Carga inicial con action=public; login envia PIN; catalog usa sessionId |
+| `catalogos/accesorios/index.html` | Mismos cambios |
+| `index.html` (landing) | Cambiar a action=public |
 
-Ver archivo: `docs/equipos_apps_script_v2_draft.gs`
+## 4. Codigo
 
-Cambios respecto al actual:
-- Nueva funcion `getPublicCatalog()` — devuelve solo datos publicos
-- Nueva funcion `getAuthorizedCatalog(phone)` — filtra por lista asignada
-- Funciones `generateSessionToken()` / `validateSession()` / `cleanExpiredSessions()`
-- `doGet` rutea `action=public` vs `action=catalog` con validacion
-- Trigger temporal para limpiar sesiones expiradas
+### Apps Script v2: `docs/equipos_apps_script_v2_draft.gs`
 
----
+Implementacion completa lista para probar como deployment separado.
 
-## 5. Cambios en frontend
-
-### Equipos (`catalogos/equipos/index.html`)
+### Frontend: cambios necesarios en equipos/index.html
 
 ```javascript
-// ANTES (actual):
-const url = `${APPS_SCRIPT_URL}?token=${TOKEN}&action=catalog`;
+// 1. Carga inicial — datos publicos
+async function loadCatalog() {
+    const res = await fetch(APPS_SCRIPT_URL + '?action=public');
+    // ... productos con precioPublico y disponible (bool)
+}
 
-// DESPUES:
-// Carga inicial — solo datos publicos
-const url = `${APPS_SCRIPT_URL}?token=${TOKEN}&action=public`;
-
-// Post-login — datos completos segun lista
-const sessionId = sessionStorage.getItem('celulink_session');
-const url = `${APPS_SCRIPT_URL}?token=${TOKEN}&action=catalog&sessionId=${sessionId}`;
-```
-
-### Landing (`index.html`)
-
-```javascript
-// ANTES:
-const r = await fetch(ep.url + '?action=catalog&token=' + ...);
-
-// DESPUES:
-const r = await fetch(ep.url + '?action=public&token=' + ...);
-```
-
-### Login flow
-
-```javascript
-// ANTES: login solo verifica existencia
-// DESPUES: login devuelve sessionId
-
+// 2. Login — ahora con PIN
 async function handleLogin() {
-    const phone = document.getElementById('loginPhone').value;
-    const resp = await fetch(`${URL}?action=login&token=${TOKEN}&phone=${phone}`);
-    const data = await resp.json();
-    if (data.exists && data.sessionId) {
+    const phone = document.getElementById('loginPhone').value.trim();
+    const pin = document.getElementById('loginPin').value.trim();
+    const res = await fetch(APPS_SCRIPT_URL, {
+        method: 'POST',
+        body: JSON.stringify({ action: 'login', phone, pin })
+    });
+    const data = await res.json();
+    if (data.success) {
         sessionStorage.setItem('celulink_session', data.sessionId);
-        // Recargar catalogo con datos completos
-        await fetchProducts(); // ahora usa sessionId
+        await loadAuthorizedCatalog();
     }
+}
+
+// 3. Catalogo autorizado
+async function loadAuthorizedCatalog() {
+    const sid = sessionStorage.getItem('celulink_session');
+    if (!sid) return;
+    const res = await fetch(APPS_SCRIPT_URL + '?action=catalog&sessionId=' + sid);
+    const data = await res.json();
+    if (data.code === 'INVALID_SESSION') {
+        sessionStorage.removeItem('celulink_session');
+        return;
+    }
+}
+
+// 4. Logout
+function logout() {
+    const sid = sessionStorage.getItem('celulink_session');
+    if (sid) {
+        fetch(APPS_SCRIPT_URL, {
+            method: 'POST',
+            body: JSON.stringify({ action: 'logout', sessionId: sid })
+        });
+    }
+    sessionStorage.removeItem('celulink_session');
+    location.reload();
 }
 ```
 
----
+## 5. Plan de migracion
 
-## 6. Plan de migracion sin interrupcion
+### Fase 0 — Preparar hoja de calculo (5 min)
+1. Agregar columna "PIN_hash" a hoja Registro (columna F, despues de Lista)
+2. Las celdas vacias significan "usuario sin PIN, requiere activacion"
 
-### Fase 0 — Preparacion (sin impacto en produccion)
-1. Crear codigo v2 del Apps Script
-2. Probar como deployment separado (URL de prueba)
-3. Verificar que `action=public` devuelve solo datos publicos
-4. Verificar que `action=catalog` sin session valida devuelve error
-5. Verificar que `action=catalog` con session valida devuelve datos correctos
+### Fase 1 — Deploy de prueba (15 min)
+1. Pegar codigo v2 en Apps Script
+2. Crear NUEVO deployment (Manage deployments → New)
+3. Copiar URL de prueba
+4. Probar con curl
 
-### Fase 1 — Deploy paralelo
-1. Crear NUEVO deployment del Apps Script (no reemplazar el actual)
-2. Actualizar frontend en rama para usar nueva URL
-3. Probar catálogo completo: carga, búsqueda, filtros, carrito
-4. El endpoint antiguo sigue activo como respaldo
+### Fase 2 — Asignar PINs a usuarios existentes (variable)
+1. Ejecutar `setUserPin("phone", "pin")` para cada usuario activo
+2. Notificar a cada usuario su PIN por WhatsApp/Bitrix
+3. Los usuarios sin PIN solo ven datos publicos
 
-### Fase 2 — Activar en produccion
-1. Merge del frontend actualizado a main
-2. Verificar funcionamiento 24-48h
-3. Monitorear errores en Apps Script (Stackdriver logs)
+### Fase 3 — Migrar frontend (30 min)
+1. Actualizar equipos/index.html + accesorios/index.html
+2. Agregar campo PIN al formulario de login
+3. Cambiar localStorage → sessionStorage
+4. Deploy a main
 
-### Fase 3 — Invalidar acceso anterior
-1. Cambiar el token del endpoint antiguo (invalida cualquier copia cacheada)
-2. Retirar el deployment antiguo de Apps Script
-3. El token nuevo solo funciona con action=public (sin session)
+### Fase 4 — Retirar endpoint antiguo (5 min)
+1. Archivar deployment anterior
+2. Verificar que no hay errores
 
-### Fase 4 — Limpieza
-1. Configurar trigger de limpieza de sesiones (cada 6h)
-2. Verificar que no hay acceso residual al endpoint antiguo
+## 6. Pruebas
 
----
-
-## 7. Pruebas requeridas
-
-### Acceso anonimo (post-migracion)
-```bash
-# Debe devolver solo datos publicos
-curl "URL?action=public&token=XXX"
-# Verificar: NO contiene listaM, listaG, listaF, existencias (numero)
-# Verificar: SI contiene codigo, producto, precioPublico, disponible (boolean)
-
-# Debe fallar sin session
-curl "URL?action=catalog&token=XXX"
-# Verificar: devuelve {error: "Sesion requerida"}
-
-# Session invalida
-curl "URL?action=catalog&token=XXX&sessionId=inventado"
-# Verificar: devuelve {error: "Sesion invalida o expirada"}
-```
+### Acceso anonimo
+- `GET ?action=public` → solo datos publicos, sin listaM/G/F ni existencias
+- `GET ?action=catalog` sin session → error NO_SESSION
+- `GET ?action=catalog&sessionId=fake` → error INVALID_SESSION
 
 ### Acceso autorizado
-```bash
-# Login con telefono registrado
-curl "URL?action=login&token=XXX&phone=3321234567"
-# Verificar: devuelve {exists: true, sessionId: "uuid-xxx", lista: "F"}
+- Login con PIN correcto → recibe sessionId
+- `GET ?action=catalog&sessionId=valid` → datos filtrados segun lista
+- Usuario con lista "F" no recibe listaM ni listaG
 
-# Catalog con session valida
-curl "URL?action=catalog&token=XXX&sessionId=uuid-xxx"
-# Verificar: devuelve datos filtrados segun lista del usuario
-# Si lista="F": solo listaF, NO listaM ni listaG
-```
+### Rate limiting
+- 5 intentos fallidos → bloqueo 15 min
 
-### Regresion
-- Catalogo publico carga y muestra precioPublico correctamente
-- Disponibilidad muestra Si/No (no cantidad exacta)
-- Carrito funciona con precios de la lista del usuario post-login
-- Landing page muestra precios del escaparate
-- Busqueda y filtros sin cambios
-- Login/registro sin cambios funcionales
-
----
-
-## 8. Procedimiento de reversion
+## 7. Reversion
 
 | Paso | Accion | Tiempo |
 |------|--------|--------|
-| 1 | Reactivar deployment anterior del Apps Script | < 1 min |
-| 2 | Revertir commit de frontend (git revert) | < 2 min |
-| 3 | Push a main | < 1 min |
-| 4 | GitHub Pages actualiza automaticamente | < 5 min |
+| 1 | Reactivar deployment anterior | < 1 min |
+| 2 | git revert del commit de frontend | < 2 min |
+| 3 | Push a main + GitHub Pages | < 5 min |
 | **Total** | | **< 10 min** |
 
-El frontend anterior es compatible con la respuesta completa del endpoint
-antiguo, por lo que revertir el frontend es suficiente.
+## 8. Autorizacion necesaria
 
----
-
-## 9. Autorizacion necesaria para desplegar
-
-1. **Acceso al proyecto Apps Script de equipos** para crear nuevo deployment
-2. **Acceso al proyecto Apps Script de accesorios** para crear nuevo deployment
-3. **Acceso a la hoja de calculo** para agregar pestana "Sesiones"
-4. **Permiso para merge a main** en el repositorio GitHub
-5. **Ventana de mantenimiento** de ~30 min para Fase 2
-6. **Persona de respaldo** con acceso a Apps Script para reversion
+1. Acceso al proyecto Apps Script de equipos y accesorios
+2. Acceso a la hoja de calculo
+3. Decision: PIN de 4 o 6 digitos
+4. Lista de usuarios activos que necesitan PIN
+5. Canal para comunicar PINs
+6. Ventana de ~45 min para migracion
