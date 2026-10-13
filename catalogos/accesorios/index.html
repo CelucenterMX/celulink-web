@@ -1995,10 +1995,13 @@
                 // (2X si total < $3k, F si ≥ $3k, G si ≥ $6k, M si ≥ $9k)
                 // precioPublico solo se muestra como referencia tachada
                 const listaActiva = getCartLista();
-                const buyFmt = formatMXN(getUnitPriceForList(product, listaActiva));
+                const buyPrice = getUnitPriceForList(product, listaActiva);
+                const buyFmt = formatMXN(buyPrice);
+                const pubNum = parsePrice(product.precioPublico);
                 const pubFmt = formatMXN(product.precioPublico);
                 if (buyFmt) {
-                    const pubRef = (pubFmt && pubFmt !== buyFmt) ? `<span class="price-public">P. público ${pubFmt}</span>` : '';
+                    // Solo mostrar tachado si precioPublico es estrictamente mayor al precio de venta
+                    const pubRef = (pubFmt && pubNum > buyPrice) ? `<span class="price-public">P. público ${pubFmt}</span>` : '';
                     pricingHtml = `<div class="product-pricing"><div class="price-yours"><span class="price-label">Lista ${listaActiva}</span><span class="price-value">${buyFmt}</span>${pubRef}</div></div>`;
                 } else if (pubFmt) {
                     pricingHtml = `<div class="product-pricing"><div class="price-yours"><span class="price-label">Precio público</span><span class="price-value">${pubFmt}</span></div></div>`;
@@ -2024,12 +2027,10 @@
                     return !isNaN(n) ? '$' + n.toFixed(2) : null;
                 };
 
-                // Precio publico tachado
-                let publicHtml = '';
+                // Precio publico: solo como referencia tachada cuando es mayor al precio de venta
                 const pubFmt = fmt(product.precioPublico);
-                if (pubFmt) {
-                    publicHtml = `<span class="price-public">P. Público ${pubFmt}</span>`;
-                }
+                const pubNum = parsePrice(product.precioPublico);
+                // publicHtml se calcula más abajo, después de conocer el precio de venta
 
                 if (lista === 'TODAS') {
                     // Mostrar TODAS las listas
@@ -2047,11 +2048,14 @@
                                 <span style="font-weight:600;color:#1a1a1a;">${l.value}</span>
                             </div>`
                         ).join('');
+                        // Mostrar público tachado solo si es mayor que el precio más alto mostrado
+                        const highestListPrice = parsePrice(product.lista2x) || parsePrice(product.listaF) || 0;
+                        const showPubTodas = pubFmt && pubNum > highestListPrice;
                         pricingHtml = `
                             <div class="product-pricing">
                                 <div style="background:#f5f5f5;padding:6px 10px;border-radius:6px;">
                                     ${rowsHtml}
-                                    ${publicHtml ? `<div style="display:flex;justify-content:space-between;font-size:11px;padding-top:4px;border-top:1px solid #ddd;margin-top:4px;"><span style="color:#999;">Público</span><span style="color:#999;text-decoration:line-through;">${pubFmt}</span></div>` : ''}
+                                    ${showPubTodas ? `<div style="display:flex;justify-content:space-between;font-size:11px;padding-top:4px;border-top:1px solid #ddd;margin-top:4px;"><span style="color:#999;">Público</span><span style="color:#999;text-decoration:line-through;">${pubFmt}</span></div>` : ''}
                                 </div>
                             </div>`;
                     } else {
@@ -2076,6 +2080,10 @@
                     }
 
                     const formatted = fmt(price);
+                    const priceNum = parsePrice(price);
+                    // Solo mostrar tachado si precioPublico > precio de venta
+                    const showPubSingle = pubFmt && pubNum > priceNum;
+                    const publicHtml = showPubSingle ? `<span class="price-public">P. Público ${pubFmt}</span>` : '';
                     if (formatted) {
                         pricingHtml = `
                             <div class="product-pricing">
@@ -2295,14 +2303,17 @@
                 const cod = btn.getAttribute('data-codigo');
                 const product = allProducts.find(p => p.codigo === cod);
                 if (!product) return;
-                const buyFmt = formatMXN(getUnitPriceForList(product, listaActiva));
+                const buyPrice = getUnitPriceForList(product, listaActiva);
+                const buyFmt = formatMXN(buyPrice);
+                const pubNum = parsePrice(product.precioPublico);
                 const pubFmt = formatMXN(product.precioPublico);
                 const priceLabel = cardEl.querySelector('.price-label');
                 const priceValue = cardEl.querySelector('.price-value');
                 const pricePublic = cardEl.querySelector('.price-public');
                 if (priceLabel) priceLabel.textContent = 'Lista ' + listaActiva;
                 if (priceValue) priceValue.textContent = buyFmt;
-                if (pubFmt && pubFmt !== buyFmt) {
+                // Solo mostrar tachado si precioPublico es estrictamente mayor
+                if (pubFmt && pubNum > buyPrice) {
                     if (pricePublic) { pricePublic.textContent = 'P. público ' + pubFmt; }
                 } else {
                     if (pricePublic) { pricePublic.remove(); }
