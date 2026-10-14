@@ -89,6 +89,23 @@
   <div class="result" id="r-ratelimit"></div>
 </div>
 
+<h2>7. Verificar retiro de V1</h2>
+<div class="test-group">
+  <h3>Confirmar que endpoint V1 ya no expone datos sensibles</h3>
+  <div class="field-row">
+    <div>
+      <label>URL V1 (antiguo):</label>
+      <input type="text" id="v1Url" placeholder="https://script.google.com/macros/s/.../exec" />
+    </div>
+    <div>
+      <label>Token V1:</label>
+      <input type="text" id="v1Token" placeholder="CELUCENTER_EQUIPOS_2026" />
+    </div>
+  </div>
+  <button onclick="testV1Retired()" class="danger">Verificar retiro</button>
+  <div class="result" id="r-v1retired"></div>
+</div>
+
 <script>
 let currentSessionId = null;
 
@@ -320,6 +337,45 @@ async function testRateLimit() {
       log('r-ratelimit', 'Intento ' + i + ': ' + status, cls);
     } catch (e) {
       log('r-ratelimit', 'Intento ' + i + ': ERROR ' + e.message, 'fail');
+    }
+  }
+}
+
+// Test 7: V1 endpoint retirement verification
+async function testV1Retired() {
+  clear('r-v1retired');
+  const v1Url = document.getElementById('v1Url').value.trim();
+  const v1Token = document.getElementById('v1Token').value.trim();
+
+  if (!v1Url || !v1Token) {
+    log('r-v1retired', 'Ingresa URL y token del endpoint V1', 'fail');
+    return;
+  }
+
+  log('r-v1retired', 'Probando V1: ' + v1Url + '?action=catalog&token=***', 'info');
+  try {
+    const data = await fetchJSON(v1Url + '?action=catalog&token=' + v1Token);
+    const products = data.products || [];
+
+    if (products.length === 0) {
+      log('r-v1retired', 'PASS: V1 no devuelve productos (retirado correctamente)', 'pass');
+      return;
+    }
+
+    const p = products[0];
+    const sensitive = ['listaM', 'listaG', 'listaF', 'existencias'].filter(f => f in p);
+
+    if (sensitive.length > 0) {
+      log('r-v1retired', 'FAIL: V1 SIGUE ACTIVO — ' + products.length + ' productos con campos: ' + sensitive.join(', '), 'fail');
+      log('r-v1retired', 'CRITICO: La proteccion V2 es inutil mientras V1 siga activo', 'fail');
+    } else {
+      log('r-v1retired', 'WARN: V1 responde pero sin campos sensibles (' + products.length + ' productos)', 'info');
+    }
+  } catch (e) {
+    if (e.message.includes('Failed to fetch') || e.message.includes('NetworkError')) {
+      log('r-v1retired', 'PASS: V1 no accesible (posiblemente retirado)', 'pass');
+    } else {
+      log('r-v1retired', 'Resultado: ' + e.message, 'info');
     }
   }
 }

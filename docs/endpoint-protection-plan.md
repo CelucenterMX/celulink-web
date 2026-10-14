@@ -64,7 +64,8 @@ El backend NUNCA devuelve listas superiores a la asignada.
 
 ### Protecciones adicionales
 
-- **PIN hasheado**: SHA-256 en la hoja, no texto plano
+- **PIN con sal**: HMAC-SHA256 con sal unica de 32 bytes por usuario (formato salt:hmac)
+- **Comparacion constante**: verificacion en tiempo constante contra timing attacks
 - **Rate limiting**: 5 intentos fallidos → bloqueo 15 min (hoja LoginAttempts)
 - **Respuesta generica**: login fallido no revela si el telefono existe
 - **Session unica**: login invalida sesiones anteriores del mismo telefono
@@ -144,26 +145,40 @@ function logout() {
 1. Agregar columna "PIN_hash" a hoja Registro (columna F, despues de Lista)
 2. Las celdas vacias significan "usuario sin PIN, requiere activacion"
 
-### Fase 1 — Deploy de prueba (15 min)
-1. Pegar codigo v2 en Apps Script
-2. Crear NUEVO deployment (Manage deployments → New)
-3. Copiar URL de prueba
-4. Probar con curl
+### Fase 1 — Deploy de prueba AISLADO (15 min)
+1. Crear proyecto Apps Script STANDALONE (no en la hoja productiva)
+2. Usar hoja de prueba con datos ficticios
+3. Pegar codigo v2 → Deploy como Web App
+4. Ejecutar los 6 tests de seguridad con test-endpoint.html
+5. Verificar que action=public NO devuelve listaM/G/F ni existencias
 
 ### Fase 2 — Asignar PINs a usuarios existentes (variable)
 1. Ejecutar `setUserPin("phone", "pin")` para cada usuario activo
 2. Notificar a cada usuario su PIN por WhatsApp/Bitrix
-3. Los usuarios sin PIN solo ven datos publicos
+3. Los usuarios sin PIN solo ven datos publicos (action=public)
 
 ### Fase 3 — Migrar frontend (30 min)
 1. Actualizar equipos/index.html + accesorios/index.html
 2. Agregar campo PIN al formulario de login
 3. Cambiar localStorage → sessionStorage
-4. Deploy a main
+4. Cambiar APPS_SCRIPT_URL a la URL del nuevo deployment V2
+5. Eliminar la constante TOKEN del HTML (ya no se necesita)
+6. Deploy a main
 
-### Fase 4 — Retirar endpoint antiguo (5 min)
-1. Archivar deployment anterior
-2. Verificar que no hay errores
+### Fase 4 — Retirar endpoint V1 INSEGURO (CRITICO — 10 min)
+**IMPORTANTE: Si no se completa esta fase, la proteccion es nula.**
+El endpoint V1 sigue entregando listaM/G/F + existencias a cualquiera.
+1. En Apps Script productivo: archivar/eliminar el deployment V1
+   (Manage deployments → seleccionar el deployment actual → Archive)
+2. Verificar que la URL V1 ya no responde con datos
+3. Buscar en TODO el frontend que ninguna pagina use la URL V1
+4. Verificar index.html (landing), equipos, accesorios, menu
+5. Buscar la URL V1 en Google (site:celulink.mx + cache)
+6. Documentar SHA del commit final y URL nueva
+
+**Nota sobre accesorios**: El endpoint de accesorios tambien requiere
+la misma migracion. Actualmente expone 79 productos con todas las
+listas y stock. Necesita su propio script V2 con la misma proteccion.
 
 ## 6. Pruebas
 
@@ -191,9 +206,45 @@ function logout() {
 
 ## 8. Autorizacion necesaria
 
-1. Acceso al proyecto Apps Script de equipos y accesorios
-2. Acceso a la hoja de calculo
-3. Decision: PIN de 4 o 6 digitos
-4. Lista de usuarios activos que necesitan PIN
-5. Canal para comunicar PINs
-6. Ventana de ~45 min para migracion
+1. ~~Decision: PIN de 4 o 6 digitos~~ → **6 digitos (decidido)**
+2. ~~Acceso desde clasp~~ → **Disponible (OAuth activo)**
+3. Autorizar creacion de hoja de prueba con datos ficticios
+4. Autorizar deployment de prueba aislado (no toca produccion)
+5. Conteo de usuarios activos por lista (para planificar notificacion)
+6. Canal para comunicar PINs (WhatsApp/Bitrix)
+7. Ventana para Fase 3+4 (~45 min, requiere retiro simultaneo de V1)
+
+## 9. Estado actual de la exposicion
+
+Verificado 2026-10-13:
+
+| Endpoint | Productos | listaM | listaG | listaF | Stock | Token en HTML |
+|----------|-----------|--------|--------|--------|-------|---------------|
+| Equipos V1 | 1,194 | 1,193 | 1,193 | 1,193 | 1,185 | Si |
+| Accesorios V1 | 79 | 79 | 79 | 79 | 66 | Si |
+| **Total expuesto** | **1,273** | **1,272** | **1,272** | **1,272** | **1,251** | |
+
+Cualquier visitante puede obtener TODOS los precios mayoristas y stock
+exacto por almacen con una sola peticion HTTP usando el token que esta
+en el codigo fuente publico de la pagina.
+
+## 10. Seguridad del almacenamiento de PIN
+
+### Modelo de amenaza
+- **Fuerza bruta online**: Mitigada por rate limiting (5 intentos / 15 min)
+- **Fuerza bruta offline** (si atacante obtiene la hoja): Cada PIN
+  tiene sal unica → no se pueden usar tablas precalculadas. Pero un PIN
+  de 6 digitos (1M combinaciones) con HMAC-SHA256 se puede forzar en
+  ~1 segundo por usuario con hardware moderno.
+- **Mitigacion**: La proteccion principal es el rate limiting online +
+  seguridad de acceso a la hoja de Google. Si se requiere proteccion
+  offline mas fuerte, migrar a Firebase Auth o Auth0.
+
+### Por que no bcrypt/scrypt/PBKDF2
+Apps Script no ofrece estas funciones. Las alternativas son:
+1. HMAC-SHA256 con sal (implementado) — maximo posible en Apps Script
+2. Firebase Auth — proteccion completa pero requiere migracion mayor
+3. Auth0 — mismo caso
+
+La decision actual (HMAC + sal + rate limiting) es el mejor balance
+entre seguridad y viabilidad para el entorno Apps Script.

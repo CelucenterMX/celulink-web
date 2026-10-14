@@ -12,7 +12,7 @@
  * 2. AUTENTICACION CON PIN:
  *    - El admin asigna un PIN de 6 digitos al registrar al usuario
  *    - Login requiere telefono + PIN (no solo telefono)
- *    - PIN se almacena hasheado (SHA-256) en la hoja Registro
+ *    - PIN se almacena con sal unica + HMAC-SHA256 (ver seccion PIN HASHING)
  *    - Login exitoso genera session token (UUID) con TTL de 24h
  *
  * 3. ENDPOINT AUTORIZADO (action=catalog):
@@ -28,7 +28,7 @@
  *
  *   Usuario inicia sesion:
  *     POST {action:"login", phone:"3321234567", pin:"123456"}
- *     → Verifica phone + SHA-256(pin) contra Registro
+ *     → Verifica phone + HMAC-SHA256(salt, pin) contra Registro
  *     → Si coincide: genera UUID, almacena en "Sesiones", devuelve sessionId
  *     → Si no: error generico (no revelar si existe el telefono)
  *
@@ -273,22 +273,19 @@ function doLogin(phone, pin) {
   }
 
   var data = sheet.getDataRange().getValues();
-  var pinHash = hashPin(pin);
 
   for (var i = 1; i < data.length; i++) {
     if (String(data[i][REG_COL.PHONE]).trim() === phone) {
       var storedHash = String(data[i][REG_COL.PIN_HASH] || '').trim();
 
       if (!storedHash) {
-        // Usuario sin PIN asignado
-        return jsonResponse({
-          success: false,
-          message: 'Tu cuenta requiere activacion. Contacta a tu asesor para recibir tu PIN.',
-          code: 'NO_PIN'
-        });
+        // Usuario sin PIN asignado — misma respuesta generica
+        // para no revelar que el telefono existe sin PIN
+        recordFailedAttempt(phone);
+        return jsonResponse({ success: false, message: 'Credenciales invalidas' });
       }
 
-      if (storedHash !== pinHash) {
+      if (!verifyPin(pin, storedHash)) {
         recordFailedAttempt(phone);
         return jsonResponse({ success: false, message: 'Credenciales invalidas' });
       }
@@ -441,18 +438,81 @@ function validateSession(sessionId) {
 }
 
 // ============================================================
-// PIN HASHING
+// PIN HASHING — sal unica por usuario + HMAC-SHA256
 // ============================================================
-function hashPin(pin) {
-  var raw = Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, pin);
+//
+// Por que no SHA-256 simple:
+//   Un PIN de 6 digitos tiene solo 1M combinaciones.
+//   SHA-256(pin) se puede invertir en < 1 segundo con una tabla precalculada
+//   de 1M entradas. Si un atacante obtiene la hoja (backup, export, acceso
+//   temporal), todos los PINs quedan expuestos.
+//
+// Solucion: sal aleatoria de 32 bytes unica por usuario + HMAC-SHA256.
+//   - La sal impide tablas precalculadas (rainbow tables).
+//   - HMAC es mas robusto que hash(salt+pin) contra extension de longitud.
+//   - Cada usuario tiene un hash diferente incluso si comparten PIN.
+//   - Fuerza bruta online limitada a 5 intentos / 15 min (rate limiting).
+//   - Fuerza bruta offline: requiere obtener la hoja + fuerza bruta
+//     individual por usuario (no reutilizable entre usuarios).
+//
+// Limitacion conocida: Apps Script no ofrece bcrypt/scrypt/PBKDF2.
+//   HMAC-SHA256 con sal es el maximo nivel posible en este entorno.
+//   La proteccion principal contra fuerza bruta es el rate limiting
+//   server-side. Si se necesita proteccion offline mas fuerte, habria
+//   que migrar a un proveedor externo (Firebase Auth, Auth0).
+//
+// Formato almacenado en columna PIN_hash:
+//   "salt_hex:hmac_hex"
+//   Ejemplo: "a1b2c3...32bytes...:f4e5d6...32bytes..."
+
+function generateSalt() {
+  // 32 bytes aleatorios via Utilities.getUuid (2 UUIDs concatenados = 32 hex chars de entropia)
+  var uuid1 = Utilities.getUuid().replace(/-/g, '');
+  var uuid2 = Utilities.getUuid().replace(/-/g, '');
+  return (uuid1 + uuid2).substring(0, 64); // 32 bytes en hex
+}
+
+function hmacPin(salt, pin) {
+  // HMAC-SHA256(value=pin, key=salt)
+  // Apps Script signature: computeHmacSha256Signature(value, key)
+  // Usando salt como string directamente (hex) como clave HMAC
+  var raw = Utilities.computeHmacSha256Signature(pin, salt);
   return raw.map(function(b) {
     return ('0' + (b & 0xFF).toString(16)).slice(-2);
   }).join('');
 }
 
-// Funcion auxiliar para que el admin genere el hash de un PIN
+function hashPinWithSalt(pin) {
+  var salt = generateSalt();
+  var hmac = hmacPin(salt, pin);
+  return salt + ':' + hmac;
+}
+
+function verifyPin(pin, storedHash) {
+  // storedHash = "salt:hmac"
+  var parts = storedHash.split(':');
+  if (parts.length !== 2) return false;
+  var salt = parts[0];
+  var expectedHmac = parts[1];
+  var actualHmac = hmacPin(salt, pin);
+
+  // Comparacion en tiempo constante (evitar timing attacks)
+  if (actualHmac.length !== expectedHmac.length) return false;
+  var diff = 0;
+  for (var i = 0; i < actualHmac.length; i++) {
+    diff |= actualHmac.charCodeAt(i) ^ expectedHmac.charCodeAt(i);
+  }
+  return diff === 0;
+}
+
+// Funcion auxiliar para que el admin asigne un PIN
 // Ejecutar manualmente: setUserPin("3321234567", "123456")
 function setUserPin(phone, pin) {
+  if (!/^\d{4,6}$/.test(pin)) {
+    Logger.log('ERROR: PIN debe ser de 4-6 digitos');
+    return;
+  }
+
   var ss = SpreadsheetApp.openById(SHEET_ID);
   var sheet = ss.getSheetByName(REGISTER_SHEET);
   if (!sheet) { Logger.log('Hoja Registro no encontrada'); return; }
@@ -460,8 +520,9 @@ function setUserPin(phone, pin) {
   var data = sheet.getDataRange().getValues();
   for (var i = 1; i < data.length; i++) {
     if (String(data[i][REG_COL.PHONE]).trim() === phone) {
-      sheet.getRange(i + 1, REG_COL.PIN_HASH + 1).setValue(hashPin(pin));
-      Logger.log('PIN actualizado para ' + phone);
+      var hashed = hashPinWithSalt(pin);
+      sheet.getRange(i + 1, REG_COL.PIN_HASH + 1).setValue(hashed);
+      Logger.log('PIN actualizado para ' + phone + ' (salt:hmac, ' + hashed.length + ' chars)');
       return;
     }
   }
