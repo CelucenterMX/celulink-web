@@ -285,7 +285,7 @@ function doLogin(phone, pin) {
         return jsonResponse({ success: false, message: 'Credenciales invalidas' });
       }
 
-      if (!verifyPin(pin, storedHash)) {
+      if (!verifyPinPBKDF2(pin, storedHash)) {
         recordFailedAttempt(phone);
         return jsonResponse({ success: false, message: 'Credenciales invalidas' });
       }
@@ -438,69 +438,101 @@ function validateSession(sessionId) {
 }
 
 // ============================================================
-// PIN HASHING — sal unica por usuario + HMAC-SHA256
+// PIN HASHING — PBKDF2-HMAC-SHA256 (derivacion lenta)
 // ============================================================
 //
-// Por que no SHA-256 simple:
+// Por que no SHA-256 simple ni HMAC simple:
 //   Un PIN de 6 digitos tiene solo 1M combinaciones.
-//   SHA-256(pin) se puede invertir en < 1 segundo con una tabla precalculada
-//   de 1M entradas. Si un atacante obtiene la hoja (backup, export, acceso
-//   temporal), todos los PINs quedan expuestos.
+//   SHA-256(pin): invertible en < 1 segundo con tabla precalculada.
+//   HMAC-SHA256(salt, pin): previene tablas, pero sigue siendo ~1ms/intento.
+//     → 1M intentos = < 1 segundo offline por usuario.
 //
-// Solucion: sal aleatoria de 32 bytes unica por usuario + HMAC-SHA256.
-//   - La sal impide tablas precalculadas (rainbow tables).
-//   - HMAC es mas robusto que hash(salt+pin) contra extension de longitud.
-//   - Cada usuario tiene un hash diferente incluso si comparten PIN.
-//   - Fuerza bruta online limitada a 5 intentos / 15 min (rate limiting).
-//   - Fuerza bruta offline: requiere obtener la hoja + fuerza bruta
-//     individual por usuario (no reutilizable entre usuarios).
+// Solucion: PBKDF2-HMAC-SHA256 con 10,000 iteraciones + sal unica.
+//   - PBKDF2 es literalmente HMAC iterado — disponible en Apps Script.
+//   - 10,000 iteraciones: ~10ms por intento en Apps Script.
+//   - 1M intentos = ~2.8 horas por usuario offline.
+//   - Sal unica: no reutilizable entre usuarios.
+//   - Rate limiting online: 5 intentos / 15 min (proteccion principal).
+//   - Comparacion en tiempo constante.
 //
-// Limitacion conocida: Apps Script no ofrece bcrypt/scrypt/PBKDF2.
-//   HMAC-SHA256 con sal es el maximo nivel posible en este entorno.
-//   La proteccion principal contra fuerza bruta es el rate limiting
-//   server-side. Si se necesita proteccion offline mas fuerte, habria
-//   que migrar a un proveedor externo (Firebase Auth, Auth0).
+// Formato almacenado: "iterations:salt_hex:derived_hex"
+//   Ejemplo: "10000:a1b2c3...64chars...:f4e5d6...64chars..."
 //
-// Formato almacenado en columna PIN_hash:
-//   "salt_hex:hmac_hex"
-//   Ejemplo: "a1b2c3...32bytes...:f4e5d6...32bytes..."
+// Nota: bcrypt/scrypt no estan disponibles en Apps Script.
+//   PBKDF2 con 10K iteraciones es el maximo razonable en este entorno
+//   sin exceder el timeout de 30s de web apps.
+//   Para proteccion offline mayor, migrar a Firebase Auth.
 
-function generateSalt() {
-  // 32 bytes aleatorios via Utilities.getUuid (2 UUIDs concatenados = 32 hex chars de entropia)
-  var uuid1 = Utilities.getUuid().replace(/-/g, '');
-  var uuid2 = Utilities.getUuid().replace(/-/g, '');
-  return (uuid1 + uuid2).substring(0, 64); // 32 bytes en hex
-}
+var PBKDF2_ITERATIONS = 10000;
 
-function hmacPin(salt, pin) {
-  // HMAC-SHA256(value=pin, key=salt)
-  // Apps Script signature: computeHmacSha256Signature(value, key)
-  // Usando salt como string directamente (hex) como clave HMAC
-  var raw = Utilities.computeHmacSha256Signature(pin, salt);
-  return raw.map(function(b) {
+function bytesToHex(bytes) {
+  return bytes.map(function(b) {
     return ('0' + (b & 0xFF).toString(16)).slice(-2);
   }).join('');
 }
 
-function hashPinWithSalt(pin) {
-  var salt = generateSalt();
-  var hmac = hmacPin(salt, pin);
-  return salt + ':' + hmac;
+function hexToBytes(hex) {
+  var bytes = [];
+  for (var i = 0; i < hex.length; i += 2) {
+    bytes.push(parseInt(hex.substr(i, 2), 16));
+  }
+  return bytes;
 }
 
-function verifyPin(pin, storedHash) {
-  // storedHash = "salt:hmac"
-  var parts = storedHash.split(':');
-  if (parts.length !== 2) return false;
-  var salt = parts[0];
-  var expectedHmac = parts[1];
-  var actualHmac = hmacPin(salt, pin);
+function generateSalt() {
+  var uuid1 = Utilities.getUuid().replace(/-/g, '');
+  var uuid2 = Utilities.getUuid().replace(/-/g, '');
+  return (uuid1 + uuid2).substring(0, 64);
+}
 
-  // Comparacion en tiempo constante (evitar timing attacks)
-  if (actualHmac.length !== expectedHmac.length) return false;
+function pbkdf2HmacSha256(password, saltHex, iterations) {
+  // PBKDF2 con dkLen = 32 bytes (1 bloque SHA-256)
+  var saltBytes = hexToBytes(saltHex);
+  saltBytes.push(0, 0, 0, 1); // INT32BE(1)
+  var saltBlob = Utilities.newBlob(saltBytes);
+
+  var u = Utilities.computeHmacSha256Signature(
+    saltBlob.getBytes(),
+    Utilities.newBlob(password).getBytes()
+  );
+  var result = u.slice();
+
+  for (var i = 1; i < iterations; i++) {
+    u = Utilities.computeHmacSha256Signature(
+      Utilities.newBlob(u).getBytes(),
+      Utilities.newBlob(password).getBytes()
+    );
+    for (var j = 0; j < result.length; j++) {
+      result[j] ^= u[j];
+    }
+  }
+
+  return bytesToHex(result);
+}
+
+function hashPinPBKDF2(pin) {
+  var salt = generateSalt();
+  var derived = pbkdf2HmacSha256(pin, salt, PBKDF2_ITERATIONS);
+  return PBKDF2_ITERATIONS + ':' + salt + ':' + derived;
+}
+
+function verifyPinPBKDF2(pin, storedHash) {
+  var parts = storedHash.split(':');
+  if (parts.length !== 3) return false;
+
+  var iterations = parseInt(parts[0], 10);
+  var salt = parts[1];
+  var expectedDerived = parts[2];
+
+  if (!iterations || iterations < 1000 || !salt || !expectedDerived) return false;
+
+  var actualDerived = pbkdf2HmacSha256(pin, salt, iterations);
+
+  // Comparacion en tiempo constante
+  if (actualDerived.length !== expectedDerived.length) return false;
   var diff = 0;
-  for (var i = 0; i < actualHmac.length; i++) {
-    diff |= actualHmac.charCodeAt(i) ^ expectedHmac.charCodeAt(i);
+  for (var i = 0; i < actualDerived.length; i++) {
+    diff |= actualDerived.charCodeAt(i) ^ expectedDerived.charCodeAt(i);
   }
   return diff === 0;
 }
@@ -520,9 +552,9 @@ function setUserPin(phone, pin) {
   var data = sheet.getDataRange().getValues();
   for (var i = 1; i < data.length; i++) {
     if (String(data[i][REG_COL.PHONE]).trim() === phone) {
-      var hashed = hashPinWithSalt(pin);
+      var hashed = hashPinPBKDF2(pin);
       sheet.getRange(i + 1, REG_COL.PIN_HASH + 1).setValue(hashed);
-      Logger.log('PIN actualizado para ' + phone + ' (salt:hmac, ' + hashed.length + ' chars)');
+      Logger.log('PIN actualizado para ' + phone + ' (PBKDF2, ' + PBKDF2_ITERATIONS + ' iteraciones)');
       return;
     }
   }

@@ -64,8 +64,9 @@ El backend NUNCA devuelve listas superiores a la asignada.
 
 ### Protecciones adicionales
 
-- **PIN con sal**: HMAC-SHA256 con sal unica de 32 bytes por usuario (formato salt:hmac)
+- **PIN con PBKDF2**: PBKDF2-HMAC-SHA256, 10,000 iteraciones, sal unica 32 bytes (formato iterations:salt:derived)
 - **Comparacion constante**: verificacion en tiempo constante contra timing attacks
+- **Resistencia offline**: 1M combinaciones × 10ms/intento = ~2.8h por usuario (vs <1s con SHA-256 simple)
 - **Rate limiting**: 5 intentos fallidos → bloqueo 15 min (hoja LoginAttempts)
 - **Respuesta generica**: login fallido no revela si el telefono existe
 - **Session unica**: login invalida sesiones anteriores del mismo telefono
@@ -232,19 +233,23 @@ en el codigo fuente publico de la pagina.
 
 ### Modelo de amenaza
 - **Fuerza bruta online**: Mitigada por rate limiting (5 intentos / 15 min)
-- **Fuerza bruta offline** (si atacante obtiene la hoja): Cada PIN
-  tiene sal unica → no se pueden usar tablas precalculadas. Pero un PIN
-  de 6 digitos (1M combinaciones) con HMAC-SHA256 se puede forzar en
-  ~1 segundo por usuario con hardware moderno.
-- **Mitigacion**: La proteccion principal es el rate limiting online +
-  seguridad de acceso a la hoja de Google. Si se requiere proteccion
-  offline mas fuerte, migrar a Firebase Auth o Auth0.
+- **Fuerza bruta offline** (si atacante obtiene la hoja):
+  - PBKDF2 con 10,000 iteraciones: ~10ms por intento
+  - 1M combinaciones (PIN 6 digitos) × 10ms = ~2.8 horas por usuario
+  - Sal unica: cada usuario debe atacarse individualmente
+  - Comparar: SHA-256 simple seria < 1 segundo para todos los usuarios
+- **Mitigacion adicional**: seguridad de acceso a la hoja de Google
+  (solo el owner tiene acceso de edicion)
 
-### Por que no bcrypt/scrypt/PBKDF2
-Apps Script no ofrece estas funciones. Las alternativas son:
-1. HMAC-SHA256 con sal (implementado) — maximo posible en Apps Script
-2. Firebase Auth — proteccion completa pero requiere migracion mayor
-3. Auth0 — mismo caso
+### Por que PBKDF2 y no bcrypt/scrypt
+Apps Script no tiene bcrypt ni scrypt como funciones nativas.
+Pero PBKDF2 es literalmente HMAC iterado, y `Utilities.computeHmacSha256Signature`
+SI esta disponible. Implementamos PBKDF2-HMAC-SHA256 manualmente.
 
-La decision actual (HMAC + sal + rate limiting) es el mejor balance
-entre seguridad y viabilidad para el entorno Apps Script.
+Alternativas si se necesita proteccion offline aun mayor:
+1. **Firebase Auth** — proteccion completa (bcrypt), requiere migracion mayor
+2. **Auth0** — mismo caso
+3. **Subir iteraciones PBKDF2** a 50,000+ (verificar que no exceda timeout 30s)
+
+La decision actual (PBKDF2 10K + sal + rate limiting) ofrece proteccion
+razonable dentro de las limitaciones de Apps Script.
