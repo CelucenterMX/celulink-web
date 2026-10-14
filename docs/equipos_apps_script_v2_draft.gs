@@ -12,7 +12,7 @@
  * 2. AUTENTICACION CON PIN:
  *    - El admin asigna un PIN de 6 digitos al registrar al usuario
  *    - Login requiere telefono + PIN (no solo telefono)
- *    - PIN se almacena con sal unica + HMAC-SHA256 (ver seccion PIN HASHING)
+ *    - PIN se almacena con PBKDF2-HMAC-SHA256, 10,000 iteraciones, sal unica (ver seccion PIN HASHING)
  *    - Login exitoso genera session token (UUID) con TTL de 24h
  *
  * 3. ENDPOINT AUTORIZADO (action=catalog):

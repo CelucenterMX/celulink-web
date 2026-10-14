@@ -1,7 +1,7 @@
 # Proteccion de Endpoints — Diseno Tecnico V2
 
 Fecha: 2026-10-13
-Estado: Implementacion de prueba lista — NO desplegado
+Estado: 25/25 tests pasados en entorno aislado — NO desplegado en produccion
 
 ---
 
@@ -183,18 +183,25 @@ listas y stock. Necesita su propio script V2 con la misma proteccion.
 
 ## 6. Pruebas
 
-### Acceso anonimo
-- `GET ?action=public` → solo datos publicos, sin listaM/G/F ni existencias
-- `GET ?action=catalog` sin session → error NO_SESSION
-- `GET ?action=catalog&sessionId=fake` → error INVALID_SESSION
+### Resultados: 25/25 PASS (2026-10-13)
 
-### Acceso autorizado
-- Login con PIN correcto → recibe sessionId
-- `GET ?action=catalog&sessionId=valid` → datos filtrados segun lista
-- Usuario con lista "F" no recibe listaM ni listaG
+Entorno: Apps Script standalone + hoja de prueba con datos ficticios.
+Deployment @10, Script ID: `1yj-fShH4mpX6h6BJ5_iUNOCZbI3JHG27dLuz2J8vAgmNC4O6tk5_sKnA`
 
-### Rate limiting
-- 5 intentos fallidos → bloqueo 15 min
+| # | Test | Checks | Estado |
+|---|------|--------|--------|
+| 1 | Endpoint publico | 3/3 | PASS — sin listaM/G/F ni existencias |
+| 2 | Catalogo sin sesion | 2/2 | PASS — NO_SESSION y INVALID_SESSION |
+| 3 | Login | 4/4 | PASS — PIN correcto/incorrecto/telefono desconocido/sin PIN |
+| 4 | Catalogo autorizado + filtrado por lista | 6/6 | PASS — M ve listaM/G/F+existencias, F solo listaF |
+| 5 | Logout + invalidacion de sesion | 2/2 | PASS |
+| 6 | Reemplazo de sesion | 3/3 | PASS — login nuevo invalida sesion anterior |
+| 7 | Rate limiting | 3/3 | PASS — bloqueo al intento 6, PIN correcto bloqueado, otro telefono no afectado |
+
+### Causa raiz del fallo anterior en login
+Los numeros de telefono se perdian de la hoja Registro porque el path
+de regeneracion de `setup()` solo actualizaba PIN_hash sin reescribir
+la fila completa. Corregido: `setup()` ahora reescribe filas completas.
 
 ## 7. Reversion
 
