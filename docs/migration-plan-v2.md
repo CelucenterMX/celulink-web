@@ -131,41 +131,54 @@ Mismos cambios que equipos, adaptados a la estructura de accesorios:
 
 ### 3.1 Asignación de PINs
 
-**Procedimiento por usuario:**
-1. Admin ejecuta `setUserPin("teléfono", "PIN")` en el editor de Apps Script
-2. La función genera PBKDF2 hash y lo guarda en la columna PIN_hash
-3. Admin comunica el PIN al usuario por WhatsApp directo (no grupo)
-4. El PIN NO aparece en logs, URLs ni código
+**Generación:**
+El admin genera el PIN ejecutando `setUserPin("teléfono", "PIN")` en el
+editor de Apps Script. La función almacena SOLO el hash PBKDF2; el PIN
+en texto plano no se guarda en la hoja ni aparece en el log de ejecución.
 
-**Mensaje tipo (WhatsApp individual):**
-```
-Hola [nombre], actualizamos el catálogo de Celucenter.
-Ahora necesitas un PIN para ver precios mayoristas.
-Tu PIN: [xxxxxx]
-Entra en celulink.mx/catalogos/equipos → Iniciar sesión → tu teléfono + PIN.
-Si tienes problemas, escríbeme.
-```
+**Protección del PIN en tránsito:**
+- `setUserPin()` solo imprime "PIN asignado a [teléfono]" — nunca el PIN
+- El PIN no se incluye en URLs, código fuente, historial de commits ni
+  mensajes de grupo
+- El admin NO debe enviar el PIN por canales inseguros (email, grupos
+  de WhatsApp, broadcast, SMS sin cifrado)
+
+**Entrega al usuario — opciones viables:**
+1. **Presencial**: el admin comunica el PIN en persona o por llamada directa
+2. **WhatsApp individual con mensaje efímero**: activar mensajes temporales
+   (24h) antes de enviar. El mensaje se autodestruye.
+3. **Bitrix24 chat privado**: mensaje directo al usuario (no canal abierto)
+4. **Nota de voz por WhatsApp individual**: no queda texto buscable
+
+**En todos los casos:**
+- Nunca incluir el PIN junto con el teléfono en el mismo mensaje público
+- Nunca enviar a grupos ni canales compartidos
+- Si se usa texto, pedir al usuario que borre el mensaje después de anotarlo
 
 ### 3.2 Restablecimiento de PIN
 
-Si un usuario olvida su PIN:
 1. Admin ejecuta `setUserPin("teléfono", "nuevoPIN")` en Apps Script
-2. El hash anterior se sobreescribe
-3. Admin comunica nuevo PIN por WhatsApp directo
+2. El hash anterior se sobreescribe automáticamente
+3. Todas las sesiones activas del usuario se invalidan inmediatamente
+   (validateSession verifica que PIN_hash exista y no esté vacío)
+4. Admin entrega nuevo PIN por los mismos canales seguros de §3.1
 
 ### 3.3 Revocación de acceso
 
-Para revocar acceso a un usuario:
 1. Borrar la celda PIN_hash del usuario en la hoja Registro
-2. Sin PIN_hash, el login falla automáticamente
-3. Las sesiones activas expiran en max 24h (o se pueden borrar manualmente de la hoja Sesiones)
+2. **Efecto inmediato**: validateSession ahora verifica que PIN_hash no
+   esté vacío. Si fue borrado, las sesiones activas se rechazan al
+   siguiente request — sin esperar expiración de 24h
+3. El login posterior falla automáticamente (sin PIN_hash no hay verificación posible)
+4. Para reactivar: asignar un nuevo PIN con `setUserPin()`
 
 ### 3.4 Orden de activación
 
 1. Empezar con 1-2 usuarios de confianza (prueba piloto)
 2. Verificar que pueden hacer login y ver sus precios correctamente
-3. Expandir al resto de usuarios
-4. Los usuarios sin PIN ven solo datos públicos (catálogo funcional pero sin precios mayoristas)
+3. Expandir al resto de usuarios progresivamente
+4. Los usuarios sin PIN ven solo datos públicos (catálogo funcional pero
+   sin precios mayoristas ni existencias)
 
 ---
 
@@ -259,15 +272,39 @@ Si algo falla después del retiro:
 
 ---
 
-## 7. Decisiones pendientes
+## 7. Verificación: ¿comparten Registro?
+
+Equipos y accesorios usan **proyectos Apps Script separados** con tokens
+distintos (`CELUCENTER_EQUIPOS_2026` vs `CELUCENTER_SECURE_2025`). Cada
+proyecto está vinculado a su propia hoja de cálculo (SHEET_ID distinto).
+
+**Implicación para V2:** cada endpoint tiene su propia hoja Registro.
+Si se quiere un login unificado (un PIN para ambos catálogos), hay dos opciones:
+1. Que ambos V2 apunten a la misma hoja de Registro (requiere permiso cruzado)
+2. Duplicar el PIN en ambas hojas (más simple pero doble mantenimiento)
+
+**Recomendación:** verificar con el owner si ambas hojas tienen los mismos
+usuarios registrados. Si sí, consolidar en una sola hoja de Registro compartida.
+
+## 8. Panel de resumen (accesorios)
+
+El panel `?resumen=1&key=XXX` en accesorios expone datos de pedidos con
+clave fija en URL. Esto debe migrar a la autenticación V2:
+
+- Acceso: solo usuarios con lista M o TODAS
+- Reemplazar `?key=XXX` → usar sessionId (mismo flujo que catalog)
+- Agregar `action=resumen` al routing V2 con verificación de sesión
+- Eliminar la clave estática del frontend y localStorage
+
+## 9. Decisiones pendientes
 
 | # | Decisión | Impacto |
 |---|----------|---------|
-| 1 | ¿Equipos y accesorios comparten hoja de Registro? | Si comparten: un solo login para ambos. Si no: PINs separados. |
-| 2 | ¿Qué pasa con detalle.html de accesorios? | Necesita migrar al mismo esquema V2. |
-| 3 | ¿El landing necesita precios mayoristas? | Actualmente usa V1 con token. V2 solo mostraría precioPublico. |
-| 4 | ¿Hay más consumidores de la API V1? | El panel de resumen (key=cris) también usa la URL de accesorios. |
-| 5 | ¿Mantener registro abierto? | V2 soporta action=register pero sin PIN. El admin debe activar después. |
+| 1 | ¿Consolidar Registro en una sola hoja? | Un PIN para ambos catálogos vs duplicar PINs |
+| 2 | ¿Migrar detalle.html al mismo tiempo? | Sin migrar, la página de detalle seguiría usando V1 |
+| 3 | ¿El landing necesita precios mayoristas? | Actualmente usa V1 con token. V2 solo mostraría precioPublico |
+| 4 | ¿Mantener registro abierto? | V2 soporta action=register pero sin PIN. El admin activa después |
+| 5 | ¿Panel de resumen: migrar o eliminar? | Si está en uso, migrar a auth V2. Si no, eliminar |
 
 ---
 

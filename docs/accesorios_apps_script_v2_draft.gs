@@ -280,6 +280,9 @@ function validateSession(sessionId) {
       var regData = regSheet.getDataRange().getValues();
       for (var j = 1; j < regData.length; j++) {
         if (String(regData[j][REG_COL.PHONE]).trim() === phone) {
+          // Si el PIN_hash fue borrado (revocacion), invalidar sesion
+          var pinHash = String(regData[j][REG_COL.PIN_HASH] || '').trim();
+          if (!pinHash) return null;
           return { phone: phone, lista: String(regData[j][REG_COL.LISTA] || '').trim(), name: String(regData[j][REG_COL.NAME] || '').trim() };
         }
       }
