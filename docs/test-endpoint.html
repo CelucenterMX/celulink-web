@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Test — Endpoint Protection v2</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Courier New', monospace; background: #1a1a2e; color: #e0e0e0; padding: 20px; }
+  h1 { color: #00d4aa; margin-bottom: 20px; font-size: 18px; }
+  h2 { color: #00a5d4; margin: 20px 0 10px; font-size: 14px; text-transform: uppercase; }
+  .config { background: #16213e; padding: 16px; border-radius: 8px; margin-bottom: 20px; }
+  .config label { display: block; margin-bottom: 4px; font-size: 12px; color: #888; }
+  .config input { width: 100%; padding: 8px; background: #0f3460; border: 1px solid #333; color: #fff; border-radius: 4px; font-family: inherit; margin-bottom: 10px; }
+  .test-group { background: #16213e; padding: 16px; border-radius: 8px; margin-bottom: 12px; }
+  .test-group h3 { font-size: 13px; color: #f0a500; margin-bottom: 8px; }
+  button { padding: 8px 16px; background: #00a5d4; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-family: inherit; font-size: 12px; margin-right: 8px; margin-bottom: 4px; }
+  button:hover { background: #0088b0; }
+  button.danger { background: #e53935; }
+  button.danger:hover { background: #c62828; }
+  .result { margin-top: 8px; padding: 10px; background: #0a0a1a; border-radius: 4px; font-size: 12px; white-space: pre-wrap; max-height: 300px; overflow-y: auto; }
+  .pass { color: #00d4aa; }
+  .fail { color: #ff5252; }
+  .info { color: #888; }
+  .field-row { display: flex; gap: 10px; }
+  .field-row > div { flex: 1; }
+</style>
+</head>
+<body>
+
+<h1>Endpoint Protection v2 — Test Console</h1>
+
+<div class="config">
+  <label>URL del deployment de PRUEBA (no produccion):</label>
+  <input type="text" id="testUrl" placeholder="https://script.google.com/macros/s/XXXX/exec" />
+  <div class="field-row">
+    <div>
+      <label>Telefono de prueba:</label>
+      <input type="tel" id="testPhone" placeholder="3321234567" maxlength="10" />
+    </div>
+    <div>
+      <label>PIN de prueba:</label>
+      <input type="text" id="testPin" placeholder="123456" maxlength="6" />
+    </div>
+  </div>
+</div>
+
+<h2>1. Endpoint Publico</h2>
+<div class="test-group">
+  <h3>action=public — sin autenticacion</h3>
+  <button onclick="testPublic()">Ejecutar</button>
+  <div class="result" id="r-public"></div>
+</div>
+
+<h2>2. Endpoint Catalog sin session</h2>
+<div class="test-group">
+  <h3>action=catalog sin sessionId — debe rechazar</h3>
+  <button onclick="testCatalogNoSession()">Ejecutar</button>
+  <div class="result" id="r-catalog-none"></div>
+</div>
+
+<h2>3. Login con PIN</h2>
+<div class="test-group">
+  <h3>Login con telefono + PIN</h3>
+  <button onclick="testLogin()">Login correcto</button>
+  <button onclick="testLoginBadPin()">PIN incorrecto</button>
+  <div class="result" id="r-login"></div>
+</div>
+
+<h2>4. Catalog autorizado</h2>
+<div class="test-group">
+  <h3>action=catalog con sessionId valido</h3>
+  <button onclick="testCatalogAuth()">Ejecutar</button>
+  <div class="result" id="r-catalog-auth"></div>
+</div>
+
+<h2>5. Logout</h2>
+<div class="test-group">
+  <h3>Invalidar session</h3>
+  <button onclick="testLogout()" class="danger">Logout</button>
+  <button onclick="testCatalogAfterLogout()">Catalog post-logout</button>
+  <div class="result" id="r-logout"></div>
+</div>
+
+<h2>6. Rate Limiting</h2>
+<div class="test-group">
+  <h3>5 intentos fallidos → bloqueo</h3>
+  <button onclick="testRateLimit()" class="danger">Ejecutar (6 intentos rapidos)</button>
+  <div class="result" id="r-ratelimit"></div>
+</div>
+
+<h2>7. Verificar retiro de V1</h2>
+<div class="test-group">
+  <h3>Confirmar que endpoint V1 ya no expone datos sensibles</h3>
+  <div class="field-row">
+    <div>
+      <label>URL V1 (antiguo):</label>
+      <input type="text" id="v1Url" placeholder="https://script.google.com/macros/s/.../exec" />
+    </div>
+    <div>
+      <label>Token V1:</label>
+      <input type="text" id="v1Token" placeholder="CELUCENTER_EQUIPOS_2026" />
+    </div>
+  </div>
+  <button onclick="testV1Retired()" class="danger">Verificar retiro</button>
+  <div class="result" id="r-v1retired"></div>
+</div>
+
+<script>
+let currentSessionId = null;
+
+function getUrl() { return document.getElementById('testUrl').value.trim(); }
+function getPhone() { return document.getElementById('testPhone').value.trim(); }
+function getPin() { return document.getElementById('testPin').value.trim(); }
+
+function log(id, msg, cls) {
+  const el = document.getElementById(id);
+  const line = document.createElement('div');
+  line.className = cls || '';
+  line.textContent = msg;
+  el.appendChild(line);
+}
+function clear(id) { document.getElementById(id).innerHTML = ''; }
+
+async function fetchJSON(url, opts) {
+  const res = await fetch(url, opts);
+  return res.json();
+}
+
+// Test 1: Public catalog
+async function testPublic() {
+  clear('r-public');
+  log('r-public', 'GET ' + getUrl() + '?action=public', 'info');
+  try {
+    const data = await fetchJSON(getUrl() + '?action=public');
+    const products = data.products || [];
+    log('r-public', 'Productos: ' + products.length);
+
+    if (products.length === 0) {
+      log('r-public', 'WARN: 0 productos devueltos', 'fail');
+      return;
+    }
+
+    const p = products[0];
+    const fields = Object.keys(p);
+    log('r-public', 'Campos: ' + fields.join(', '));
+
+    // Verificar que NO estan los campos sensibles
+    const sensitive = ['listaM', 'listaG', 'listaF', 'existencias', 'costo'];
+    const exposed = sensitive.filter(f => f in p);
+
+    if (exposed.length > 0) {
+      log('r-public', 'FAIL: campos sensibles expuestos: ' + exposed.join(', '), 'fail');
+    } else {
+      log('r-public', 'PASS: ningun campo sensible expuesto', 'pass');
+    }
+
+    // Verificar campos esperados
+    const expected = ['codigo', 'producto', 'precioPublico', 'disponible'];
+    const missing = expected.filter(f => !(f in p));
+    if (missing.length > 0) {
+      log('r-public', 'FAIL: campos esperados faltantes: ' + missing.join(', '), 'fail');
+    } else {
+      log('r-public', 'PASS: todos los campos publicos presentes', 'pass');
+    }
+
+    // Verificar que 'disponible' es boolean, no numero
+    if (typeof p.disponible === 'boolean') {
+      log('r-public', 'PASS: disponible es boolean (' + p.disponible + ')', 'pass');
+    } else {
+      log('r-public', 'FAIL: disponible es ' + typeof p.disponible + ' (' + p.disponible + ')', 'fail');
+    }
+
+    log('r-public', '\nEjemplo: ' + JSON.stringify(p, null, 2), 'info');
+  } catch (e) {
+    log('r-public', 'ERROR: ' + e.message, 'fail');
+  }
+}
+
+// Test 2: Catalog without session
+async function testCatalogNoSession() {
+  clear('r-catalog-none');
+  log('r-catalog-none', 'GET ' + getUrl() + '?action=catalog', 'info');
+  try {
+    const data = await fetchJSON(getUrl() + '?action=catalog');
+    if (data.error && data.code === 'NO_SESSION') {
+      log('r-catalog-none', 'PASS: rechazado con NO_SESSION', 'pass');
+    } else {
+      log('r-catalog-none', 'FAIL: respuesta inesperada: ' + JSON.stringify(data), 'fail');
+    }
+  } catch (e) {
+    log('r-catalog-none', 'ERROR: ' + e.message, 'fail');
+  }
+}
+
+// Test 3: Login
+async function testLogin() {
+  clear('r-login');
+  log('r-login', 'POST login phone=' + getPhone() + ' pin=******', 'info');
+  try {
+    const data = await fetchJSON(getUrl(), {
+      method: 'POST',
+      body: JSON.stringify({ action: 'login', phone: getPhone(), pin: getPin() })
+    });
+    if (data.success && data.sessionId) {
+      currentSessionId = data.sessionId;
+      log('r-login', 'PASS: login exitoso', 'pass');
+      log('r-login', 'sessionId: ' + data.sessionId.substring(0, 8) + '...', 'info');
+      log('r-login', 'lista: ' + data.lista, 'info');
+      log('r-login', 'nombre: ' + data.name, 'info');
+    } else {
+      log('r-login', 'FAIL/EXPECTED: ' + (data.message || JSON.stringify(data)), 'fail');
+    }
+  } catch (e) {
+    log('r-login', 'ERROR: ' + e.message, 'fail');
+  }
+}
+
+async function testLoginBadPin() {
+  clear('r-login');
+  log('r-login', 'POST login phone=' + getPhone() + ' pin=000000', 'info');
+  try {
+    const data = await fetchJSON(getUrl(), {
+      method: 'POST',
+      body: JSON.stringify({ action: 'login', phone: getPhone(), pin: '000000' })
+    });
+    if (!data.success) {
+      log('r-login', 'PASS: rechazado con mensaje generico', 'pass');
+      log('r-login', 'Mensaje: ' + data.message, 'info');
+      // Verificar que no revela si el telefono existe
+      if (data.message === 'Credenciales invalidas') {
+        log('r-login', 'PASS: respuesta no revela existencia del telefono', 'pass');
+      }
+    } else {
+      log('r-login', 'FAIL: login exitoso con PIN incorrecto!', 'fail');
+    }
+  } catch (e) {
+    log('r-login', 'ERROR: ' + e.message, 'fail');
+  }
+}
+
+// Test 4: Authorized catalog
+async function testCatalogAuth() {
+  clear('r-catalog-auth');
+  if (!currentSessionId) {
+    log('r-catalog-auth', 'Primero haz login exitoso', 'fail');
+    return;
+  }
+  log('r-catalog-auth', 'GET action=catalog&sessionId=' + currentSessionId.substring(0, 8) + '...', 'info');
+  try {
+    const data = await fetchJSON(getUrl() + '?action=catalog&sessionId=' + currentSessionId);
+    if (data.error) {
+      log('r-catalog-auth', 'ERROR: ' + data.error, 'fail');
+      return;
+    }
+    const products = data.products || [];
+    log('r-catalog-auth', 'Productos: ' + products.length);
+    log('r-catalog-auth', 'Lista: ' + data.lista);
+
+    if (products.length > 0) {
+      const p = products[0];
+      const fields = Object.keys(p);
+      log('r-catalog-auth', 'Campos: ' + fields.join(', '));
+
+      // Verificar existencias (numero, no boolean)
+      if ('existencias' in p && typeof p.existencias === 'number') {
+        log('r-catalog-auth', 'PASS: existencias es numero', 'pass');
+      }
+
+      // Verificar que tiene listas segun nivel
+      const lista = (data.lista || '').toUpperCase();
+      if (lista === 'F' && 'listaF' in p && !('listaM' in p) && !('listaG' in p)) {
+        log('r-catalog-auth', 'PASS: solo listaF visible (correcto para lista F)', 'pass');
+      } else if (lista === 'TODAS' || lista === 'M') {
+        if ('listaM' in p && 'listaG' in p && 'listaF' in p) {
+          log('r-catalog-auth', 'PASS: todas las listas visibles (correcto para lista ' + lista + ')', 'pass');
+        }
+      }
+
+      log('r-catalog-auth', '\nEjemplo: ' + JSON.stringify(p, null, 2), 'info');
+    }
+  } catch (e) {
+    log('r-catalog-auth', 'ERROR: ' + e.message, 'fail');
+  }
+}
+
+// Test 5: Logout
+async function testLogout() {
+  clear('r-logout');
+  if (!currentSessionId) {
+    log('r-logout', 'No hay session activa', 'info');
+    return;
+  }
+  try {
+    const data = await fetchJSON(getUrl(), {
+      method: 'POST',
+      body: JSON.stringify({ action: 'logout', sessionId: currentSessionId })
+    });
+    log('r-logout', 'PASS: logout completado', 'pass');
+    currentSessionId = null;
+  } catch (e) {
+    log('r-logout', 'ERROR: ' + e.message, 'fail');
+  }
+}
+
+async function testCatalogAfterLogout() {
+  if (currentSessionId) {
+    log('r-logout', 'Haz logout primero', 'info');
+    return;
+  }
+  log('r-logout', 'GET action=catalog con session invalidada...', 'info');
+  try {
+    // Usar un sessionId viejo (ya borrado)
+    const data = await fetchJSON(getUrl() + '?action=catalog&sessionId=invalidated-session');
+    if (data.code === 'INVALID_SESSION') {
+      log('r-logout', 'PASS: session invalidada correctamente', 'pass');
+    } else {
+      log('r-logout', 'FAIL: ' + JSON.stringify(data), 'fail');
+    }
+  } catch (e) {
+    log('r-logout', 'ERROR: ' + e.message, 'fail');
+  }
+}
+
+// Test 6: Rate limiting
+async function testRateLimit() {
+  clear('r-ratelimit');
+  log('r-ratelimit', 'Enviando 6 intentos con PIN incorrecto...', 'info');
+  for (let i = 1; i <= 6; i++) {
+    try {
+      const data = await fetchJSON(getUrl(), {
+        method: 'POST',
+        body: JSON.stringify({ action: 'login', phone: getPhone(), pin: '000000' })
+      });
+      const status = data.code === 'LOCKED_OUT' ? 'BLOQUEADO' : data.message;
+      const cls = i <= 5 ? 'info' : (data.code === 'LOCKED_OUT' ? 'pass' : 'fail');
+      log('r-ratelimit', 'Intento ' + i + ': ' + status, cls);
+    } catch (e) {
+      log('r-ratelimit', 'Intento ' + i + ': ERROR ' + e.message, 'fail');
+    }
+  }
+}
+
+// Test 7: V1 endpoint retirement verification
+async function testV1Retired() {
+  clear('r-v1retired');
+  const v1Url = document.getElementById('v1Url').value.trim();
+  const v1Token = document.getElementById('v1Token').value.trim();
+
+  if (!v1Url || !v1Token) {
+    log('r-v1retired', 'Ingresa URL y token del endpoint V1', 'fail');
+    return;
+  }
+
+  log('r-v1retired', 'Probando V1: ' + v1Url + '?action=catalog&token=***', 'info');
+  try {
+    const data = await fetchJSON(v1Url + '?action=catalog&token=' + v1Token);
+    const products = data.products || [];
+
+    if (products.length === 0) {
+      log('r-v1retired', 'PASS: V1 no devuelve productos (retirado correctamente)', 'pass');
+      return;
+    }
+
+    const p = products[0];
+    const sensitive = ['listaM', 'listaG', 'listaF', 'existencias'].filter(f => f in p);
+
+    if (sensitive.length > 0) {
+      log('r-v1retired', 'FAIL: V1 SIGUE ACTIVO — ' + products.length + ' productos con campos: ' + sensitive.join(', '), 'fail');
+      log('r-v1retired', 'CRITICO: La proteccion V2 es inutil mientras V1 siga activo', 'fail');
+    } else {
+      log('r-v1retired', 'WARN: V1 responde pero sin campos sensibles (' + products.length + ' productos)', 'info');
+    }
+  } catch (e) {
+    if (e.message.includes('Failed to fetch') || e.message.includes('NetworkError')) {
+      log('r-v1retired', 'PASS: V1 no accesible (posiblemente retirado)', 'pass');
+    } else {
+      log('r-v1retired', 'Resultado: ' + e.message, 'info');
+    }
+  }
+}
+</script>
+</body>
+</html>

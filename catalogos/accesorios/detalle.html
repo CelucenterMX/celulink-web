@@ -458,6 +458,35 @@
             text-decoration: line-through;
         }
 
+        /* ── Escalera activa ── */
+        .detail-all-lists .list-row.active {
+            background: #E3F6FF;
+            border-radius: 8px;
+            padding: 8px 12px;
+            margin: 2px -6px;
+        }
+        .detail-all-lists .list-row.active .list-name { color: #29ABE2; font-weight: 700; }
+        .detail-all-lists .list-row.active .list-price { color: #0D1B2A; font-size: 1.05rem; }
+
+        .list-badge {
+            display: inline-block;
+            background: #8DC63F;
+            color: #fff;
+            font-size: 0.68rem;
+            font-weight: 700;
+            padding: 1px 6px;
+            border-radius: 10px;
+            margin-left: 6px;
+            vertical-align: middle;
+        }
+
+        .detail-escalera-hint {
+            font-size: 0.73rem;
+            color: #aaa;
+            margin-top: 6px;
+            text-align: center;
+        }
+
         /* ===== CART CONTROLS IN DETAIL ===== */
         .detail-cart-actions {
             margin-top: 12px;
@@ -1192,6 +1221,47 @@
             return parsePrice(product.lista2x) || parsePrice(product.listaF) || parsePrice(product.precioPublico) || 0;
         }
 
+        function buildEscaleraHtml(product) {
+            const listaActiva = getCartLista();
+            const pub = parsePrice(product.precioPublico);
+            const tiers = [
+                { key: '2X', label: 'Lista 2X', hint: `< $${UMBRAL_F / 1000}k` },
+                { key: 'F',  label: 'Lista F',  hint: `≥ $${UMBRAL_F / 1000}k` },
+                { key: 'G',  label: 'Lista G',  hint: `≥ $${UMBRAL_G / 1000}k` },
+                { key: 'M',  label: 'Lista M',  hint: `≥ $${UMBRAL_M / 1000}k` },
+            ];
+            const rows = tiers.map(t => {
+                const price = getUnitPriceForList(product, t.key);
+                if (!price) return '';
+                const isActive = t.key === listaActiva;
+                const sav = (pub && price < pub) ? Math.round((1 - price / pub) * 100) : 0;
+                const badge = sav > 0 ? `<span class="list-badge">Ahorras ${sav}%</span>` : '';
+                return `<div class="list-row${isActive ? ' active' : ''}" data-lista="${t.key}">
+                    <span class="list-name">${t.label} <small style="font-size:0.7rem;color:#bbb;font-weight:400;">${t.hint}</small></span>
+                    <span class="list-price">${fmt(price)}${badge}</span>
+                </div>`;
+            }).filter(Boolean).join('');
+            const pubRow = pub ? `<div class="list-row public-row" data-lista="pub">
+                <span class="list-name">Precio público</span>
+                <span class="list-price">${fmt(pub)}</span>
+            </div>` : '';
+            return `<div class="detail-all-lists" id="detailEscalera">${rows}${pubRow}</div>
+                <div class="detail-escalera-hint">Activa: <strong>Lista ${listaActiva}</strong> · Agrega más al carrito para subir de lista</div>`;
+        }
+
+        function refreshEscaleraActive() {
+            const el = document.getElementById('detailEscalera');
+            if (!el) return;
+            const listaActiva = getCartLista();
+            el.querySelectorAll('.list-row[data-lista]').forEach(row => {
+                row.classList.toggle('active', row.getAttribute('data-lista') === listaActiva);
+            });
+            const hint = el.nextElementSibling;
+            if (hint && hint.classList.contains('detail-escalera-hint')) {
+                hint.innerHTML = `Activa: <strong>Lista ${listaActiva}</strong> · Agrega más al carrito para subir de lista`;
+            }
+        }
+
         function getCartTotalAtList(lista) {
             let total = 0;
             Object.values(cart).forEach(item => { total += getUnitPriceForList(item.product, lista) * item.qty; });
@@ -1456,6 +1526,7 @@
             const currentCode = container.getAttribute('data-codigo');
             if (currentCode !== codigo) return;
             renderDetailCartActions(codigo);
+            refreshEscaleraActive();
         }
 
         function renderDetailCartActions(codigo) {
@@ -1644,14 +1715,7 @@
                 const buyFmt = fmt(getUnitPriceForList(product, listaActiva));
                 const pubFmt = fmt(product.precioPublico);
                 if (buyFmt) {
-                    const pubRef = (pubFmt && pubFmt !== buyFmt) ? `<span class="detail-price-public">P. público ${pubFmt}</span>` : '';
-                    pricingHtml = `
-                        <div class="detail-price-tag">
-                            <span class="detail-price-label">Lista ${listaActiva}</span>
-                            <span class="detail-price-value">${buyFmt}</span>
-                            ${pubRef}
-                        </div>
-                        <div style="font-size:0.8rem;color:var(--muted);margin-top:6px;">Sube el carrito a $3,000 → Lista F · $6,000 → G · $9,000 → M</div>`;
+                    pricingHtml = buildEscaleraHtml(product);
                 } else if (pubFmt) {
                     pricingHtml = `<div class="detail-price-tag"><span class="detail-price-label">Precio público</span><span class="detail-price-value">${pubFmt}</span></div>`;
                 } else {
@@ -1673,9 +1737,13 @@
                     ].filter(l => l.value);
 
                     if (allLists.length) {
-                        const rowsHtml = allLists.map(l =>
-                            `<div class="list-row"><span class="list-name">${l.name}</span><span class="list-price">${l.value}</span></div>`
-                        ).join('');
+                        const pubNum = parsePrice(product.precioPublico);
+                    const rowsHtml = allLists.map(l => {
+                            const lNum = parsePrice(l.value);
+                            const sav = (pubNum && lNum && lNum < pubNum) ? Math.round((1 - lNum / pubNum) * 100) : 0;
+                            const badge = sav > 0 ? `<span class="list-badge">Ahorras ${sav}%</span>` : '';
+                            return `<div class="list-row"><span class="list-name">${l.name}</span><span class="list-price">${l.value}${badge}</span></div>`;
+                        }).join('');
                         const publicRow = pubFmt ? `<div class="list-row public-row"><span class="list-name">Publico</span><span class="list-price">${pubFmt}</span></div>` : '';
                         pricingHtml = `<div class="detail-all-lists">${rowsHtml}${publicRow}</div>`;
                     } else {
@@ -1690,11 +1758,15 @@
 
                     const formatted = fmt(price);
                     if (formatted) {
+                        const lNum = parsePrice(price);
+                        const pubNum = parsePrice(product.precioPublico);
+                        const sav = (pubNum && lNum && lNum < pubNum) ? Math.round((1 - lNum / pubNum) * 100) : 0;
+                        const savBadge = sav > 0 ? `<span class="list-badge" style="font-size:0.8rem;padding:2px 8px;">Ahorras ${sav}%</span>` : '';
                         const publicHtml = pubFmt ? `<span class="detail-price-public">P. Publico ${pubFmt}</span>` : '';
                         pricingHtml = `
                             <div class="detail-price-tag">
                                 <span class="detail-price-label">${listName}</span>
-                                <span class="detail-price-value">${formatted}</span>
+                                <span class="detail-price-value">${formatted}${savBadge}</span>
                                 ${publicHtml}
                             </div>`;
                     } else {

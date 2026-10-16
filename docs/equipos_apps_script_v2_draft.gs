@@ -1,24 +1,73 @@
 /**
  * Apps Script para Catalogo de Equipos - Celucenter
- * VERSION 2 — DRAFT (NO DESPLEGADO)
+ * VERSION 2 — IMPLEMENTACION DE PRUEBA (NO DESPLEGADO)
  *
- * Cambios respecto a v1:
- *   - action=public: devuelve solo datos publicos (sin listas internas ni cantidades)
- *   - action=catalog: requiere sessionId valido, filtra por lista asignada
- *   - action=login: genera session token server-side
- *   - Limpieza automatica de sesiones expiradas
+ * CAMBIOS RESPECTO A V1:
  *
- * IMPORTANTE: Este archivo es un borrador para revision.
- *             NO reemplazar el deployment actual sin pruebas completas.
+ * 1. ENDPOINT PUBLICO (action=public):
+ *    - Devuelve solo datos publicos: codigo, producto, categoria, precioPublico,
+ *      disponible (boolean), telmovPay, payjoy
+ *    - NO devuelve: listaM, listaG, listaF, existencias (cantidad), costo
+ *
+ * 2. AUTENTICACION CON PIN:
+ *    - El admin asigna un PIN de 6 digitos al registrar al usuario
+ *    - Login requiere telefono + PIN (no solo telefono)
+ *    - PIN se almacena con PBKDF2-HMAC-SHA256, 10,000 iteraciones, sal unica (ver seccion PIN HASHING)
+ *    - Login exitoso genera session token (UUID) con TTL de 24h
+ *
+ * 3. ENDPOINT AUTORIZADO (action=catalog):
+ *    - Requiere sessionId valido (generado por login)
+ *    - Devuelve campos filtrados segun lista asignada al usuario
+ *    - Session se invalida al expirar o al hacer logout
+ *
+ * FLUJO DE AUTENTICACION:
+ *
+ *   Admin asigna usuario:
+ *     Hoja "Registro": [Nombre, Telefono, Email, Fecha, Lista, PIN_hash, Notas]
+ *     El PIN se genera y comunica al usuario por canal privado (WhatsApp/Bitrix)
+ *
+ *   Usuario inicia sesion:
+ *     POST {action:"login", phone:"3321234567", pin:"123456"}
+ *     → Verifica phone + HMAC-SHA256(salt, pin) contra Registro
+ *     → Si coincide: genera UUID, almacena en "Sesiones", devuelve sessionId
+ *     → Si no: error generico (no revelar si existe el telefono)
+ *
+ *   Usuario consulta catalogo:
+ *     GET ?action=catalog&sessionId=uuid-xxx
+ *     → Valida session, extrae lista, filtra campos
+ *
+ *   Logout:
+ *     POST {action:"logout", sessionId:"uuid-xxx"}
+ *     → Elimina session de la hoja
+ *
+ * COMPATIBILIDAD CON CLIENTES ACTUALES:
+ *   - Usuarios existentes sin PIN: se les notifica por Bitrix para establecer PIN
+ *   - Mientras tanto, action=public sigue funcionando para el catalogo basico
+ *   - El catalogo carga siempre con datos publicos; el login desbloquea las listas
+ *
+ * DESPLIEGUE:
+ *   1. Crear NUEVO deployment (no reemplazar el actual)
+ *   2. Probar con URL de prueba
+ *   3. Migrar frontend a la nueva URL
+ *   4. Retirar deployment anterior
  */
 
+// ============================================================
+// CONFIGURACION
+// ============================================================
 var TOKEN = 'CELUCENTER_EQUIPOS_2026';
 var SHEET_ID = '1dN0Z8RER0i1bWwWvy6uHz2A_A7dg7mI1KzWTEzSnrdY';
 var REGISTER_SHEET = 'Registro';
 var SESSIONS_SHEET = 'Sesiones';
 var SESSION_TTL_HOURS = 24;
+var MAX_LOGIN_ATTEMPTS = 5;
+var LOCKOUT_MINUTES = 15;
 var BITRIX_WEBHOOK = 'https://celucenter.bitrix24.es/rest/9/m616r1ki7xm70bjp/';
 var BITRIX_USER_CRIS = 9;
+
+// Columnas de la hoja Registro (base 0):
+// 0=Nombre, 1=Telefono, 2=Email, 3=Fecha, 4=Lista, 5=PIN_hash, 6=Notas
+var REG_COL = { NAME: 0, PHONE: 1, EMAIL: 2, DATE: 3, LISTA: 4, PIN_HASH: 5, NOTES: 6 };
 
 var LIST_CONFIGS = [
   {
@@ -55,18 +104,16 @@ var LIST_CONFIGS = [
 // ============================================================
 function doGet(e) {
   var params = e.parameter || {};
-  if (params.token !== TOKEN) {
-    return jsonResponse({ error: 'Token invalido' });
-  }
 
+  // action=public no requiere token (es publico)
   var action = params.action || 'public';
 
   if (action === 'public') {
     return getPublicCatalog();
-  } else if (action === 'catalog') {
+  }
+
+  if (action === 'catalog') {
     return getAuthorizedCatalog(params.sessionId || '');
-  } else if (action === 'login') {
-    return doLogin(params.phone || '');
   }
 
   return jsonResponse({ error: 'Accion no reconocida' });
@@ -79,19 +126,25 @@ function doPost(e) {
     return jsonResponse({ success: false, message: 'Datos invalidos' });
   }
 
-  if (body.token !== TOKEN) {
-    return jsonResponse({ success: false, message: 'Token invalido' });
+  var action = body.action || '';
+
+  if (action === 'login') {
+    return doLogin(body.phone || '', body.pin || '');
   }
 
-  if (body.action === 'register') {
+  if (action === 'register') {
     return doRegister(body.phone || '', body.email || '', body.name || '');
+  }
+
+  if (action === 'logout') {
+    return doLogout(body.sessionId || '');
   }
 
   return jsonResponse({ success: false, message: 'Accion no reconocida' });
 }
 
 // ============================================================
-// PUBLIC CATALOG — sin autenticacion, datos publicos unicamente
+// PUBLIC CATALOG — sin autenticacion
 // ============================================================
 function getPublicCatalog() {
   var ss = SpreadsheetApp.openById(SHEET_ID);
@@ -109,8 +162,6 @@ function getPublicCatalog() {
       var producto = String(row[cfg.cols.producto] || '').trim();
       if (!codigo || !producto) continue;
 
-      var cantidad = cleanCantidad(row[cfg.cols.cantidad]);
-
       products.push({
         almacen: cfg.almacen,
         codigo: codigo,
@@ -118,7 +169,7 @@ function getPublicCatalog() {
         nombreCategoria: String(row[cfg.cols.nombreCategoria] || '').trim(),
         categoria: String(row[cfg.cols.categoria] || '').trim(),
         precioPublico: cleanPrice(row[cfg.cols.precioPublico]),
-        disponible: cantidad > 0,  // boolean, no cantidad exacta
+        disponible: cleanCantidad(row[cfg.cols.cantidad]) > 0,
         telmovPay: cfg.cols.telmovPay >= 0 ? String(row[cfg.cols.telmovPay] || '').trim().toUpperCase() === 'SI' : false,
         payjoy: cfg.cols.payjoy >= 0 ? String(row[cfg.cols.payjoy] || '').trim().toUpperCase() === 'SI' : false,
       });
@@ -136,20 +187,19 @@ function getAuthorizedCatalog(sessionId) {
     return jsonResponse({ error: 'Sesion requerida', code: 'NO_SESSION' });
   }
 
-  var sessionData = validateSession(sessionId);
-  if (!sessionData) {
+  var session = validateSession(sessionId);
+  if (!session) {
     return jsonResponse({ error: 'Sesion invalida o expirada', code: 'INVALID_SESSION' });
   }
 
-  var phone = sessionData.phone;
-  var lista = sessionData.lista;
-
+  var lista = session.lista;
   if (!lista) {
     return jsonResponse({ error: 'Lista no asignada. Contacta al administrador.', code: 'NO_LIST' });
   }
 
   var ss = SpreadsheetApp.openById(SHEET_ID);
   var products = [];
+  var listaUpper = lista.toUpperCase();
 
   for (var c = 0; c < LIST_CONFIGS.length; c++) {
     var cfg = LIST_CONFIGS[c];
@@ -175,8 +225,7 @@ function getAuthorizedCatalog(sessionId) {
         payjoy: cfg.cols.payjoy >= 0 ? String(row[cfg.cols.payjoy] || '').trim().toUpperCase() === 'SI' : false,
       };
 
-      // Filtrar listas segun nivel autorizado
-      var listaUpper = lista.toUpperCase();
+      // Filtrar listas segun nivel autorizado — server-side, no client-side
       if (listaUpper === 'TODAS' || listaUpper === 'M') {
         item.listaM = cleanPrice(row[cfg.cols.listaM]);
         item.listaG = cleanPrice(row[cfg.cols.listaG]);
@@ -187,7 +236,7 @@ function getAuthorizedCatalog(sessionId) {
       } else if (listaUpper === 'F') {
         item.listaF = cleanPrice(row[cfg.cols.listaF]);
       }
-      // Si lista es "2X" o cualquier otra: solo precioPublico (ya incluido)
+      // Si lista es "2X": solo precioPublico (ya incluido)
 
       products.push(item);
     }
@@ -197,19 +246,147 @@ function getAuthorizedCatalog(sessionId) {
 }
 
 // ============================================================
+// LOGIN — telefono + PIN
+// ============================================================
+function doLogin(phone, pin) {
+  phone = String(phone).trim();
+  pin = String(pin).trim();
+
+  // Validacion basica sin revelar informacion
+  if (!/^\d{10}$/.test(phone) || !/^\d{4,6}$/.test(pin)) {
+    return jsonResponse({ success: false, message: 'Credenciales invalidas' });
+  }
+
+  var ss = SpreadsheetApp.openById(SHEET_ID);
+  var sheet = ss.getSheetByName(REGISTER_SHEET);
+  if (!sheet) {
+    return jsonResponse({ success: false, message: 'Credenciales invalidas' });
+  }
+
+  // Rate limiting por telefono
+  if (isLockedOut(phone)) {
+    return jsonResponse({
+      success: false,
+      message: 'Demasiados intentos. Intenta en ' + LOCKOUT_MINUTES + ' minutos.',
+      code: 'LOCKED_OUT'
+    });
+  }
+
+  var data = sheet.getDataRange().getValues();
+
+  for (var i = 1; i < data.length; i++) {
+    if (String(data[i][REG_COL.PHONE]).trim() === phone) {
+      var storedHash = String(data[i][REG_COL.PIN_HASH] || '').trim();
+
+      if (!storedHash) {
+        // Usuario sin PIN asignado — misma respuesta generica
+        // para no revelar que el telefono existe sin PIN
+        recordFailedAttempt(phone);
+        return jsonResponse({ success: false, message: 'Credenciales invalidas' });
+      }
+
+      if (!verifyPinPBKDF2(pin, storedHash)) {
+        recordFailedAttempt(phone);
+        return jsonResponse({ success: false, message: 'Credenciales invalidas' });
+      }
+
+      // Login exitoso
+      clearFailedAttempts(phone);
+      var lista = String(data[i][REG_COL.LISTA] || '').trim();
+      var sessionId = generateSessionToken(phone);
+
+      return jsonResponse({
+        success: true,
+        name: String(data[i][REG_COL.NAME] || '').trim(),
+        lista: lista,
+        sessionId: sessionId
+      });
+    }
+  }
+
+  // Telefono no encontrado — misma respuesta generica
+  return jsonResponse({ success: false, message: 'Credenciales invalidas' });
+}
+
+// ============================================================
+// LOGOUT
+// ============================================================
+function doLogout(sessionId) {
+  if (!sessionId) {
+    return jsonResponse({ success: true });
+  }
+
+  var ss = SpreadsheetApp.openById(SHEET_ID);
+  var sheet = ss.getSheetByName(SESSIONS_SHEET);
+  if (!sheet) return jsonResponse({ success: true });
+
+  var data = sheet.getDataRange().getValues();
+  for (var i = data.length - 1; i >= 1; i--) {
+    if (String(data[i][1]).trim() === sessionId) {
+      sheet.deleteRow(i + 1);
+      break;
+    }
+  }
+
+  return jsonResponse({ success: true });
+}
+
+// ============================================================
+// REGISTER (sin cambios funcionales — no asigna PIN)
+// ============================================================
+function doRegister(phone, email, name) {
+  phone = String(phone).trim();
+  email = String(email).trim();
+  name = String(name || '').trim();
+
+  if (!name) {
+    return jsonResponse({ success: false, message: 'Ingresa tu nombre' });
+  }
+  if (!/^\d{10}$/.test(phone)) {
+    return jsonResponse({ success: false, message: 'Telefono debe tener 10 digitos' });
+  }
+  if (!email || email.indexOf('@') === -1) {
+    return jsonResponse({ success: false, message: 'Correo invalido' });
+  }
+
+  var ss = SpreadsheetApp.openById(SHEET_ID);
+  var sheet = ss.getSheetByName(REGISTER_SHEET);
+
+  if (!sheet) {
+    sheet = ss.insertSheet(REGISTER_SHEET);
+    sheet.appendRow(['Nombre', 'Telefono', 'Email', 'Fecha registro', 'Lista asignada', 'PIN_hash', 'Notas']);
+    sheet.getRange(1, 1, 1, 7).setFontWeight('bold');
+  }
+
+  var data = sheet.getDataRange().getValues();
+  for (var i = 1; i < data.length; i++) {
+    if (String(data[i][REG_COL.PHONE]).trim() === phone) {
+      return jsonResponse({
+        success: true,
+        message: 'Ya estas registrado. Si no tienes PIN, contacta a tu asesor.'
+      });
+    }
+  }
+
+  var now = Utilities.formatDate(new Date(), 'America/Mexico_City', 'dd/MM/yyyy HH:mm');
+  sheet.appendRow([name, phone, email, now, '', '', '']);
+
+  notifyBitrix(name, phone, email);
+
+  return jsonResponse({
+    success: true,
+    message: 'Registro exitoso. Tu asesor te enviara tu PIN de acceso.'
+  });
+}
+
+// ============================================================
 // SESSION MANAGEMENT
 // ============================================================
 function generateSessionToken(phone) {
   var ss = SpreadsheetApp.openById(SHEET_ID);
-  var sheet = ss.getSheetByName(SESSIONS_SHEET);
+  var sheet = getOrCreateSheet(ss, SESSIONS_SHEET, ['Phone', 'SessionId', 'Creado', 'Expira']);
 
-  if (!sheet) {
-    sheet = ss.insertSheet(SESSIONS_SHEET);
-    sheet.appendRow(['Phone', 'SessionId', 'Creado', 'Expira']);
-    sheet.getRange(1, 1, 1, 4).setFontWeight('bold');
-  }
-
-  // Limpiar sesiones anteriores del mismo telefono
+  // Invalidar sesiones anteriores del mismo telefono
   var data = sheet.getDataRange().getValues();
   for (var i = data.length - 1; i >= 1; i--) {
     if (String(data[i][0]).trim() === phone) {
@@ -237,29 +414,199 @@ function validateSession(sessionId) {
   for (var i = 1; i < data.length; i++) {
     if (String(data[i][1]).trim() === sessionId) {
       var expires = new Date(data[i][3]);
-      if (expires > now) {
-        var phone = String(data[i][0]).trim();
-        // Buscar lista asignada en Registro
-        var regSheet = ss.getSheetByName(REGISTER_SHEET);
-        if (!regSheet) return null;
-        var regData = regSheet.getDataRange().getValues();
-        for (var j = 1; j < regData.length; j++) {
-          if (String(regData[j][1]).trim() === phone) {
-            return {
-              phone: phone,
-              lista: String(regData[j][4] || '').trim()
-            };
-          }
+      if (expires <= now) return null;
+
+      var phone = String(data[i][0]).trim();
+      var regSheet = ss.getSheetByName(REGISTER_SHEET);
+      if (!regSheet) return null;
+
+      var regData = regSheet.getDataRange().getValues();
+      for (var j = 1; j < regData.length; j++) {
+        if (String(regData[j][REG_COL.PHONE]).trim() === phone) {
+          // Si el PIN_hash fue borrado (revocacion), invalidar sesion
+          var pinHash = String(regData[j][REG_COL.PIN_HASH] || '').trim();
+          if (!pinHash) return null;
+          return {
+            phone: phone,
+            lista: String(regData[j][REG_COL.LISTA] || '').trim(),
+            name: String(regData[j][REG_COL.NAME] || '').trim()
+          };
         }
-        return { phone: phone, lista: '' };
       }
-      return null; // expirada
+      return null;
     }
   }
 
-  return null; // no encontrada
+  return null;
 }
 
+// ============================================================
+// PIN HASHING — PBKDF2-HMAC-SHA256 (derivacion lenta)
+// ============================================================
+//
+// Por que no SHA-256 simple ni HMAC simple:
+//   Un PIN de 6 digitos tiene solo 1M combinaciones.
+//   SHA-256(pin): invertible en < 1 segundo con tabla precalculada.
+//   HMAC-SHA256(salt, pin): previene tablas, pero sigue siendo ~1ms/intento.
+//     → 1M intentos = < 1 segundo offline por usuario.
+//
+// Solucion: PBKDF2-HMAC-SHA256 con 10,000 iteraciones + sal unica.
+//   - PBKDF2 es literalmente HMAC iterado — disponible en Apps Script.
+//   - 10,000 iteraciones: ~10ms por intento en Apps Script.
+//   - 1M intentos = ~2.8 horas por usuario offline.
+//   - Sal unica: no reutilizable entre usuarios.
+//   - Rate limiting online: 5 intentos / 15 min (proteccion principal).
+//   - Comparacion en tiempo constante.
+//
+// Formato almacenado: "iterations:salt_hex:derived_hex"
+//   Ejemplo: "10000:a1b2c3...64chars...:f4e5d6...64chars..."
+//
+// Nota: bcrypt/scrypt no estan disponibles en Apps Script.
+//   PBKDF2 con 10K iteraciones es el maximo razonable en este entorno
+//   sin exceder el timeout de 30s de web apps.
+//   Para proteccion offline mayor, migrar a Firebase Auth.
+
+var PBKDF2_ITERATIONS = 10000;
+
+function bytesToHex(bytes) {
+  return bytes.map(function(b) {
+    return ('0' + (b & 0xFF).toString(16)).slice(-2);
+  }).join('');
+}
+
+function hexToBytes(hex) {
+  var bytes = [];
+  for (var i = 0; i < hex.length; i += 2) {
+    bytes.push(parseInt(hex.substr(i, 2), 16));
+  }
+  return bytes;
+}
+
+function generateSalt() {
+  var uuid1 = Utilities.getUuid().replace(/-/g, '');
+  var uuid2 = Utilities.getUuid().replace(/-/g, '');
+  return (uuid1 + uuid2).substring(0, 64);
+}
+
+function pbkdf2HmacSha256(password, saltHex, iterations) {
+  // PBKDF2 con dkLen = 32 bytes (1 bloque SHA-256)
+  var saltBytes = hexToBytes(saltHex);
+  saltBytes.push(0, 0, 0, 1); // INT32BE(1)
+  var saltBlob = Utilities.newBlob(saltBytes);
+
+  var u = Utilities.computeHmacSha256Signature(
+    saltBlob.getBytes(),
+    Utilities.newBlob(password).getBytes()
+  );
+  var result = u.slice();
+
+  for (var i = 1; i < iterations; i++) {
+    u = Utilities.computeHmacSha256Signature(
+      Utilities.newBlob(u).getBytes(),
+      Utilities.newBlob(password).getBytes()
+    );
+    for (var j = 0; j < result.length; j++) {
+      result[j] ^= u[j];
+    }
+  }
+
+  return bytesToHex(result);
+}
+
+function hashPinPBKDF2(pin) {
+  var salt = generateSalt();
+  var derived = pbkdf2HmacSha256(pin, salt, PBKDF2_ITERATIONS);
+  return PBKDF2_ITERATIONS + ':' + salt + ':' + derived;
+}
+
+function verifyPinPBKDF2(pin, storedHash) {
+  var parts = storedHash.split(':');
+  if (parts.length !== 3) return false;
+
+  var iterations = parseInt(parts[0], 10);
+  var salt = parts[1];
+  var expectedDerived = parts[2];
+
+  if (!iterations || iterations < 1000 || !salt || !expectedDerived) return false;
+
+  var actualDerived = pbkdf2HmacSha256(pin, salt, iterations);
+
+  // Comparacion en tiempo constante
+  if (actualDerived.length !== expectedDerived.length) return false;
+  var diff = 0;
+  for (var i = 0; i < actualDerived.length; i++) {
+    diff |= actualDerived.charCodeAt(i) ^ expectedDerived.charCodeAt(i);
+  }
+  return diff === 0;
+}
+
+// Funcion auxiliar para que el admin asigne un PIN
+// Ejecutar manualmente: setUserPin("3321234567", "123456")
+function setUserPin(phone, pin) {
+  if (!/^\d{4,6}$/.test(pin)) {
+    Logger.log('ERROR: PIN debe ser de 4-6 digitos');
+    return;
+  }
+
+  var ss = SpreadsheetApp.openById(SHEET_ID);
+  var sheet = ss.getSheetByName(REGISTER_SHEET);
+  if (!sheet) { Logger.log('Hoja Registro no encontrada'); return; }
+
+  var data = sheet.getDataRange().getValues();
+  for (var i = 1; i < data.length; i++) {
+    if (String(data[i][REG_COL.PHONE]).trim() === phone) {
+      var hashed = hashPinPBKDF2(pin);
+      sheet.getRange(i + 1, REG_COL.PIN_HASH + 1).setValue(hashed);
+      Logger.log('PIN actualizado para ' + phone + ' (PBKDF2, ' + PBKDF2_ITERATIONS + ' iteraciones)');
+      return;
+    }
+  }
+  Logger.log('Telefono no encontrado: ' + phone);
+}
+
+// ============================================================
+// RATE LIMITING (intentos fallidos)
+// ============================================================
+function isLockedOut(phone) {
+  var ss = SpreadsheetApp.openById(SHEET_ID);
+  var sheet = ss.getSheetByName('LoginAttempts');
+  if (!sheet) return false;
+
+  var data = sheet.getDataRange().getValues();
+  var cutoff = new Date(Date.now() - LOCKOUT_MINUTES * 60 * 1000);
+  var count = 0;
+
+  for (var i = 1; i < data.length; i++) {
+    if (String(data[i][0]).trim() === phone && new Date(data[i][1]) > cutoff) {
+      count++;
+    }
+  }
+
+  return count >= MAX_LOGIN_ATTEMPTS;
+}
+
+function recordFailedAttempt(phone) {
+  var ss = SpreadsheetApp.openById(SHEET_ID);
+  var sheet = getOrCreateSheet(ss, 'LoginAttempts', ['Phone', 'Timestamp']);
+  sheet.appendRow([phone, new Date()]);
+}
+
+function clearFailedAttempts(phone) {
+  var ss = SpreadsheetApp.openById(SHEET_ID);
+  var sheet = ss.getSheetByName('LoginAttempts');
+  if (!sheet) return;
+
+  var data = sheet.getDataRange().getValues();
+  for (var i = data.length - 1; i >= 1; i--) {
+    if (String(data[i][0]).trim() === phone) {
+      sheet.deleteRow(i + 1);
+    }
+  }
+}
+
+// ============================================================
+// CLEANUP TRIGGERS
+// ============================================================
 function cleanExpiredSessions() {
   var ss = SpreadsheetApp.openById(SHEET_ID);
   var sheet = ss.getSheetByName(SESSIONS_SHEET);
@@ -267,102 +614,36 @@ function cleanExpiredSessions() {
 
   var data = sheet.getDataRange().getValues();
   var now = new Date();
-
-  // Borrar de abajo hacia arriba para no desplazar indices
   for (var i = data.length - 1; i >= 1; i--) {
-    var expires = new Date(data[i][3]);
-    if (expires <= now) {
+    if (new Date(data[i][3]) <= now) {
       sheet.deleteRow(i + 1);
     }
   }
-}
 
-// ============================================================
-// LOGIN — ahora genera session token
-// ============================================================
-function doLogin(phone) {
-  phone = String(phone).trim();
-
-  if (!/^\d{10}$/.test(phone)) {
-    return jsonResponse({ exists: false, message: 'Telefono invalido' });
-  }
-
-  var ss = SpreadsheetApp.openById(SHEET_ID);
-  var sheet = ss.getSheetByName(REGISTER_SHEET);
-
-  if (!sheet) {
-    return jsonResponse({ exists: false, message: 'No hay registros' });
-  }
-
-  var data = sheet.getDataRange().getValues();
-
-  for (var i = 1; i < data.length; i++) {
-    if (String(data[i][1]).trim() === phone) {
-      var lista = String(data[i][4] || '').trim();
-      var sessionId = generateSessionToken(phone);
-
-      return jsonResponse({
-        exists: true,
-        name: String(data[i][0] || '').trim(),
-        email: String(data[i][2] || '').trim(),
-        lista: lista,
-        sessionId: sessionId
-      });
+  // Tambien limpiar intentos de login viejos
+  var attempts = ss.getSheetByName('LoginAttempts');
+  if (attempts) {
+    var cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    var aData = attempts.getDataRange().getValues();
+    for (var j = aData.length - 1; j >= 1; j--) {
+      if (new Date(aData[j][1]) <= cutoff) {
+        attempts.deleteRow(j + 1);
+      }
     }
   }
-
-  return jsonResponse({ exists: false });
 }
 
-// ============================================================
-// REGISTER (sin cambios funcionales)
-// ============================================================
-function doRegister(phone, email, name) {
-  phone = String(phone).trim();
-  email = String(email).trim();
-  name = String(name || '').trim();
-
-  if (!name) {
-    return jsonResponse({ success: false, message: 'Ingresa tu nombre' });
-  }
-  if (!/^\d{10}$/.test(phone)) {
-    return jsonResponse({ success: false, message: 'Telefono debe tener 10 digitos' });
-  }
-  if (!email || email.indexOf('@') === -1) {
-    return jsonResponse({ success: false, message: 'Correo invalido' });
-  }
-
-  var ss = SpreadsheetApp.openById(SHEET_ID);
-  var sheet = ss.getSheetByName(REGISTER_SHEET);
-
-  if (!sheet) {
-    sheet = ss.insertSheet(REGISTER_SHEET);
-    sheet.appendRow(['Nombre', 'Telefono', 'Email', 'Fecha registro', 'Lista asignada', 'Notas']);
-    sheet.getRange(1, 1, 1, 6).setFontWeight('bold');
-  }
-
-  var data = sheet.getDataRange().getValues();
-  for (var i = 1; i < data.length; i++) {
-    if (String(data[i][1]).trim() === phone) {
-      var lista = String(data[i][4] || '').trim();
-      return jsonResponse({
-        success: true,
-        message: 'Ya estas registrado.',
-        lista: lista
-      });
+function setupCleanupTrigger() {
+  var triggers = ScriptApp.getProjectTriggers();
+  for (var i = 0; i < triggers.length; i++) {
+    if (triggers[i].getHandlerFunction() === 'cleanExpiredSessions') {
+      ScriptApp.deleteTrigger(triggers[i]);
     }
   }
-
-  var now = Utilities.formatDate(new Date(), 'America/Mexico_City', 'dd/MM/yyyy HH:mm');
-  sheet.appendRow([name, phone, email, now, '', '']);
-
-  notifyBitrix(name, phone, email);
-
-  return jsonResponse({
-    success: true,
-    message: 'Registro exitoso. Tu lista de precios sera asignada pronto.',
-    lista: ''
-  });
+  ScriptApp.newTrigger('cleanExpiredSessions')
+    .timeBased()
+    .everyHours(6)
+    .create();
 }
 
 // ============================================================
@@ -374,7 +655,7 @@ function notifyBitrix(name, phone, email) {
       + 'Nombre: ' + name + '\n'
       + 'Tel: ' + phone + '\n'
       + 'Email: ' + email + '\n\n'
-      + 'Pendiente asignar lista de precios (M, G, F o TODAS)';
+      + 'Pendiente: asignar lista y PIN de acceso';
 
     UrlFetchApp.fetch(BITRIX_WEBHOOK + 'im.message.add', {
       method: 'post',
@@ -389,8 +670,18 @@ function notifyBitrix(name, phone, email) {
 }
 
 // ============================================================
-// HELPERS (sin cambios)
+// HELPERS
 // ============================================================
+function getOrCreateSheet(ss, name, headers) {
+  var sheet = ss.getSheetByName(name);
+  if (!sheet) {
+    sheet = ss.insertSheet(name);
+    sheet.appendRow(headers);
+    sheet.getRange(1, 1, 1, headers.length).setFontWeight('bold');
+  }
+  return sheet;
+}
+
 function cleanPrice(v) {
   if (v === null || v === undefined || v === '') return null;
   if (typeof v === 'number') return Math.round(v * 100) / 100;
@@ -413,23 +704,4 @@ function jsonResponse(obj) {
   return ContentService
     .createTextOutput(JSON.stringify(obj))
     .setMimeType(ContentService.MimeType.JSON);
-}
-
-// ============================================================
-// TRIGGER: configurar limpieza automatica de sesiones
-// Para instalar: ejecutar setupCleanupTrigger() una vez manualmente
-// ============================================================
-function setupCleanupTrigger() {
-  // Eliminar triggers existentes de limpieza
-  var triggers = ScriptApp.getProjectTriggers();
-  for (var i = 0; i < triggers.length; i++) {
-    if (triggers[i].getHandlerFunction() === 'cleanExpiredSessions') {
-      ScriptApp.deleteTrigger(triggers[i]);
-    }
-  }
-  // Crear trigger cada 6 horas
-  ScriptApp.newTrigger('cleanExpiredSessions')
-    .timeBased()
-    .everyHours(6)
-    .create();
 }
