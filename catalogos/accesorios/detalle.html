@@ -1052,9 +1052,11 @@
         const PHOTO_BASE_URL = 'https://raw.githubusercontent.com/piztian/Accesorios-Celucenter/main/fotos/';
         const WHATSAPP_PEDIDO_NUMERO = '5213413300001';
         // Umbrales consistentes con catalogos/accesorios/index.html
-        const UMBRAL_F = 3000;      // desde $3,000 → Lista F (mayoreo)
-        const UMBRAL_G = 6000;      // desde $6,000 → Lista G
-        const UMBRAL_M = 9000;      // desde $9,000 → Lista M (mejor precio)
+        // Escalera por piezas
+        const PIEZAS_2X = 3;       // 3-5 pzas → Lista 2X
+        const PIEZAS_F  = 6;       // 6-9 pzas → Mayoreo (Lista F)
+        const PIEZAS_G  = 10;      // 10-15 pzas → VIP (Lista G)
+        const PIEZAS_M  = 16;      // 16+ pzas → VIP+ (Lista M)
         const UMBRAL_ENVIO = 10000; // desde $10,000 → envío incluido
 
         const ALMACEN_COLORS = [
@@ -1225,28 +1227,36 @@
             const listaActiva = getCartLista();
             const pub = parsePrice(product.precioPublico);
             const tiers = [
-                { key: '2X', label: 'Lista 2X', hint: `< $${UMBRAL_F / 1000}k` },
-                { key: 'F',  label: 'Lista F',  hint: `≥ $${UMBRAL_F / 1000}k` },
-                { key: 'G',  label: 'Lista G',  hint: `≥ $${UMBRAL_G / 1000}k` },
-                { key: 'M',  label: 'Lista M',  hint: `≥ $${UMBRAL_M / 1000}k` },
+                { key: 'pub', lista: null,  label: '1-2 pzas',  piezas: '1-2' },
+                { key: '2X',  lista: '2X',  label: '3-5 pzas',  piezas: '3-5' },
+                { key: 'F',   lista: 'F',   label: '6-9 pzas',  piezas: '6-9' },
+                { key: 'G',   lista: 'G',   label: '10-15 pzas', piezas: '10-15' },
+                { key: 'M',   lista: 'M',   label: '16+ pzas',  piezas: '16+' },
             ];
             const rows = tiers.map(t => {
-                const price = getUnitPriceForList(product, t.key);
+                const price = t.key === 'pub' ? pub : getUnitPriceForList(product, t.lista);
                 if (!price) return '';
                 const isActive = t.key === listaActiva;
                 const sav = (pub && price < pub) ? Math.round((1 - price / pub) * 100) : 0;
                 const badge = sav > 0 ? `<span class="list-badge">Ahorras ${sav}%</span>` : '';
-                return `<div class="list-row${isActive ? ' active' : ''}" data-lista="${t.key}">
-                    <span class="list-name">${t.label} <small style="font-size:0.7rem;color:#bbb;font-weight:400;">${t.hint}</small></span>
+                return `<div class="list-row${isActive ? ' active' : ''}${t.key === 'pub' ? ' public-row' : ''}" data-lista="${t.key}">
+                    <span class="list-name">${t.label}</span>
                     <span class="list-price">${fmt(price)}${badge}</span>
                 </div>`;
             }).filter(Boolean).join('');
-            const pubRow = pub ? `<div class="list-row public-row" data-lista="pub">
-                <span class="list-name">Precio público</span>
-                <span class="list-price">${fmt(pub)}</span>
-            </div>` : '';
-            return `<div class="detail-all-lists" id="detailEscalera">${rows}${pubRow}</div>
-                <div class="detail-escalera-hint">Activa: <strong>Lista ${listaActiva}</strong> · Agrega más al carrito para subir de lista</div>`;
+            const itemCount = getCartItemCount();
+            const nextTier = getNextTierHint(itemCount);
+            const hintText = nextTier ? `Llevas <strong>${itemCount} pieza${itemCount !== 1 ? 's' : ''}</strong> · Agrega ${nextTier.faltan} más para <strong>${nextTier.nombre}</strong>` : `Llevas <strong>${itemCount} pieza${itemCount !== 1 ? 's' : ''}</strong> · ¡Mejor precio desbloqueado!`;
+            return `<div class="detail-all-lists" id="detailEscalera">${rows}</div>
+                <div class="detail-escalera-hint">${hintText}</div>`;
+        }
+
+        function getNextTierHint(itemCount) {
+            if (itemCount < PIEZAS_2X) return { faltan: PIEZAS_2X - itemCount, nombre: 'precio por 3-5 pzas' };
+            if (itemCount < PIEZAS_F)  return { faltan: PIEZAS_F - itemCount, nombre: 'precio Mayoreo' };
+            if (itemCount < PIEZAS_G)  return { faltan: PIEZAS_G - itemCount, nombre: 'precio VIP' };
+            if (itemCount < PIEZAS_M)  return { faltan: PIEZAS_M - itemCount, nombre: 'precio VIP+' };
+            return null;
         }
 
         function refreshEscaleraActive() {
@@ -1258,7 +1268,9 @@
             });
             const hint = el.nextElementSibling;
             if (hint && hint.classList.contains('detail-escalera-hint')) {
-                hint.innerHTML = `Activa: <strong>Lista ${listaActiva}</strong> · Agrega más al carrito para subir de lista`;
+                const itemCount = getCartItemCount();
+                const nextTier = getNextTierHint(itemCount);
+                hint.innerHTML = nextTier ? `Llevas <strong>${itemCount} pieza${itemCount !== 1 ? 's' : ''}</strong> · Agrega ${nextTier.faltan} más para <strong>${nextTier.nombre}</strong>` : `Llevas <strong>${itemCount} pieza${itemCount !== 1 ? 's' : ''}</strong> · ¡Mejor precio desbloqueado!`;
             }
         }
 
@@ -1269,14 +1281,18 @@
         }
 
         function getCartLista() {
-            if (getCartTotalAtList('2X') < UMBRAL_F) return '2X';
-            if (getCartTotalAtList('F') < UMBRAL_G) return 'F';
-            if (getCartTotalAtList('G') < UMBRAL_M) return 'G';
+            const qty = getCartItemCount();
+            if (qty < PIEZAS_2X) return 'pub';
+            if (qty < PIEZAS_F)  return '2X';
+            if (qty < PIEZAS_G)  return 'F';
+            if (qty < PIEZAS_M)  return 'G';
             return 'M';
         }
 
         function getProductPriceForCart(product) {
-            return getUnitPriceForList(product, getCartLista());
+            const lista = getCartLista();
+            if (lista === 'pub') return parsePrice(product.precioPublico) || 0;
+            return getUnitPriceForList(product, lista);
         }
 
         function getCartTotal() {
@@ -1434,18 +1450,13 @@
             document.getElementById('cartSummaryTotal').textContent = formatMXN(getCartTotal());
             document.getElementById('btnWhatsAppOrder').disabled = false;
 
-            if (lista === 'G') {
+            const nextTier = getNextTierHint(totalCount);
+            if (!nextTier) {
                 hint.style.display = 'none';
-            } else if (lista === 'F') {
-                const faltante = UMBRAL_G - getCartTotalAtList('F');
-                hint.style.display = 'block';
-                hint.innerHTML = 'Agrega <strong>' + formatMXN(faltante) + '</strong> mas y desbloqueas <strong>MEJOR PRECIO (Lista G)</strong>';
-                hint.className = 'cart-mayoreo-hint is-level-f';
             } else {
-                const faltante = UMBRAL_F - getCartTotalAtList('2X');
                 hint.style.display = 'block';
-                hint.innerHTML = 'Agrega <strong>' + formatMXN(faltante) + '</strong> mas para precio <strong>MAYOREO (Lista F)</strong>';
-                hint.className = 'cart-mayoreo-hint';
+                hint.innerHTML = 'Agrega <strong>' + nextTier.faltan + ' pieza' + (nextTier.faltan !== 1 ? 's' : '') + '</strong> más para precio <strong>' + nextTier.nombre.toUpperCase() + '</strong>';
+                hint.className = 'cart-mayoreo-hint' + (totalCount >= PIEZAS_F ? ' is-level-f' : '');
             }
         }
 
