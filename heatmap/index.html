@@ -1,0 +1,1098 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Heatmap de Afluencia · CeluCenter · Combinado</title>
+<style>
+/* ── Variables ───────────────────────────────────────────────── */
+:root[data-theme="light"] {
+  --bg:#f8fafc; --surface:#ffffff; --surface2:#f1f5f9; --border:#e2e8f0;
+  --text:#0f172a; --text2:#475569; --text3:#94a3b8;
+  --accent:#0ea5e9; --danger:#ef4444; --warning:#f59e0b; --success:#22c55e;
+  --h0:#f0f9ff; --h1:#bae6fd; --h2:#38bdf8; --h3:#0284c7; --h4:#0c4a6e;
+  --cell-nodata:repeating-linear-gradient(45deg,#e2e8f0 0,#e2e8f0 2px,#f1f5f9 2px,#f1f5f9 8px);
+  --cell-future:#f8fafc; --cell-closed:#f1f5f9; --cell-partial:#fef9c3;
+  --on-dark:#ffffff;
+  --shadow:0 1px 3px rgba(0,0,0,.1),0 1px 2px rgba(0,0,0,.06);
+  --shadow-md:0 4px 6px rgba(0,0,0,.07),0 2px 4px rgba(0,0,0,.06);
+}
+:root[data-theme="dark"] {
+  --bg:#0f172a; --surface:#1e293b; --surface2:#162032; --border:#334155;
+  --text:#f1f5f9; --text2:#94a3b8; --text3:#475569;
+  --accent:#38bdf8; --danger:#f87171; --warning:#fbbf24; --success:#4ade80;
+  --h0:#1e293b; --h1:#164e63; --h2:#0369a1; --h3:#0ea5e9; --h4:#7dd3fc;
+  --cell-nodata:repeating-linear-gradient(45deg,#253347 0,#253347 2px,#1e293b 2px,#1e293b 8px);
+  --cell-future:#162032; --cell-closed:#1a2540; --cell-partial:#451a03;
+  --on-dark:#0f172a;
+  --shadow:0 1px 3px rgba(0,0,0,.4),0 1px 2px rgba(0,0,0,.3);
+  --shadow-md:0 4px 6px rgba(0,0,0,.5),0 2px 4px rgba(0,0,0,.4);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:15px;line-height:1.5}
+
+/* ── Data banner ─────────────────────────────────────────────── */
+.data-banner{background:linear-gradient(90deg,#0369a1,#0ea5e9);color:#fff;text-align:center;padding:7px 20px;font-size:12px;font-weight:700;letter-spacing:.04em;position:sticky;top:0;z-index:200}
+.data-banner.loading{background:linear-gradient(90deg,#78716c,#a8a29e)}
+.data-banner.error{background:linear-gradient(90deg,#dc2626,#ef4444)}
+
+/* ── Header ──────────────────────────────────────────────────── */
+.app-header{background:var(--surface);border-bottom:1px solid var(--border);padding:16px 28px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.app-title h1{font-size:22px;font-weight:800}
+.app-title .sub{font-size:13px;color:var(--text2);margin-top:2px}
+.header-right{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.tz-badge{font-size:12px;color:var(--text2);background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:5px 10px;white-space:nowrap}
+.live-badge{font-size:13px;font-weight:600;color:var(--success);background:rgba(34,197,94,.10);border:1px solid rgba(34,197,94,.35);border-radius:8px;padding:6px 12px;white-space:nowrap;display:flex;align-items:center;gap:5px}
+.btn-icon{background:var(--surface2);border:1px solid var(--border);color:var(--text2);border-radius:8px;padding:7px 14px;cursor:pointer;font-size:14px;transition:.15s;display:flex;align-items:center;gap:5px;white-space:nowrap}
+.btn-icon:hover{background:var(--border);color:var(--text)}
+
+/* ── Filter bar ──────────────────────────────────────────────── */
+.filter-bar{background:var(--surface);border-bottom:1px solid var(--border);padding:12px 28px;display:flex;gap:16px;flex-wrap:wrap;align-items:flex-end}
+.fg{display:flex;flex-direction:column;gap:4px}
+.flabel{font-size:12px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.06em}
+select{background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:8px 32px 8px 12px;font-size:14px;cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' fill='%2394a3b8' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14L2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;min-width:170px}
+select:focus{outline:none;border-color:var(--accent)}
+select:disabled{opacity:.45;cursor:not-allowed}
+.period-group{display:flex;border:1px solid var(--border);border-radius:8px;overflow:hidden}
+.pbtn{background:var(--surface2);border:none;border-right:1px solid var(--border);color:var(--text2);padding:8px 18px;font-size:14px;font-weight:500;cursor:pointer;transition:.15s}
+.pbtn:last-child{border-right:none}
+.pbtn:hover{background:var(--border);color:var(--text)}
+.pbtn.active{background:var(--accent);color:#fff}
+
+/* ── Note inline ─────────────────────────────────────────────── */
+.inline-note{font-size:11px;color:var(--text3);margin-top:2px}
+
+/* ── Main content ────────────────────────────────────────────── */
+.main{padding:20px 28px}
+
+/* ── Context tag ─────────────────────────────────────────────── */
+.ctx-tag{display:inline-flex;align-items:center;gap:6px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:7px 14px;font-size:13px;color:var(--text2);font-weight:500;margin-bottom:18px;flex-wrap:wrap}
+.ctx-tag strong{color:var(--text)}
+
+/* ── Cards ───────────────────────────────────────────────────── */
+.cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px;margin-bottom:22px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px 22px;box-shadow:var(--shadow);border-top-width:3px}
+.card-accent{border-top-color:var(--accent)}
+.card-danger{border-top-color:var(--danger)}
+.card-warn{border-top-color:var(--warning)}
+.card-ok{border-top-color:var(--success)}
+.card-neu{border-top-color:var(--border)}
+.card-lbl{font-size:12px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px}
+.card-val{font-size:34px;font-weight:800;color:var(--text);line-height:1.1}
+.card-sub{font-size:13px;color:var(--text2);margin-top:5px}
+
+/* ── Section ─────────────────────────────────────────────────── */
+.section{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px 28px;margin-bottom:20px;box-shadow:var(--shadow)}
+.sec-hdr{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px}
+.sec-title{font-size:16px;font-weight:700}
+.sec-meta{font-size:13px;color:var(--text2);margin-top:3px}
+.chip{display:inline-flex;align-items:center;padding:3px 10px;border-radius:99px;font-size:12px;font-weight:600;background:rgba(14,165,233,.12);color:var(--accent)}
+.chip-warn{background:rgba(245,158,11,.12);color:var(--warning)}
+
+/* ── Heatmap — fluid: fills full available width ─────────────── */
+.hm-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:4px}
+.hm-table{border-collapse:separate;border-spacing:3px;width:100%;table-layout:fixed}
+.hm-table thead tr th:first-child{width:120px}
+.hm-table th.hour-th{font-size:11px;font-weight:600;color:var(--text3);text-align:center;padding:3px 0}
+.row-lbl{font-size:13px;font-weight:600;color:var(--text2);white-space:nowrap;padding-right:10px;text-align:right;vertical-align:middle;width:120px}
+.cell{height:34px;width:100%;border-radius:4px;cursor:pointer;position:relative;transition:transform .1s,box-shadow .1s;display:flex;align-items:center;justify-content:center;user-select:none}
+.cell:hover{transform:scale(1.18);z-index:20;box-shadow:0 0 0 2px var(--accent)}
+.cell:focus-visible{outline:none;transform:scale(1.18);z-index:20;box-shadow:0 0 0 2px var(--accent),0 0 0 4px rgba(14,165,233,.35)}
+.cell-val{font-size:10px;font-weight:800;pointer-events:none;line-height:1}
+.cell-nd{background:var(--cell-nodata)}
+.cell-fu{background:var(--cell-future);border:1px dashed var(--border)}
+.cell-cl{background:var(--cell-closed)}
+.cell-nc{background:var(--cell-closed);opacity:.5}
+.cell-ss{background:var(--cell-closed);opacity:.35}
+
+/* ── Legend ──────────────────────────────────────────────────── */
+.legend{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-top:16px;padding-top:14px;border-top:1px solid var(--border);font-size:12px;color:var(--text2)}
+.leg-scale{display:flex;align-items:center;gap:6px}
+.leg-canvas{height:14px;width:100px;border-radius:3px;border:1px solid var(--border)}
+.leg-item{display:flex;align-items:center;gap:5px}
+.leg-sw{width:16px;height:16px;border-radius:3px;border:1px solid var(--border);flex-shrink:0}
+
+/* ── Anomalies ───────────────────────────────────────────────── */
+.anom-list{display:flex;flex-direction:column;gap:10px;margin-top:12px}
+.anom-item{display:flex;gap:12px;align-items:flex-start;padding:13px 16px;border-radius:10px;border:1px solid var(--border);background:var(--surface2)}
+.anom-icon{font-size:20px;flex-shrink:0;line-height:1.3}
+.anom-body{flex:1;min-width:0}
+.anom-title{font-size:14px;font-weight:600}
+.anom-detail{font-size:12px;color:var(--text2);margin-top:3px;line-height:1.4}
+.badge{font-size:11px;font-weight:700;padding:3px 10px;border-radius:99px;flex-shrink:0;white-space:nowrap;align-self:flex-start;margin-top:1px}
+.bd-danger{background:rgba(239,68,68,.15);color:var(--danger)}
+.bd-warn{background:rgba(245,158,11,.15);color:var(--warning)}
+.bd-info{background:rgba(14,165,233,.15);color:var(--accent)}
+
+/* ── Tooltip ─────────────────────────────────────────────────── */
+#tip{position:fixed;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 15px;font-size:13px;color:var(--text);box-shadow:var(--shadow-md);pointer-events:none;z-index:1000;max-width:300px;display:none}
+.tip-hdr{font-weight:700;font-size:14px;margin-bottom:7px;border-bottom:1px solid var(--border);padding-bottom:6px}
+.tip-row{display:flex;justify-content:space-between;gap:10px;margin-top:5px}
+.tip-k{color:var(--text2)}
+.tip-v{font-weight:600;text-align:right}
+.tip-note{margin-top:7px;padding-top:6px;border-top:1px solid var(--border);font-size:11px;color:var(--text3);line-height:1.5}
+.tip-dates{margin-top:7px;padding-top:6px;border-top:1px solid var(--border);max-height:100px;overflow-y:auto;font-size:11px;color:var(--text2);line-height:1.6}
+
+/* ── Footer ──────────────────────────────────────────────────── */
+.footer{padding:12px 28px;text-align:center;font-size:12px;color:var(--text3);border-top:1px solid var(--border)}
+
+/* ── Loading overlay ─────────────────────────────────────────── */
+#loadingOverlay{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;z-index:999}
+#loadingOverlay .lo-msg{font-size:15px;color:var(--text2)}
+#loadingOverlay .lo-err{font-size:14px;color:var(--danger);max-width:520px;text-align:center;line-height:1.6}
+
+/* ── Responsive: tablet 900px ────────────────────────────────── */
+@media(max-width:900px){
+  .hm-table{table-layout:auto}
+  .hm-table thead tr th:first-child{width:90px}
+  .row-lbl{width:90px;font-size:12px}
+  .cell{height:30px}
+}
+/* ── Responsive: tablet 768px ────────────────────────────────── */
+@media(max-width:768px){
+  .app-header,.filter-bar,.main{padding-left:16px;padding-right:16px}
+  .cards-grid{grid-template-columns:repeat(2,1fr);gap:12px}
+  .card{padding:16px 18px} .card-val{font-size:28px}
+  select{min-width:130px} .pbtn{padding:7px 14px;font-size:13px}
+  .section{padding:18px 16px}
+  .live-badge{white-space:normal;max-width:calc(100vw - 32px);overflow-wrap:break-word;line-height:1.4}
+}
+/* ── Responsive: mobile 480px ────────────────────────────────── */
+@media(max-width:480px){
+  .app-header,.filter-bar,.main{padding-left:12px;padding-right:12px}
+  .app-title h1{font-size:18px}
+  .cards-grid{grid-template-columns:repeat(2,1fr);gap:8px}
+  .card{padding:12px 14px} .card-val{font-size:22px} .card-sub{font-size:12px}
+  select{min-width:100px} .pbtn{padding:6px 10px;font-size:12px}
+  .section{padding:14px 12px}
+  .live-badge{white-space:normal;max-width:calc(100vw - 24px);overflow-wrap:break-word;line-height:1.4}
+  .hm-table{table-layout:auto}
+  .hm-table thead tr th:first-child{width:72px}
+  .row-lbl{width:72px;font-size:11px}
+  .cell{height:26px}
+  .cell-val{font-size:8px}
+}
+</style>
+</head>
+<body>
+
+<div id="loadingOverlay">
+  <div class="lo-msg" id="loMsg">Cargando datos combinados…</div>
+  <div class="lo-err" id="loErr" style="display:none"></div>
+</div>
+
+<div class="data-banner loading" id="dataBanner">Cargando datos…</div>
+
+<header class="app-header">
+  <div class="app-title">
+    <h1>Heatmap de Afluencia</h1>
+    <div class="sub">Radar Comercial · CeluCenter · OCT 2026</div>
+  </div>
+  <div class="header-right">
+    <span class="tz-badge">🌐 America/Mexico_City · UTC−6</span>
+    <div class="live-badge" id="liveBadge">📡 Datos reales · Combinado</div>
+    <button class="btn-icon" id="themeBtn">☀️ Modo claro</button>
+  </div>
+</header>
+
+<div class="filter-bar">
+  <div class="fg">
+    <label class="flabel">Sucursal</label>
+    <select id="branchSel"></select>
+  </div>
+  <div class="fg">
+    <label class="flabel">Sensor</label>
+    <select id="sensorSel">
+      <option value="interior">Interior (entradas)</option>
+      <option value="exterior">Exterior (Enter+Exit)</option>
+    </select>
+    <div class="inline-note" id="sensorNote"></div>
+  </div>
+  <div class="fg">
+    <label class="flabel">Periodo</label>
+    <div class="period-group">
+      <button class="pbtn" data-p="today">Hoy</button>
+      <button class="pbtn active" data-p="7d">7 días</button>
+      <button class="pbtn" data-p="sep">Sep 26</button>
+      <button class="pbtn" data-p="oct">Oct 26</button>
+    </div>
+  </div>
+</div>
+
+<div class="main">
+  <div class="ctx-tag" id="ctxTag"></div>
+  <div class="cards-grid" id="cardsGrid"></div>
+
+  <div class="section">
+    <div class="sec-hdr">
+      <div>
+        <div class="sec-title" id="hmTitle">Heatmap de Afluencia</div>
+        <div class="sec-meta" id="hmMeta"></div>
+      </div>
+    </div>
+    <div class="hm-scroll">
+      <div id="hmContainer"></div>
+    </div>
+    <div class="legend" id="legendBox"></div>
+  </div>
+
+  <div class="section">
+    <div class="sec-hdr">
+      <div class="sec-title">Detección de Anomalías</div>
+      <span class="chip chip-warn" id="anomCount"></span>
+    </div>
+    <div id="anomBaseline" style="font-size:11px;color:var(--text3);margin-bottom:10px"></div>
+    <div class="anom-list" id="anomList"></div>
+  </div>
+</div>
+
+<footer class="footer">
+  Heatmap de Afluencia · CeluCenter · Combinado · Datos reales de sensor
+  · Conteos registrados por sensor — no representan personas únicas
+  · Exterior = Enter+Exit combinados (separación disponible solo a nivel diario)
+</footer>
+
+<div id="tip"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+//  CONSTANTS
+// ═══════════════════════════════════════════════════════════════
+
+// ── Dynamic date/time helpers (America/Mexico_City) ─────────────────────
+function todayMX() {
+  return new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' });
+}
+function curHourMX() {
+  return (parseInt(new Date().toLocaleString('en-US', {
+    timeZone: 'America/Mexico_City', hour: 'numeric', hour12: false,
+  })) || 0);
+}
+let TODAY_STR      = todayMX();
+const JSON_COVERAGE = { ini: '2026-08-21', fin: todayMX() }; // fin updated after JSON load
+
+// 28-branch catalog
+// tipo: 'sensor_activo' | 'sensor_inactivo' | 'sin_contador'
+// open/close: inferred operating hours (hour integer 0-23)
+// has_ext: branch config indicates exterior sensor present
+// ext_validado: exterior physically confirmed
+// sensor_issue: interior sensor known to report all-zero (sensor problem)
+const BRANCHES = [
+  // ── Con sensor activo (15) ────────────────────────────────────
+  { id:'ATEQUIZA',     label:'Atequiza',     tipo:'sensor_activo', open:8,  close:23, has_ext:true,  ext_validado:true,  sensor_issue:false },
+  { id:'GOMEZ FARIAS', label:'Gómez Farías', tipo:'sensor_activo', open:9,  close:21, has_ext:true,  ext_validado:false, sensor_issue:false },
+  { id:'HUESCALAPA',   label:'Huescalapa',   tipo:'sensor_activo', open:9,  close:21, has_ext:true,  ext_validado:false, sensor_issue:false, fuente_nota:'nueva fuente · Sep–Oct' },
+  { id:'JOCOTEPEC',    label:'Jocotepec',    tipo:'sensor_activo', open:9,  close:23, has_ext:false, ext_validado:false, sensor_issue:false },
+  { id:'MATRIZ',       label:'Matriz',       tipo:'sensor_activo', open:8,  close:23, has_ext:true,  ext_validado:false, sensor_issue:false },
+  { id:'PONCITLAN',    label:'Poncitlán',    tipo:'sensor_activo', open:8,  close:23, has_ext:false, ext_validado:false, sensor_issue:true  },
+  { id:'SANTA CRUZ',   label:'Santa Cruz',   tipo:'sensor_activo', open:8,  close:21, has_ext:true,  ext_validado:false, sensor_issue:true  },
+  { id:'TAMAZULA CH',  label:'Tamazula CH',  tipo:'sensor_activo', open:8,  close:23, has_ext:true,  ext_validado:false, sensor_issue:false },
+  { id:'TAMAZULA RC',  label:'Tamazula RC',  tipo:'sensor_activo', open:8,  close:23, has_ext:true,  ext_validado:false, sensor_issue:false },
+  { id:'TECALITLAN',   label:'Tecalitlán',   tipo:'sensor_activo', open:9,  close:21, has_ext:false, ext_validado:false, sensor_issue:false, sin_datos:true },
+  { id:'TIZAPAN',      label:'Tizapán',      tipo:'sensor_activo', open:8,  close:21, has_ext:true,  ext_validado:false, sensor_issue:false },
+  { id:'TONAYA',       label:'Tonaya',        tipo:'sensor_activo', open:8,  close:20, has_ext:true,  ext_validado:false, sensor_issue:false },
+  { id:'TUXPAN',       label:'Tuxpan',       tipo:'sensor_activo', open:8,  close:22, has_ext:true,  ext_validado:false, sensor_issue:false },
+  { id:'ZAPOTILTIC',   label:'Zapotiltic',   tipo:'sensor_activo', open:8,  close:23, has_ext:true,  ext_validado:true,  sensor_issue:false },
+  { id:'ZAPOTLAN',     label:'Zapotlán',     tipo:'sensor_activo', open:9,  close:22, has_ext:true,  ext_validado:false, sensor_issue:true  },
+  // ── Nueva fuente — sensor activo (4) ─────────────────────────
+  { id:'CONTLA',           label:'Contla',           tipo:'sensor_activo', open:9,  close:21, has_ext:true,  ext_validado:false, sensor_issue:false, fuente_nota:'nueva fuente · Sep' },
+  { id:'JIQUILPAN',        label:'Jiquilpan',        tipo:'sensor_activo', open:9,  close:21, has_ext:true,  ext_validado:false, sensor_issue:true,  fuente_nota:'solo exterior · 1 día (Sep 4)' },
+  { id:'SAN ANDRES',       label:'San Andrés',       tipo:'sensor_activo', open:9,  close:21, has_ext:false, ext_validado:false, sensor_issue:false, fuente_nota:'nueva fuente · Ago–Sep' },
+  { id:'SAN LUIS SOYATLAN',label:'San Luis Soyatlán',tipo:'sensor_activo', open:9,  close:21, has_ext:true,  ext_validado:false, sensor_issue:false, fuente_nota:'nueva fuente · 2 días (Ago–Sep)' },
+  // ── Sin contador (9) ──────────────────────────────────────────
+  { id:'ATOYAC',           label:'Atoyac',           tipo:'sin_contador' },
+  { id:'COTIJA',           label:'Cotija',           tipo:'sin_contador' },
+  { id:'SAN GABRIEL',      label:'San Gabriel',      tipo:'sin_contador', nota:'Solo datos históricos 2023-2024.' },
+  { id:'TECALITLAN CH',    label:'Tecalitlán CH',    tipo:'sin_contador' },
+  { id:'TEOCUITATLAN',     label:'Teocuitatlán',     tipo:'sin_contador' },
+  { id:'USMAJAC',          label:'Usmajac',          tipo:'sin_contador' },
+  { id:'ZAPOTILTIC REF',   label:'Zapotiltic REF',   tipo:'sin_contador' },
+  { id:'TLAJOMULCO',       label:'Tlajomulco',       tipo:'sin_contador' },
+  { id:'TUXPAN B',         label:'Tuxpan B',         tipo:'sin_contador' },
+];
+
+// ═══════════════════════════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════════════════════════
+const S = { branch:'ATEQUIZA', sensor:'interior', period:'7d' };
+
+// Real data loaded from JSON
+let HORA_JSON = null;
+
+// ═══════════════════════════════════════════════════════════════
+//  DATA ACCESS
+// ═══════════════════════════════════════════════════════════════
+
+function getBr() { return BRANCHES.find(b => b.id === S.branch); }
+
+/**
+ * Returns {v, st, notes[]} for branch S.branch, sensor S.sensor, date dt, hour h.
+ *
+ * States:
+ *   'observed'     — real reading from sensor (v >= 1)
+ *   'zero'         — real zero from sensor (v === 0, slot present in JSON)
+ *   'no_data'      — date in combined range but no record for this hour/day
+ *   'future'       — hour hasn't occurred yet today, or date after today
+ *   'no_coverage'  — date outside combined JSON range (before Aug 21)
+ *   'sin_sensor'   — branch has no counter
+ *   'sensor_inactive' — branch sensor inactive
+ *   'no_ext_sensor'— exterior requested but branch has no exterior sensor
+ */
+function cellAt(dt, h) {
+  const br = getBr();
+  if (!br) return { v:null, st:'no_data', notes:[] };
+
+  // Branches without counter
+  if (br.tipo === 'sin_contador')    return { v:null, st:'sin_sensor',      notes:[] };
+  if (br.tipo === 'sensor_inactivo') return { v:null, st:'sensor_inactive', notes:[br.nota||'Sensor inactivo'] };
+
+  // No exterior sensor for this branch
+  if (S.sensor === 'exterior' && !br.has_ext) {
+    return { v:null, st:'no_ext_sensor', notes:['Esta sucursal no tiene sensor exterior registrado.'] };
+  }
+
+  // Date range checks
+  if (dt > TODAY_STR) return { v:null, st:'future', notes:[] };
+  if (dt < JSON_COVERAGE.ini) return { v:null, st:'no_coverage', notes:['Fuera del rango disponible (datos desde 21 ago)'] };
+
+  // Today: block future hours; let data lookup handle past hours (some branches have today)
+  if (dt === TODAY_STR && h > curHourMX()) return { v:null, st:'future', notes:[] };
+
+  const td = HORA_JSON?.tiendas?.[br.id];
+  if (!td) return { v:null, st:'no_data', notes:['Sucursal no encontrada en JSON horario.'] };
+
+  const horasDate = td.horas?.[dt];
+  if (!horasDate) {
+    return { v:null, st:'no_data', notes:['Sin filas en la hoja para esta fecha.'] };
+  }
+
+  const hKey = String(h).padStart(2,'0') + ':00';
+  const slot = horasDate[hKey];
+
+  // Hour not in dict → no sensor record that hour
+  if (slot === undefined) {
+    if (h < br.open || h > br.close) return { v:null, st:'closed', notes:[] };
+    return { v:null, st:'no_data', notes:['Hora sin registro del sensor (fuera de horario o gap).'] };
+  }
+
+  // Slot present → real reading
+  const v = slot[S.sensor] ?? 0;
+  const notes = [];
+
+  // Warn if interior=0 for a branch with known sensor issue
+  if (S.sensor === 'interior' && br.sensor_issue && v === 0) {
+    notes.push('Sensor interior reporta 0 sistemáticamente — posible falla, sensor apagado o mala clasificación de cámara.');
+  }
+  // Note for exterior: combined value
+  if (S.sensor === 'exterior') {
+    notes.push('Exterior = Enter + Exit combinados (datos horarios). Separación disponible a nivel diario.');
+    if (!br.ext_validado) notes.push('Sensor exterior pendiente de validación física en campo.');
+  }
+
+  return { v, st: v === 0 ? 'zero' : 'observed', notes };
+}
+
+// Daily data (enter/exit separated) for tooltip
+function dayAt(dt) {
+  const br = getBr();
+  if (!br || br.tipo !== 'sensor_activo') return null;
+  const td = HORA_JSON?.tiendas?.[br.id];
+  return td?.dias?.[dt] || null;
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  UTILITIES
+// ═══════════════════════════════════════════════════════════════
+
+const HOURS     = Array.from({length:24}, (_,i) => i);
+const DAYS_SHORT = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb'];
+const DAYS_LONG  = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+const MONTHS     = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+
+function hh(h) { return String(h).padStart(2,'0') + ':00'; }
+function fmtD(d) { const dt=new Date(d+'T12:00:00'); return `${dt.getDate()} ${MONTHS[dt.getMonth()]}`; }
+function fmtDL(d) { const dt=new Date(d+'T12:00:00'); return `${DAYS_LONG[dt.getDay()]} ${dt.getDate()} ${MONTHS[dt.getMonth()]} ${dt.getFullYear()}`; }
+function fmtN(n) { return n==null ? '—' : n.toLocaleString('es-MX'); }
+
+function periodDates() {
+  if (S.period === 'today') return [TODAY_STR];
+  if (S.period === 'oct')   return genRange('2026-10-01', TODAY_STR);
+  if (S.period === 'sep')   return genRange('2026-09-01', '2026-09-30');
+  // '7d'
+  const arr = [];
+  const base = new Date(TODAY_STR + 'T12:00:00');
+  for (let i=6; i>=0; i--) { const d=new Date(base); d.setDate(d.getDate()-i); arr.push(d.toISOString().slice(0,10)); }
+  return arr;
+}
+
+function genRange(from, to) {
+  const arr = [];
+  const d = new Date(from + 'T12:00:00');
+  const end = new Date(to + 'T12:00:00');
+  while (d <= end) { arr.push(d.toISOString().slice(0,10)); d.setDate(d.getDate()+1); }
+  return arr;
+}
+
+// Color interpolation
+const PALETTES = {
+  dark:  ['#1e293b','#164e63','#0369a1','#0ea5e9','#7dd3fc'],
+  light: ['#e0f2fe','#bae6fd','#38bdf8','#0284c7','#0c4a6e'],
+};
+function lerp(c1,c2,t) {
+  const h=s=>[parseInt(s.slice(1,3),16),parseInt(s.slice(3,5),16),parseInt(s.slice(5,7),16)];
+  const [r1,g1,b1]=h(c1); const [r2,g2,b2]=h(c2);
+  return `rgb(${Math.round(r1+(r2-r1)*t)},${Math.round(g1+(g2-g1)*t)},${Math.round(b1+(b2-b1)*t)})`;
+}
+function heatColor(v,max) {
+  const p=PALETTES[document.documentElement.dataset.theme==='dark'?'dark':'light'];
+  if (!v||max===0) return p[0];
+  const ratio=Math.min(1,v/max), n=p.length-1, seg=ratio*n, i=Math.floor(seg), t=seg-i;
+  return i>=n ? p[n] : lerp(p[i],p[i+1],t);
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  SENSOR NOTE IN FILTER BAR
+// ═══════════════════════════════════════════════════════════════
+
+function updateSensorNote() {
+  const br = getBr();
+  const note = document.getElementById('sensorNote');
+  const sel  = document.getElementById('sensorSel');
+  if (!br || br.tipo !== 'sensor_activo') { note.textContent=''; sel.disabled=false; return; }
+  if (br.sin_datos) { note.textContent='Pestaña vacía (sin datos de sensor)'; return; }
+  if (S.sensor === 'exterior') {
+    if (!br.has_ext) { note.textContent='Sin sensor exterior'; sel.value='interior'; S.sensor='interior'; }
+    else if (!br.ext_validado) note.textContent='⚠ Ext. no validado físicamente';
+    else note.textContent='✓ Sensor exterior validado';
+  } else {
+    if (br.sensor_issue) note.textContent='⚠ Interior reporta 0 — posible falla';
+    else note.textContent='';
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  CARDS
+// ═══════════════════════════════════════════════════════════════
+
+function calcCards() {
+  const dates = periodDates();
+  let total=0, peakV=0, peakDt=null, peakH=null;
+  let completeN=0, expected=0, missing=0;
+  const daysSet = new Set();
+
+  for (const dt of dates) {
+    let hasDt = false;
+    for (let h=0; h<24; h++) {
+      const c = cellAt(dt, h);
+      if (c.st==='closed'||c.st==='future'||c.st==='sin_sensor'||
+          c.st==='sensor_inactive'||c.st==='no_coverage'||c.st==='no_ext_sensor') continue;
+      expected++;
+      if (c.st==='observed') {
+        total+=c.v; completeN++; hasDt=true;
+        if (c.v>peakV) { peakV=c.v; peakDt=dt; peakH=h; }
+      } else if (c.st==='zero') {
+        completeN++; hasDt=true;
+      } else {
+        missing++;
+      }
+    }
+    if (hasDt) daysSet.add(dt);
+  }
+  const cov = expected>0 ? completeN/expected : 0;
+  const avg = completeN>0 ? total/completeN : null;
+  return {total, peakV, peakDt, peakH, avg, days:daysSet.size, cov, missing, expected, completeN};
+}
+
+function renderCards() {
+  const c = calcCards();
+  const br = getBr();
+  const tipo = br?.tipo || '';
+  const metricLabel = S.sensor==='exterior' ? 'Tráfico ext.' : 'Entradas int.';
+
+  if (tipo === 'sin_contador') {
+    document.getElementById('cardsGrid').innerHTML = `
+      <div class="card card-neu" style="grid-column:1/-1">
+        <div class="card-lbl">Sin sensor</div>
+        <div class="card-val" style="font-size:14px">${br.label} no tiene contador de afluencia</div>
+        <div class="card-sub">No hay datos disponibles para esta sucursal.</div>
+      </div>`;
+    return;
+  }
+  if (tipo === 'sensor_inactivo') {
+    document.getElementById('cardsGrid').innerHTML = `
+      <div class="card card-warn" style="grid-column:1/-1">
+        <div class="card-lbl">Sensor inactivo</div>
+        <div class="card-val" style="font-size:14px">${br.label}</div>
+        <div class="card-sub">${br.nota||'Sin datos recientes'}</div>
+      </div>`;
+    return;
+  }
+
+  const covCls = c.cov<.5 ? 'card-danger' : c.cov<.8 ? 'card-warn' : 'card-ok';
+  document.getElementById('cardsGrid').innerHTML = `
+    <div class="card card-accent">
+      <div class="card-lbl">Total conteos</div>
+      <div class="card-val">${fmtN(c.total)}</div>
+      <div class="card-sub">${metricLabel} · periodo</div>
+    </div>
+    <div class="card card-danger">
+      <div class="card-lbl">Pico</div>
+      <div class="card-val">${fmtN(c.peakV)}</div>
+      <div class="card-sub">${c.peakDt ? fmtD(c.peakDt)+' · '+hh(c.peakH) : 'Sin datos'}</div>
+    </div>
+    <div class="card card-neu">
+      <div class="card-lbl">Promedio / hora</div>
+      <div class="card-val">${c.avg!=null ? c.avg.toFixed(1) : '—'}</div>
+      <div class="card-sub">Sobre ${c.completeN} horas observadas</div>
+    </div>
+    <div class="card card-ok">
+      <div class="card-lbl">Días con datos</div>
+      <div class="card-val">${c.days}</div>
+      <div class="card-sub">de ${periodDates().length} días del periodo</div>
+    </div>
+    <div class="card ${covCls}">
+      <div class="card-lbl">Cobertura</div>
+      <div class="card-val">${(c.cov*100).toFixed(0)}%</div>
+      <div class="card-sub">${c.completeN}/${c.expected} horas · ${c.missing} sin datos</div>
+    </div>
+  `;
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  HEATMAP DATA
+// ═══════════════════════════════════════════════════════════════
+
+function hmData() {
+  const dates = periodDates();
+
+  if (S.period !== 'oct' && S.period !== 'sep') {
+    const rows = dates.map(dt => {
+      const dow = new Date(dt+'T12:00:00').getDay();
+      const lbl = S.period==='today' ? fmtD(dt) : `${DAYS_SHORT[dow]} ${fmtD(dt)}`;
+      return { lbl, dt, cells: HOURS.map(h => ({...cellAt(dt,h), h})) };
+    });
+    const vals = rows.flatMap(r=>r.cells.filter(c=>c.st==='observed'&&c.v!=null).map(c=>c.v));
+    const max = vals.length ? Math.max(...vals) : 1;
+    return {rows, max, is30d:false};
+  }
+
+  // 'oct'/'sep' mode: aggregate by day-of-week + hour (compact monthly view)
+  const dowMap = {};
+  for (let d=0;d<7;d++) { dowMap[d]={}; for (let h=0;h<24;h++) dowMap[d][h]=[]; }
+  for (const dt of dates) {
+    const dow = new Date(dt+'T12:00:00').getDay();
+    for (let h=0;h<24;h++) {
+      const c = cellAt(dt,h);
+      if (c.st==='observed'&&c.v!=null) dowMap[dow][h].push({dt,v:c.v});
+    }
+  }
+  const DOW_ORD = [1,2,3,4,5,6,0];
+  const rows = DOW_ORD.map(dow => {
+    const cells = HOURS.map(h => {
+      const entries = dowMap[dow][h];
+      if (!entries.length) return {v:null, st:'no_data', entries:[], h};
+      const avg = entries.reduce((a,b)=>a+b.v,0)/entries.length;
+      return {v:avg, st:'observed', entries, h};
+    });
+    return {lbl:DAYS_LONG[dow], dow, cells};
+  });
+  const vals = rows.flatMap(r=>r.cells.filter(c=>c.st==='observed'&&c.v!=null).map(c=>c.v));
+  const max = vals.length ? Math.max(...vals) : 1;
+  return {rows, max, is30d:true};
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  RENDER HEATMAP
+// ═══════════════════════════════════════════════════════════════
+
+function renderHeatmap() {
+  const {rows, max, is30d} = hmData();
+  const theme = document.documentElement.dataset.theme;
+  const metricLabel = S.sensor==='exterior' ? 'Tráfico exterior (Enter+Exit)' : 'Entradas interior';
+
+  const pLabel = {today:'Hoy','7d':'Últimos 7 días',sep:'Septiembre 2026',oct:'Octubre 2026'}[S.period];
+  document.getElementById('hmTitle').textContent = `Heatmap · ${metricLabel} · ${pLabel}`;
+  document.getElementById('hmMeta').textContent = is30d
+    ? `Promedio por día de semana y hora · Escala 0–${Math.round(max)}`
+    : `Conteos por hora · Escala 0–${Math.round(max)} · Datos hasta ${JSON_COVERAGE.fin}`;
+
+  let html='<table class="hm-table"><thead><tr><th style="text-align:right;padding-right:8px;font-size:10px;color:var(--text3)">Periodo</th>';
+  for (const h of HOURS) html+=`<th class="hour-th">${String(h).padStart(2,'0')}</th>`;
+  html+='</tr></thead><tbody>';
+
+  for (const row of rows) {
+    html+=`<tr><td class="row-lbl">${row.lbl}</td>`;
+    for (const cell of row.cells) {
+      const h=cell.h;
+      let cls='cell', bg='', inner='', ariaExtra='';
+      const rowKey = row.dt ? `data-dt="${row.dt}"` : `data-dow="${row.dow}"`;
+      const entrJSON = (cell.entries&&cell.entries.length)
+        ? `data-ent='${JSON.stringify(cell.entries.slice(0,12))}'` : '';
+      // Notes for tooltip stored as data attr (first note only, tooltip reads all)
+      const notesAttr = (cell.notes&&cell.notes.length) ? `data-notes='${JSON.stringify(cell.notes)}'` : '';
+
+      switch (cell.st) {
+        case 'closed':
+          cls+=' cell-cl';
+          inner=`<span class="cell-val" style="color:var(--text3)">—</span>`;
+          break;
+        case 'future':
+          cls+=' cell-fu';
+          inner=`<span class="cell-val" style="color:var(--text3)">◌</span>`;
+          break;
+        case 'sin_sensor':
+        case 'sensor_inactive':
+          cls+=' cell-ss';
+          inner=`<span class="cell-val" style="color:var(--text3)">✕</span>`;
+          break;
+        case 'no_ext_sensor':
+          cls+=' cell-ss';
+          inner=`<span class="cell-val" style="color:var(--text3)">—</span>`;
+          break;
+        case 'no_coverage':
+          cls+=' cell-nc';
+          inner=`<span class="cell-val" style="color:var(--text3)">·</span>`;
+          break;
+        case 'no_data':
+          cls+=' cell-nd';
+          inner=`<span class="cell-val" style="color:var(--text3)">?</span>`;
+          break;
+        default:
+          // observed or zero
+          bg = heatColor(cell.v||0, max);
+          const hi = (cell.v||0)>=max*.55;
+          const tc = hi ? (theme==='dark'?'#0f172a':'#fff') : 'var(--text2)';
+          if (cell.v===0) {
+            inner=`<span class="cell-val" style="color:var(--text3)">0</span>`;
+          } else if ((cell.v||0)>=max*.28) {
+            inner=`<span class="cell-val" style="color:${tc}">${Math.round(cell.v)}</span>`;
+          }
+      }
+
+      const styleA = bg ? `style="background:${bg}"` : '';
+      const dAttrs = `data-st="${cell.st}" data-v="${cell.v!=null?cell.v.toFixed(1):''}" data-h="${h}" ${rowKey} ${entrJSON} ${notesAttr}`;
+      const stDesc = {
+        closed:'fuera de horario',future:'hora futura',no_data:'sin datos',
+        sin_sensor:'sin sensor',sensor_inactive:'sensor inactivo',
+        no_ext_sensor:'sin sensor ext.',no_coverage:'fuera de cobertura',
+        zero:'cero observado',observed:'conteo observado'
+      }[cell.st]||cell.st;
+      const ariaLbl = `${row.lbl}, ${hh(h)}, ${stDesc}${cell.v!=null&&cell.st!=='closed'&&cell.st!=='future'?' '+Math.round(cell.v):''}`;
+      html+=`<td><div class="${cls}" ${styleA} ${dAttrs} tabindex="0" role="button" aria-label="${ariaLbl}">${inner}</div></td>`;
+    }
+    html+='</tr>';
+  }
+  html+='</tbody></table>';
+  document.getElementById('hmContainer').innerHTML=html;
+
+  // Events on cells
+  document.querySelectorAll('.cell').forEach(el => {
+    el.addEventListener('mouseenter', e => { tipBuild(e.currentTarget); tipPosAt(e.clientX, e.clientY); });
+    el.addEventListener('mousemove',  e => tipPosAt(e.clientX, e.clientY));
+    el.addEventListener('mouseleave', tipHide);
+    el.addEventListener('focus', e => { tipBuild(e.currentTarget); tipPosByEl(e.currentTarget); });
+    el.addEventListener('blur',  tipHide);
+    el.addEventListener('keydown', e => {
+      if (e.key==='Enter'||e.key===' ') { e.preventDefault(); tipBuild(e.currentTarget); tipPosByEl(e.currentTarget); }
+      else if (e.key==='Escape') { tipHide(); e.currentTarget.blur(); }
+    });
+    el.addEventListener('touchstart', e => {
+      el._ts = {x:e.touches[0].clientX, y:e.touches[0].clientY};
+    }, {passive:true});
+    el.addEventListener('touchend', e => {
+      const t=e.changedTouches[0];
+      const moved=el._ts&&(Math.abs(t.clientX-el._ts.x)>10||Math.abs(t.clientY-el._ts.y)>10);
+      if (!moved) { tipBuild(e.currentTarget); tipPosAt(t.clientX,t.clientY); clearTimeout(el._tt); el._tt=setTimeout(tipHide,3500); }
+    }, {passive:true});
+  });
+  document.addEventListener('touchstart', e => {
+    if (e.target&&typeof e.target.closest==='function'&&!e.target.closest('.cell')&&!e.target.closest('#tip')) tipHide();
+  }, {passive:true});
+
+  renderLegend(max, is30d);
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  LEGEND
+// ═══════════════════════════════════════════════════════════════
+
+function renderLegend(max, is30d) {
+  const p=PALETTES[document.documentElement.dataset.theme==='dark'?'dark':'light'];
+  document.getElementById('legendBox').innerHTML=`
+    <div class="leg-scale">
+      <span>0</span>
+      <canvas id="lgc" class="leg-canvas" width="80" height="12"></canvas>
+      <span>${Math.round(max)}</span>
+      <span style="font-size:10px;color:var(--text3);margin-left:3px">${is30d?'promedio':'conteos'}</span>
+    </div>
+    <div class="leg-item"><div class="leg-sw" style="background:${p[0]}"></div><span>Cero observado</span></div>
+    <div class="leg-item"><div class="leg-sw" style="background:var(--cell-nodata)"></div><span>Sin datos (?)</span></div>
+    <div class="leg-item"><div class="leg-sw" style="background:var(--cell-future);border:1px dashed var(--border)"></div><span>Hora futura (◌)</span></div>
+    <div class="leg-item"><div class="leg-sw" style="background:var(--cell-closed)"></div><span>Fuera de horario (—)</span></div>
+    <div class="leg-item"><div class="leg-sw" style="background:var(--cell-closed);opacity:.35"></div><span>Sin sensor (✕) / Sin cobertura (·)</span></div>
+  `;
+  const cv=document.getElementById('lgc');
+  if (!cv) return;
+  const cx=cv.getContext('2d'), gr=cx.createLinearGradient(0,0,80,0);
+  p.forEach((c,i)=>gr.addColorStop(i/(p.length-1),c));
+  cx.fillStyle=gr; cx.fillRect(0,0,80,12);
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  ANOMALY DETECTION (no historical baseline — detects gaps and zero patterns)
+// ═══════════════════════════════════════════════════════════════
+
+function detectAnomalies() {
+  const br = getBr();
+  if (!br || br.tipo !== 'sensor_activo' || br.sin_datos) return [];
+  const dates = periodDates().filter(d => d >= JSON_COVERAGE.ini && d <= JSON_COVERAGE.fin);
+  const found = [];
+
+  // 1. Days with all-zero interior (sensor issue pattern)
+  if (S.sensor === 'interior') {
+    for (const dt of dates) {
+      let allZero=true, hasSlots=false;
+      for (let h=br.open; h<=br.close; h++) {
+        const c=cellAt(dt,h);
+        if (c.st==='observed') { allZero=false; break; }
+        if (c.st==='zero') hasSlots=true;
+      }
+      if (allZero && hasSlots) {
+        found.push({
+          type:'zero_day', icon:'⚠️',
+          title:`Día sin entradas interiores · ${fmtD(dt)}`,
+          detail:`${fmtDL(dt)} — Sensor interior reporta 0 en todas las horas. Posible falla, modo fuera de horario o mala clasificación de cámara.`,
+          badgeCls:'bd-warn', badgeTxt:'Sensor sospechoso', sortKey:1, dt,
+        });
+      }
+    }
+  }
+
+  // 2. Hours with no_data during expected operational window
+  const noDataByDate = {};
+  for (const dt of dates) {
+    const gaps=[];
+    for (let h=br.open; h<=br.close; h++) {
+      const c=cellAt(dt,h);
+      if (c.st==='no_data') gaps.push(h);
+    }
+    if (gaps.length >= 2) noDataByDate[dt]=gaps;
+  }
+  for (const [dt, gaps] of Object.entries(noDataByDate)) {
+    found.push({
+      type:'gap', icon:'📵',
+      title:`Huecos de datos · ${fmtD(dt)}`,
+      detail:`${fmtDL(dt)} — ${gaps.length} horas sin registro durante horario esperado: ${gaps.map(hh).join(', ')}.`,
+      badgeCls:'bd-info', badgeTxt:'Sin datos', sortKey:2, dt,
+    });
+  }
+
+  // 3. Days entirely missing
+  for (const dt of dates) {
+    const td = HORA_JSON?.tiendas?.[br.id];
+    if (!td?.horas?.[dt]) {
+      found.push({
+        type:'missing_day', icon:'❌',
+        title:`Día sin registros · ${fmtD(dt)}`,
+        detail:`${fmtDL(dt)} — No existe ninguna fila en la hoja para esta fecha. Posible interrupción del sensor o error de exportación.`,
+        badgeCls:'bd-danger', badgeTxt:'Día faltante', sortKey:0, dt,
+      });
+    }
+  }
+
+  // 4. Warn if sensor_issue branch
+  if (br.sensor_issue && S.sensor === 'interior' && !found.find(f=>f.type==='zero_day')) {
+    found.push({
+      type:'sensor_known', icon:'🔌',
+      title:`Sensor interior con ceros sistemáticos`,
+      detail:`${br.label} reporta interior=0 en todos los registros del periodo. El contador interior puede estar apagado, mal clasificado o con falla de conectividad. STX confirma ventas activas en la tienda.`,
+      badgeCls:'bd-warn', badgeTxt:'Sensor falla', sortKey:0,
+    });
+  }
+
+  found.sort((a,b) => a.sortKey-b.sortKey || (a.dt||'').localeCompare(b.dt||''));
+  return found;
+}
+
+function renderAnomalies() {
+  const br = getBr();
+  const items = detectAnomalies();
+  const cap = 25;
+
+  // Baseline note
+  document.getElementById('anomBaseline').textContent =
+    'Sin referencia histórica disponible para esta versión — solo se detectan ausencias de datos y patrones de cero. La detección estadística (±2σ) requiere históricos previos.';
+
+  document.getElementById('anomCount').textContent = `${items.length} alertas`;
+  if (!items.length) {
+    document.getElementById('anomList').innerHTML =
+      '<div style="text-align:center;color:var(--text2);padding:20px;font-size:13px">✓ Sin anomalías detectadas en el periodo seleccionado</div>';
+    return;
+  }
+  document.getElementById('anomList').innerHTML = items.slice(0,cap).map(a=>`
+    <div class="anom-item">
+      <div class="anom-icon">${a.icon}</div>
+      <div class="anom-body">
+        <div class="anom-title">${a.title}</div>
+        <div class="anom-detail">${a.detail}</div>
+      </div>
+      <span class="badge ${a.badgeCls}">${a.badgeTxt}</span>
+    </div>`).join('')+(items.length>cap?`<div style="text-align:center;color:var(--text2);font-size:12px;padding:8px">…y ${items.length-cap} más</div>`:'');
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  TOOLTIP
+// ═══════════════════════════════════════════════════════════════
+
+const tip = document.getElementById('tip');
+
+function tipBuild(el) {
+  const h   = parseInt(el.dataset.h);
+  const dt  = el.dataset.dt;
+  const dow = el.dataset.dow;
+  const st  = el.dataset.st;
+  const v   = el.dataset.v;
+  const ents  = el.dataset.ent   ? JSON.parse(el.dataset.ent)   : null;
+  const notes = el.dataset.notes ? JSON.parse(el.dataset.notes) : [];
+  const br  = getBr();
+  const is30d = S.period==='oct' || S.period==='sep';
+  const metricLabel = S.sensor==='exterior' ? 'Tráfico ext. (E+S)' : 'Entradas int.';
+
+  const hdr = is30d
+    ? `${DAYS_LONG[parseInt(dow)]} · ${hh(h)}`
+    : `${dt ? fmtDL(dt) : ''} · ${hh(h)}`;
+
+  const stLbls = {
+    closed:'Fuera de horario operativo', future:'Hora futura',
+    no_data:'Sin registros — dato faltante', sin_sensor:'Sin contador de afluencia',
+    sensor_inactive:'Sensor inactivo', no_ext_sensor:'Sin sensor exterior registrado',
+    no_coverage:'Fuera del rango disponible (Ago–Oct)', zero:'Cero observado (lectura real del sensor)',
+    observed:'Conteo observado'
+  };
+
+  let body='';
+  if (st==='observed'||st==='zero') {
+    const num = v ? parseFloat(v).toFixed(0) : '0';
+    if (is30d && ents) {
+      body=`
+        <div class="tip-row"><span class="tip-k">${metricLabel}</span><span class="tip-v">${parseFloat(v).toFixed(1)} (prom.)</span></div>
+        <div class="tip-row"><span class="tip-k">Observaciones</span><span class="tip-v">${ents.length} días</span></div>
+        <div class="tip-dates">${ents.map(en=>`<div>${fmtD(en.dt)}: ${en.v}</div>`).join('')}</div>`;
+    } else {
+      body=`<div class="tip-row"><span class="tip-k">${metricLabel}</span><span class="tip-v">${num}</span></div>`;
+      // Add daily data if available and sensor is exterior
+      if (dt && S.sensor==='exterior') {
+        const day = dayAt(dt);
+        if (day) body+=`
+          <div class="tip-row" style="margin-top:6px;padding-top:5px;border-top:1px solid var(--border)">
+            <span class="tip-k">Ext. entradas (día)</span><span class="tip-v">${fmtN(day.exterior_enter)}</span>
+          </div>
+          <div class="tip-row">
+            <span class="tip-k">Ext. salidas (día)</span><span class="tip-v">${fmtN(day.exterior_exit)}</span>
+          </div>`;
+      } else if (dt && S.sensor==='interior') {
+        const day = dayAt(dt);
+        if (day) body+=`<div class="tip-row"><span class="tip-k">Interior (día total)</span><span class="tip-v">${fmtN(day.interior)}</span></div>`;
+      }
+    }
+  } else if (st==='closed') {
+    body=`<div class="tip-row"><span class="tip-k">Horario</span><span class="tip-v">${hh(br.open)}–${hh(br.close)}</span></div>`;
+  }
+
+  const notesHtml = notes.length
+    ? `<div class="tip-note">${notes.map(n=>`⚠ ${n}`).join('<br>')}</div>` : '';
+
+  tip.innerHTML=`
+    <div class="tip-hdr">${hdr}</div>
+    <div class="tip-row"><span class="tip-k">Estado</span><span class="tip-v">${stLbls[st]||st}</span></div>
+    <div class="tip-row"><span class="tip-k">Sensor</span><span class="tip-v">${S.sensor}</span></div>
+    ${body}${notesHtml}
+  `;
+  tip.style.display='block';
+}
+
+function tipHide() { tip.style.display='none'; }
+function tipPosAt(cx,cy) {
+  const tw=tip.offsetWidth||260, th=tip.offsetHeight||100;
+  let x=cx+16, y=cy-16;
+  if (x+tw>window.innerWidth-8) x=cx-tw-16;
+  if (y+th>window.innerHeight-8) y=cy-th;
+  if (y<8) y=8;
+  tip.style.left=x+'px'; tip.style.top=y+'px';
+}
+function tipPosByEl(el) {
+  const rect=el.getBoundingClientRect(), tw=tip.offsetWidth||260, th=tip.offsetHeight||120;
+  let x=rect.right+12, y=rect.top;
+  if (x+tw>window.innerWidth-8) x=rect.left-tw-12;
+  if (y+th>window.innerHeight-8) y=window.innerHeight-th-8;
+  if (y<8) y=8;
+  tip.style.left=x+'px'; tip.style.top=y+'px';
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  CONTEXT TAG
+// ═══════════════════════════════════════════════════════════════
+
+function renderCtx() {
+  const br = getBr();
+  const pL = {today:'Hoy','7d':'Últimos 7 días',sep:'Septiembre 2026',oct:'Octubre 2026'}[S.period];
+  const metricLabel = S.sensor==='exterior' ? 'Exterior (Enter+Exit)' : 'Interior (entradas)';
+  const tipoLabel = {
+    sensor_activo:'Sensor activo', sensor_inactivo:'Sensor inactivo', sin_contador:'Sin sensor'
+  }[br?.tipo||''] || '';
+  document.getElementById('ctxTag').innerHTML=`
+    Sucursal: <strong>${br?.label||'—'}</strong>
+    &nbsp;·&nbsp; Tipo: <strong>${tipoLabel}</strong>
+    &nbsp;·&nbsp; Sensor: <strong>${metricLabel}</strong>
+    &nbsp;·&nbsp; Periodo: <strong>${pL}</strong>
+    &nbsp;·&nbsp; Cobertura JSON: <strong>${JSON_COVERAGE.ini} → ${JSON_COVERAGE.fin}</strong>
+  `;
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  FULL RENDER
+// ═══════════════════════════════════════════════════════════════
+
+function renderAll() {
+  updateSensorNote();
+  renderCtx();
+  renderCards();
+  renderHeatmap();
+  renderAnomalies();
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  EVENT HANDLERS
+// ═══════════════════════════════════════════════════════════════
+
+document.getElementById('branchSel').addEventListener('change', function() {
+  S.branch = this.value;
+  // Reset sensor if new branch has no exterior
+  const br = getBr();
+  if (S.sensor==='exterior' && br && !br.has_ext) { S.sensor='interior'; document.getElementById('sensorSel').value='interior'; }
+  renderAll();
+});
+document.getElementById('sensorSel').addEventListener('change', function() { S.sensor=this.value; renderAll(); });
+
+document.querySelectorAll('.pbtn').forEach(btn => {
+  btn.addEventListener('click', function() {
+    document.querySelectorAll('.pbtn').forEach(b=>b.classList.remove('active'));
+    this.classList.add('active');
+    S.period = this.dataset.p;
+    renderAll();
+  });
+});
+
+document.getElementById('themeBtn').addEventListener('click', function() {
+  const isDk = document.documentElement.dataset.theme==='dark';
+  document.documentElement.dataset.theme = isDk ? 'light' : 'dark';
+  this.textContent = isDk ? '🌙 Modo oscuro' : '☀️ Modo claro';
+  renderAll();
+});
+
+// Keyboard shortcuts
+document.addEventListener('keydown', e => {
+  if (e.target.tagName==='SELECT') return;
+  if (e.key==='d') document.getElementById('themeBtn').click();
+  const pMap = {'1':'today','7':'7d','3':'oct'};
+  if (pMap[e.key]) {
+    S.period=pMap[e.key];
+    document.querySelectorAll('.pbtn').forEach(b=>b.classList.toggle('active',b.dataset.p===S.period));
+    renderAll();
+  }
+});
+
+// ═══════════════════════════════════════════════════════════════
+//  INIT — fetch JSON then boot
+// ═══════════════════════════════════════════════════════════════
+
+function populateBranchSelect() {
+  const sel = document.getElementById('branchSel');
+  sel.innerHTML = '';
+
+  const groups = [
+    { label:'Con sensor activo', tipos:['sensor_activo'] },
+    { label:'Sensor inactivo',   tipos:['sensor_inactivo'] },
+    { label:'Sin contador',      tipos:['sin_contador'] },
+  ];
+  for (const g of groups) {
+    const og = document.createElement('optgroup');
+    og.label = g.label;
+    BRANCHES.filter(b=>g.tipos.includes(b.tipo)).forEach(br => {
+      const o = document.createElement('option');
+      o.value = br.id; o.textContent = br.label;
+      if (br.sin_datos) o.textContent += ' (sin datos)';
+      // Historical indicator: sensor_activo branches with no Oct data (skip sin_datos — already labelled)
+      if (!br.sin_datos && br.tipo === 'sensor_activo' && HORA_JSON) {
+        const td = HORA_JSON.tiendas?.[br.id];
+        const hasOct = td && Object.keys(td.horas || {}).some(f => f >= '2026-10-01');
+        if (!hasOct && td) {
+          // Extract shortest month label from fuente_nota if available
+          const nota = br.fuente_nota || '';
+          const months = nota.match(/(Ago|Sep|Oct)[^·)]*/i);
+          o.textContent += months ? ` (${months[0].trim().toLowerCase()})` : ' (hist.)';
+        }
+      }
+      if (br.sensor_issue) o.textContent += ' ⚠';
+      og.appendChild(o);
+    });
+    sel.appendChild(og);
+  }
+  sel.value = S.branch;
+}
+
+async function init() {
+  const banner  = document.getElementById('dataBanner');
+  const overlay = document.getElementById('loadingOverlay');
+  const loMsg   = document.getElementById('loMsg');
+  const loErr   = document.getElementById('loErr');
+
+  try {
+    loMsg.textContent = 'Cargando datos combinados…';
+    const resp = await fetch('/logs/afluencia_combinada_horario.json');
+    if (!resp.ok) throw new Error(`HTTP ${resp.status} — ${resp.statusText}`);
+    HORA_JSON = await resp.json();
+
+    // Refresh dynamic values (may have crossed midnight during load)
+    TODAY_STR = todayMX();
+    JSON_COVERAGE.fin = HORA_JSON.fecha_fin || todayMX();
+
+    // Validate integrity
+    if (!HORA_JSON.tiendas || !HORA_JSON.tz) throw new Error('JSON horario incompleto o corrupto.');
+
+    const nTiendas  = Object.keys(HORA_JSON.tiendas).length;
+    const genDate   = (HORA_JSON.generado || '').slice(0, 10);
+    const lastRead  = HORA_JSON.fecha_fin  || '?';
+
+    banner.className = 'data-banner';
+    banner.textContent =
+      `Datos reales combinados · ${nTiendas} sucursales · Generado ${genDate} · America/Mexico_City`;
+
+    document.getElementById('liveBadge').textContent =
+      `📡 Combinado · Última lectura ${lastRead} · Hoy ${TODAY_STR}`;
+
+    populateBranchSelect();
+    renderAll();
+
+    overlay.style.display = 'none';
+
+  } catch(err) {
+    banner.className = 'data-banner error';
+    banner.textContent = `Error al cargar datos — ${err.message}`;
+    loMsg.style.display='none';
+    loErr.style.display='block';
+    loErr.innerHTML=`
+      <strong>No se pudo cargar el JSON horario.</strong><br><br>
+      ${err.message}<br><br>
+      Asegúrate de abrir esta página desde el servidor local:<br>
+      <code>cd ~/clawd && python3 scripts/preview_server.py</code><br>
+      Luego abre: <code>http://127.0.0.1:8099/prototipos/heatmap_afluencia_v2.html</code><br><br>
+      <em>No abrir como archivo local (file://) — el navegador bloquea fetch() en ese modo.</em>
+    `;
+  }
+}
+
+init();
+</script>
+</body>
+</html>
