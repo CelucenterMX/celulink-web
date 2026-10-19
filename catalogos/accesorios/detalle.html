@@ -1323,33 +1323,40 @@
         }
 
         function refreshEscaleraActive() {
-            const el = document.getElementById('detailEscalera');
-            if (!el) return;
             const code = getProductCodeFromHash();
-            const listaActiva = getProductLista(code || '');
-            el.querySelectorAll('.list-row[data-lista]').forEach(row => {
-                row.classList.toggle('active', row.getAttribute('data-lista') === listaActiva);
-            });
+            const escalera = document.getElementById('detailEscalera');
+            if (!escalera || !code) return;
 
-            // Actualizar el precio en grande
-            const priceDisplay = document.getElementById('detailActivePriceDisplay');
-            if (priceDisplay && code) {
-                const product = allProducts.find(p => p.codigo === code);
-                if (product) {
-                    const pub = parsePrice(product.precioPublico);
-                    const tierLabels = { pub: 'Normal', '2X': 'Plus', F: 'Pro', M: 'Diamante' };
-                    const tierListas = { pub: null, '2X': '2X', F: 'F', M: 'M' };
-                    const activePrice = listaActiva === 'pub' ? pub : getUnitPriceForList(product, tierListas[listaActiva]);
-                    const sav = (pub && activePrice && activePrice < pub) ? Math.round((1 - activePrice / pub) * 100) : 0;
-                    const savBadge = sav > 0 ? `<span class="list-badge">Ahorras ${sav}%</span>` : '';
-                    const pubHtml = (pub && activePrice && activePrice < pub) ? `<span class="detail-price-public">P. Público ${fmt(pub)}</span>` : '';
-                    priceDisplay.innerHTML = `<span class="detail-price-label">${tierLabels[listaActiva] || 'Normal'}</span><span class="detail-price-value">${fmt(activePrice)}${savBadge}</span>${pubHtml}`;
-                }
+            const product = allProducts.find(p => p.codigo === code);
+            if (!product) return;
+
+            // Reconstruir toda la sección de precios para que el precio en grande
+            // y las filas de la escalera queden siempre sincronizados.
+            const pricingEl = escalera.closest('.detail-pricing');
+            if (pricingEl) {
+                pricingEl.innerHTML = buildEscaleraHtml(product);
+                return;
             }
 
-            const hint = el.nextElementSibling;
+            // Fallback: actualizar individualmente si la estructura cambió
+            const listaActiva = getProductLista(code);
+            escalera.querySelectorAll('.list-row[data-lista]').forEach(row => {
+                row.classList.toggle('active', row.getAttribute('data-lista') === listaActiva);
+            });
+            const priceDisplay = document.getElementById('detailActivePriceDisplay');
+            if (priceDisplay) {
+                const pub = parsePrice(product.precioPublico);
+                const tierLabels = { pub: 'Normal', '2X': 'Plus', F: 'Pro', M: 'Diamante' };
+                const tierListas = { pub: null, '2X': '2X', F: 'F', M: 'M' };
+                const activePrice = listaActiva === 'pub' ? pub : getUnitPriceForList(product, tierListas[listaActiva]);
+                const sav = (pub && activePrice && activePrice < pub) ? Math.round((1 - activePrice / pub) * 100) : 0;
+                const savBadge = sav > 0 ? `<span class="list-badge">Ahorras ${sav}%</span>` : '';
+                const pubHtml = (pub && activePrice && activePrice < pub) ? `<span class="detail-price-public">P. Público ${fmt(pub)}</span>` : '';
+                priceDisplay.innerHTML = `<span class="detail-price-label">${tierLabels[listaActiva] || 'Normal'}</span><span class="detail-price-value">${fmt(activePrice)}${savBadge}</span>${pubHtml}`;
+            }
+            const hint = escalera.nextElementSibling;
             if (hint && hint.classList.contains('detail-escalera-hint')) {
-                const itemCount = code && cart[code] ? cart[code].qty : 0;
+                const itemCount = cart[code] ? cart[code].qty : 0;
                 const nextTier = getNextTierHint(itemCount);
                 hint.innerHTML = nextTier ? `Llevas <strong>${itemCount} pieza${itemCount !== 1 ? 's' : ''}</strong> · Agrega ${nextTier.faltan} más para <strong>${nextTier.nombre}</strong>` : `Llevas <strong>${itemCount} pieza${itemCount !== 1 ? 's' : ''}</strong> · ¡Mejor precio desbloqueado!`;
             }
@@ -1821,10 +1828,10 @@
 
                 if (lista === 'TODAS') {
                     const allLists = [
-                        { name: 'Lista M', value: fmt(product.listaM) },
-                        { name: 'Lista G', value: fmt(product.listaG) },
-                        { name: 'Lista F', value: fmt(product.listaF) },
-                        { name: 'Lista 2X', value: fmt(product.lista2x) },
+                        { name: 'Diamante', value: fmt(product.listaM) },
+                        { name: 'Mayoreo G', value: fmt(product.listaG) },
+                        { name: 'Pro',      value: fmt(product.listaF) },
+                        { name: 'Plus',     value: fmt(product.lista2x) },
                     ].filter(l => l.value);
 
                     if (allLists.length) {
@@ -1842,10 +1849,10 @@
                     }
                 } else {
                     let price = '', listName = '';
-                    if (lista === 'M') { price = product.listaM; listName = 'Lista M'; }
-                    else if (lista === 'G') { price = product.listaG; listName = 'Lista G'; }
-                    else if (lista === 'F') { price = product.listaF; listName = 'Lista F'; }
-                    else if (lista === '2X') { price = product.lista2x; listName = 'Lista 2X'; }
+                    if (lista === 'M') { price = product.listaM; listName = 'Diamante'; }
+                    else if (lista === 'G') { price = product.listaG; listName = 'Mayoreo G'; }
+                    else if (lista === 'F') { price = product.listaF; listName = 'Pro'; }
+                    else if (lista === '2X') { price = product.lista2x; listName = 'Plus'; }
 
                     const formatted = fmt(price);
                     if (formatted) {

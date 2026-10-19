@@ -2093,10 +2093,10 @@
                 if (lista === 'TODAS') {
                     // Mostrar TODAS las listas
                     const allListsRaw = [
-                        { name: 'Lista M', value: formatMXN(product.listaM), num: parsePrice(product.listaM) || 0 },
-                        { name: 'Lista G', value: formatMXN(product.listaG), num: parsePrice(product.listaG) || 0 },
-                        { name: 'Lista F', value: formatMXN(product.listaF), num: parsePrice(product.listaF) || 0 },
-                        { name: 'Lista 2X', value: formatMXN(product.lista2x), num: parsePrice(product.lista2x) || 0 },
+                        { name: 'Diamante',  value: formatMXN(product.listaM),  num: parsePrice(product.listaM)  || 0 },
+                        { name: 'Mayoreo G', value: formatMXN(product.listaG),  num: parsePrice(product.listaG)  || 0 },
+                        { name: 'Pro',       value: formatMXN(product.listaF),  num: parsePrice(product.listaF)  || 0 },
+                        { name: 'Plus',      value: formatMXN(product.lista2x), num: parsePrice(product.lista2x) || 0 },
                     ].filter(l => l.value);
 
                     // Máximo real de las listas visibles
@@ -2126,16 +2126,16 @@
 
                     if (lista === 'M') {
                         price = product.listaM;
-                        listName = 'Lista M';
+                        listName = 'Diamante';
                     } else if (lista === 'G') {
                         price = product.listaG;
-                        listName = 'Lista G';
+                        listName = 'Mayoreo G';
                     } else if (lista === 'F') {
                         price = product.listaF;
-                        listName = 'Lista F';
+                        listName = 'Pro';
                     } else if (lista === '2X') {
                         price = product.lista2x;
-                        listName = 'Lista 2X';
+                        listName = 'Plus';
                     }
 
                     const formatted = fmt(price);
