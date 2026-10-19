@@ -437,6 +437,56 @@
 </style>
 <link rel="stylesheet" href="../../assets/css/tokens.css">
 <link rel="stylesheet" href="../../assets/css/chrome.css">
+
+        <style>
+            /* V0.2 header styles */
+            .main-nav {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding: 16px 24px;
+                background: var(--color-bg);
+                border-bottom: 1px solid var(--color-borde);
+                font-family: var(--font-display);
+                min-height: 64px;
+            }
+            .main-nav .nav-inner {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 24px;
+                max-width: var(--container-max);
+                margin: 0 auto;
+                width: 100%;
+            }
+            .main-nav .nav-brand {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                text-decoration: none;
+                color: var(--color-texto);
+            }
+            .main-nav .nav-brand-text {
+                font-weight: 800;
+                font-size: 1.1rem;
+            }
+            .main-nav .nav-links {
+                display: flex;
+                gap: 12px;
+                align-items: center;
+            }
+            .main-nav .nav-links a {
+                color: var(--color-texto);
+                font-weight: 600;
+                font-size: 0.9rem;
+                text-decoration: none;
+                padding: 6px 12px;
+                border-radius: 8px;
+            }
+            .main-nav .nav-links a:hover {
+                background: var(--color-bg-alt);
+            }
+        </style>
 </head>
 <body>
 
