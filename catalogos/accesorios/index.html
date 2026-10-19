@@ -2051,18 +2051,16 @@
             let pricingHtml = '';
 
             if (!userSession) {
-                // Cotización pública: el precio de compra es el de la lista activa del carrito
-                // (2X si total < $3k, F si ≥ $3k, G si ≥ $6k, M si ≥ $9k)
-                // precioPublico solo se muestra como referencia tachada
-                const listaActiva = getCartLista();
-                const buyPrice = getUnitPriceForList(product, listaActiva);
+                // Precio inicial: precio público. Se actualiza en tiempo real al agregar al carrito.
+                const listaActiva = getProductLista(product.codigo);
+                const buyPrice = listaActiva === 'pub' ? (parsePrice(product.precioPublico) || 0) : getUnitPriceForList(product, listaActiva);
                 const buyFmt = formatMXN(buyPrice);
                 const pubNum = parsePrice(product.precioPublico);
                 const pubFmt = formatMXN(product.precioPublico);
                 if (buyFmt) {
-                    // Solo mostrar tachado si precioPublico es estrictamente mayor al precio de venta
+                    const listaLabel = listaActiva === 'pub' ? 'Precio público' : 'Lista ' + listaActiva;
                     const pubRef = (pubNum && buyPrice && pubNum > buyPrice) ? `<span class="price-public">P. público ${pubFmt}</span>` : '';
-                    pricingHtml = `<div class="product-pricing"><div class="price-yours"><span class="price-label">Lista ${listaActiva}</span><span class="price-value">${buyFmt}</span>${pubRef}</div></div>`;
+                    pricingHtml = `<div class="product-pricing"><div class="price-yours"><span class="price-label">${listaLabel}</span><span class="price-value">${buyFmt}</span>${pubRef}</div></div>`;
                 } else if (pubFmt) {
                     pricingHtml = `<div class="product-pricing"><div class="price-yours"><span class="price-label">Precio público</span><span class="price-value">${pubFmt}</span></div></div>`;
                 } else {
@@ -2261,10 +2259,10 @@
         // CARRITO DE COMPRAS
         // ============================================================
         const WHATSAPP_PEDIDO_NUMERO = '5213413300001'; // sin "+", formato wa.me
-        // Sistema escalonado de precios: 2X → F → G → M. Envío incluido desde $10,000.
-        const UMBRAL_F = 3000;  // desde $3,000 → Lista F (mayoreo)
-        const UMBRAL_G = 6000;  // desde $6,000 → Lista G
-        const UMBRAL_M = 9000;  // desde $9,000 → Lista M (mejor precio)
+        // Escalera de precios por cantidad de piezas de cada producto (por producto, no total carrito)
+        const PIEZAS_2X    = 4;   // 4-7 pzas → Lista 2X
+        const PIEZAS_F     = 8;   // 8-15 pzas → Mayoreo (Lista F)
+        const PIEZAS_M     = 16;  // 16+ pzas → VIP+ (Lista M)
         const UMBRAL_ENVIO = 10000; // desde $10,000 → envío incluido en pedido
 
         let cart = {}; // { codigo: { product, qty } }
@@ -2317,34 +2315,25 @@
             return parsePrice(product.lista2x) || parsePrice(product.precioPublico) || 0;
         }
 
-        // Total del carrito evaluado en una lista específica
-        function getCartTotalAtList(lista) {
-            let total = 0;
-            Object.values(cart).forEach(item => {
-                total += getUnitPriceForList(item.product, lista) * item.qty;
-            });
-            return total;
+        // Precio por cantidad de ESE producto en el carrito (por producto, no total global)
+        function getProductLista(codigo) {
+            const qty = cart[codigo] ? cart[codigo].qty : 0;
+            if (qty >= PIEZAS_M)  return 'M';
+            if (qty >= PIEZAS_F)  return 'F';
+            if (qty >= PIEZAS_2X) return '2X';
+            return 'pub';
         }
 
-        // Decide la lista aplicable: escalonado 2X → F → G → M
-        function getCartLista() {
-            // Empieza en 2X. Si el total a precio 2X >= 3k → sube a F.
-            if (getCartTotalAtList('2X') < UMBRAL_F) return '2X';
-            // Ya en F. Si total a precio F >= 6k → sube a G.
-            if (getCartTotalAtList('F') < UMBRAL_G) return 'F';
-            // Ya en G. Si total a precio G >= 9k → sube a M (tope final).
-            if (getCartTotalAtList('G') < UMBRAL_M) return 'G';
-            return 'M'; // tope: Lista M (mejor precio)
-        }
-
-        function getProductPriceForCart(product) {
-            return getUnitPriceForList(product, getCartLista());
+        function getProductPriceForCart(product, codigo) {
+            const lista = getProductLista(codigo || product.codigo);
+            if (lista === 'pub') return parsePrice(product.precioPublico) || 0;
+            return getUnitPriceForList(product, lista);
         }
 
         function getCartTotal() {
             let total = 0;
             Object.values(cart).forEach(item => {
-                total += getProductPriceForCart(item.product) * item.qty;
+                total += getProductPriceForCart(item.product, item.product.codigo) * item.qty;
             });
             return total;
         }
@@ -2353,24 +2342,23 @@
             return Object.values(cart).reduce((sum, item) => sum + item.qty, 0);
         }
 
-        // Re-pintar los precios de todas las cards cuando cambia el nivel del carrito
+        // Re-pintar los precios de cada card según su propia cantidad en el carrito
         function updateAllCardPrices() {
-            const listaActiva = getCartLista();
             document.querySelectorAll('.product-card').forEach(cardEl => {
                 const btn = cardEl.querySelector('.cart-add-btn[data-codigo]');
                 if (!btn) return;
                 const cod = btn.getAttribute('data-codigo');
                 const product = allProducts.find(p => p.codigo === cod);
                 if (!product) return;
-                const buyPrice = getUnitPriceForList(product, listaActiva);
+                const lista = getProductLista(cod);
+                const buyPrice = lista === 'pub' ? (parsePrice(product.precioPublico) || 0) : getUnitPriceForList(product, lista);
                 const buyFmt = formatMXN(buyPrice);
                 const pubNum = parsePrice(product.precioPublico) || 0;
                 const priceLabel = cardEl.querySelector('.price-label');
                 const priceValue = cardEl.querySelector('.price-value');
                 const pricePublic = cardEl.querySelector('.price-public');
-                if (priceLabel) priceLabel.textContent = 'Lista ' + listaActiva;
+                if (priceLabel) priceLabel.textContent = lista === 'pub' ? 'Precio público' : 'Lista ' + lista;
                 if (priceValue) priceValue.textContent = buyFmt;
-                // Solo mostrar tachado si precioPublico es estrictamente mayor
                 if (pubNum > 0 && buyPrice > 0 && pubNum > buyPrice) {
                     if (pricePublic) { pricePublic.textContent = 'P. público ' + formatMXN(product.precioPublico); }
                 } else {
@@ -2497,28 +2485,13 @@
                 return;
             }
 
-            const lista = getCartLista();
-            const total = getCartTotal();
-            if (lista === 'M') {
-                let msg = '🏆 ¡LISTA M aplicada! (MEJOR PRECIO)';
-                if (total >= UMBRAL_ENVIO) msg += ' ✈️ ENVÍO INCLUIDO';
-                listaBadge.textContent = msg;
-                listaBadge.className = 'cart-lista-badge is-elite';
-            } else if (lista === 'G') {
-                listaBadge.textContent = '🎉 ¡LISTA G aplicada! (Mejor precio)';
-                listaBadge.className = 'cart-lista-badge is-top';
-            } else if (lista === 'F') {
-                listaBadge.textContent = '✓ Precios MAYOREO (Lista F)';
-                listaBadge.className = 'cart-lista-badge is-mayoreo';
-            } else {
-                listaBadge.textContent = 'Precios MENUDEO (Lista 2X)';
-                listaBadge.className = 'cart-lista-badge';
-            }
+            listaBadge.textContent = 'Precio por volumen de cada producto';
+            listaBadge.className = 'cart-lista-badge';
 
             let html = '';
             items.forEach(item => {
                 const p = item.product;
-                const unitPrice = getProductPriceForCart(p);
+                const unitPrice = getProductPriceForCart(p, p.codigo);
                 const subtotal = unitPrice * item.qty;
                 const imgHtml = p.imagenUrl
                     ? `<img src="${escapeHtml(p.imagenUrl)}" alt="${escapeHtml(p.nombre)}" class="cart-item-img" onerror="this.outerHTML='<div class=\\'cart-item-placeholder\\'>📦</div>'">`
@@ -2549,45 +2522,14 @@
             document.getElementById('cartSummaryTotal').textContent = formatMXN(getCartTotal());
             document.getElementById('btnWhatsAppOrder').disabled = false;
 
-            // Hint escalonado: 2X → F → G → M. Envío incluido desde $10k.
-            if (lista === 'M') {
-                // En M: si total < $6k falta para envío, si >= $6k envío incluido
-                const total = getCartTotal();
+            // Hint: envío incluido desde $10,000
+            const totalHint = getCartTotal();
+            if (totalHint >= UMBRAL_ENVIO) {
                 hint.style.display = 'block';
-                if (total < UMBRAL_ENVIO) {
-                    const faltante = UMBRAL_ENVIO - total;
-                    hint.innerHTML = '✈️ Agrega <strong>' + formatMXN(faltante) + '</strong> más y el <strong>ENVÍO ESTÁ INCLUIDO</strong>';
-                    hint.className = 'cart-mayoreo-hint is-level-m';
-                } else {
-                    hint.innerHTML = '✅ ¡ENVÍO INCLUIDO en este pedido!';
-                    hint.className = 'cart-mayoreo-hint is-level-m-free-shipping';
-                }
-            } else if (lista === 'G') {
-                const total = getCartTotal();
-                const faltante = UMBRAL_M - getCartTotalAtList('G');
-                hint.style.display = 'block';
-                if (total >= UMBRAL_ENVIO) {
-                    hint.innerHTML = '✈️ ¡ENVÍO INCLUIDO en este pedido! · Agrega <strong>' + formatMXN(faltante) + '</strong> más para <strong>LISTA M</strong>';
-                } else {
-                    hint.innerHTML = '🚀 Agrega <strong>' + formatMXN(faltante) + '</strong> más y desbloqueas <strong>MEJOR PRECIO (Lista M)</strong>';
-                }
-                hint.className = 'cart-mayoreo-hint is-level-g';
-            } else if (lista === 'F') {
-                const total = getCartTotal();
-                const faltante = UMBRAL_G - getCartTotalAtList('F');
-                hint.style.display = 'block';
-                if (total >= UMBRAL_ENVIO) {
-                    hint.innerHTML = '✈️ ¡ENVÍO INCLUIDO en este pedido! · Agrega <strong>' + formatMXN(faltante) + '</strong> más para <strong>LISTA G</strong>';
-                } else {
-                    hint.innerHTML = '🚀 Agrega <strong>' + formatMXN(faltante) + '</strong> más y desbloqueas <strong>MEJOR PRECIO (Lista G)</strong>';
-                }
-                hint.className = 'cart-mayoreo-hint is-level-f';
+                hint.innerHTML = '✈️ ¡ENVÍO INCLUIDO en este pedido!';
+                hint.className = 'cart-mayoreo-hint is-level-m-free-shipping';
             } else {
-                // Faltante para subir a Lista F
-                const faltante = UMBRAL_F - getCartTotalAtList('2X');
-                hint.style.display = 'block';
-                hint.innerHTML = '💡 Agrega <strong>' + formatMXN(faltante) + '</strong> más para precio <strong>MAYOREO (Lista F)</strong>';
-                hint.className = 'cart-mayoreo-hint';
+                hint.style.display = 'none';
             }
         }
 
@@ -2622,15 +2564,10 @@
             btn.disabled = true;
             btn.innerHTML = 'Enviando...';
 
-            const lista = getCartLista();
-            const listaText = lista === 'G' ? 'Lista G (MEJOR PRECIO)'
-                            : lista === 'F' ? 'Lista F (MAYOREO)'
-                            : 'Lista 2X (MENUDEO)';
-
             let msg = '🛒 *Hola CeluCenter!* Quiero pedir:\n\n';
             items.forEach(item => {
                 const p = item.product;
-                const unitPrice = getProductPriceForCart(p);
+                const unitPrice = getProductPriceForCart(p, p.codigo);
                 const subtotal = unitPrice * item.qty;
                 msg += '• *' + p.codigo + '* — ' + p.nombre + '\n';
                 msg += '   Cant: ' + item.qty + '  |  ' + formatMXN(unitPrice) + ' c/u  =  *' + formatMXN(subtotal) + '*\n\n';
@@ -2638,7 +2575,7 @@
 
             msg += '━━━━━━━━━━━━━━━━━\n';
             msg += '💰 *Total: ' + formatMXN(getCartTotal()) + '*\n';
-            msg += '📋 ' + listaText + '\n';
+            msg += '📋 Precios por volumen (por producto)\n';
             msg += '📦 ' + getCartItemCount() + ' pieza(s)\n';
 
             if (userSession) {
@@ -2650,7 +2587,7 @@
             }
 
             // Guarda el pedido en la hoja (calcula ganancia server-side, incluye Lista M)
-            await savePedidoToSheet(items, lista);
+            await savePedidoToSheet(items, 'mixto');
 
             const url = 'https://wa.me/' + WHATSAPP_PEDIDO_NUMERO + '?text=' + encodeURIComponent(msg);
             window.open(url, '_blank');
@@ -2919,11 +2856,12 @@
             if (!product) return;
 
             const pub = parsePrice(product.precioPublico) || 0;
+            const listaActual = getProductLista(codigo);
             const tiers = [
-                { label: '1 - 3 pzas',  qty: 1,  price: pub },
-                { label: '4 - 7 pzas',  qty: 4,  price: getUnitPriceForList(product, '2X') },
-                { label: '8 - 15 pzas', qty: 8,  price: getUnitPriceForList(product, 'F') },
-                { label: '16+ pzas',    qty: 16, price: getUnitPriceForList(product, 'M') },
+                { key: 'pub', label: '1 - 3 pzas',  qty: 1,  price: pub },
+                { key: '2X',  label: '4 - 7 pzas',  qty: 4,  price: getUnitPriceForList(product, '2X') },
+                { key: 'F',   label: '8 - 15 pzas', qty: 8,  price: getUnitPriceForList(product, 'F') },
+                { key: 'M',   label: '16+ pzas',    qty: 16, price: getUnitPriceForList(product, 'M') },
             ];
 
             document.getElementById('qtyPickerTitle').textContent = product.nombre || codigo;
@@ -2932,8 +2870,10 @@
                 if (!t.price) return '';
                 const sav = (pub && t.price < pub) ? Math.round((1 - t.price / pub) * 100) : 0;
                 const savBadge = sav > 0 ? '<span class="tier-save">-' + sav + '%</span>' : '';
-                return '<button class="qty-picker-tier-btn" onclick="addFromPicker(\'' + escapeHtml(codigo) + '\',' + t.qty + ')">'
-                    + '<span class="tier-range">' + t.label + '</span>'
+                const isActive = t.key === listaActual;
+                const style = isActive ? ' style="border-color:#2196F3;background:#e8f4fd;"' : '';
+                return '<button class="qty-picker-tier-btn" onclick="addFromPicker(\'' + escapeHtml(codigo) + '\',' + t.qty + ')"' + style + '>'
+                    + '<span class="tier-range">' + t.label + (isActive ? ' ✓' : '') + '</span>'
                     + '<span><span class="tier-price">' + formatMXN(t.price) + ' c/u</span>' + savBadge + '</span>'
                     + '</button>';
             }).filter(Boolean).join('');

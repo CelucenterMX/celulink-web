@@ -1253,7 +1253,7 @@
         }
 
         function buildEscaleraHtml(product) {
-            const listaActiva = getCartLista();
+            const listaActiva = getProductLista(product.codigo);
             const pub = parsePrice(product.precioPublico);
             const codigo = product.codigo;
             const tiers = [
@@ -1273,7 +1273,7 @@
                     <span class="list-price">${fmt(price)}${badge}</span>
                 </div>`;
             }).filter(Boolean).join('');
-            const itemCount = getCartItemCount();
+            const itemCount = cart[codigo] ? cart[codigo].qty : 0;
             const nextTier = getNextTierHint(itemCount);
             const hintText = nextTier ? `Llevas <strong>${itemCount} pieza${itemCount !== 1 ? 's' : ''}</strong> · Agrega ${nextTier.faltan} más para <strong>${nextTier.nombre}</strong>` : `Llevas <strong>${itemCount} pieza${itemCount !== 1 ? 's' : ''}</strong> · ¡Mejor precio desbloqueado!`;
             return `<div class="detail-all-lists" id="detailEscalera">${rows}</div>
@@ -1290,41 +1290,37 @@
         function refreshEscaleraActive() {
             const el = document.getElementById('detailEscalera');
             if (!el) return;
-            const listaActiva = getCartLista();
+            const code = getProductCodeFromHash();
+            const listaActiva = getProductLista(code || '');
             el.querySelectorAll('.list-row[data-lista]').forEach(row => {
                 row.classList.toggle('active', row.getAttribute('data-lista') === listaActiva);
             });
             const hint = el.nextElementSibling;
             if (hint && hint.classList.contains('detail-escalera-hint')) {
-                const itemCount = getCartItemCount();
+                const itemCount = code && cart[code] ? cart[code].qty : 0;
                 const nextTier = getNextTierHint(itemCount);
                 hint.innerHTML = nextTier ? `Llevas <strong>${itemCount} pieza${itemCount !== 1 ? 's' : ''}</strong> · Agrega ${nextTier.faltan} más para <strong>${nextTier.nombre}</strong>` : `Llevas <strong>${itemCount} pieza${itemCount !== 1 ? 's' : ''}</strong> · ¡Mejor precio desbloqueado!`;
             }
         }
 
-        function getCartTotalAtList(lista) {
-            let total = 0;
-            Object.values(cart).forEach(item => { total += getUnitPriceForList(item.product, lista) * item.qty; });
-            return total;
-        }
-
-        function getCartLista() {
-            const qty = getCartItemCount();
+        // Precio por cantidad de ESE producto en el carrito (no total global)
+        function getProductLista(codigo) {
+            const qty = cart[codigo] ? cart[codigo].qty : 0;
             if (qty < PIEZAS_2X) return 'pub';
             if (qty < PIEZAS_F)  return '2X';
             if (qty < PIEZAS_M)  return 'F';
             return 'M';
         }
 
-        function getProductPriceForCart(product) {
-            const lista = getCartLista();
+        function getProductPriceForCart(product, codigo) {
+            const lista = getProductLista(codigo || product.codigo);
             if (lista === 'pub') return parsePrice(product.precioPublico) || 0;
             return getUnitPriceForList(product, lista);
         }
 
         function getCartTotal() {
             let total = 0;
-            Object.values(cart).forEach(item => { total += getProductPriceForCart(item.product) * item.qty; });
+            Object.values(cart).forEach(item => { total += getProductPriceForCart(item.product, item.product.codigo) * item.qty; });
             return total;
         }
 
@@ -1435,22 +1431,13 @@
                 return;
             }
 
-            const lista = getCartLista();
-            if (lista === 'G') {
-                listaBadge.textContent = 'MEJOR PRECIO aplicado! (Lista G)';
-                listaBadge.className = 'cart-lista-badge is-top';
-            } else if (lista === 'F') {
-                listaBadge.textContent = 'Precios MAYOREO (Lista F) aplicados';
-                listaBadge.className = 'cart-lista-badge is-mayoreo';
-            } else {
-                listaBadge.textContent = 'Precios MENUDEO (Lista 2X)';
-                listaBadge.className = 'cart-lista-badge';
-            }
+            listaBadge.textContent = 'Precio por volumen de cada producto';
+            listaBadge.className = 'cart-lista-badge';
 
             let html = '';
             items.forEach(item => {
                 const p = item.product;
-                const unitPrice = getProductPriceForCart(p);
+                const unitPrice = getProductPriceForCart(p, p.codigo);
                 const subtotal = unitPrice * item.qty;
                 const imgHtml = p.imagenUrl
                     ? `<img src="${escapeHtml(p.imagenUrl)}" alt="${escapeHtml(p.nombre)}" class="cart-item-img" onerror="this.outerHTML='<div class=\\'cart-item-placeholder\\'>📦</div>'">`
@@ -1480,14 +1467,7 @@
             document.getElementById('cartSummaryTotal').textContent = formatMXN(getCartTotal());
             document.getElementById('btnWhatsAppOrder').disabled = false;
 
-            const nextTier = getNextTierHint(totalCount);
-            if (!nextTier) {
-                hint.style.display = 'none';
-            } else {
-                hint.style.display = 'block';
-                hint.innerHTML = 'Agrega <strong>' + nextTier.faltan + ' pieza' + (nextTier.faltan !== 1 ? 's' : '') + '</strong> más para precio <strong>' + nextTier.nombre.toUpperCase() + '</strong>';
-                hint.className = 'cart-mayoreo-hint' + (totalCount >= PIEZAS_F ? ' is-level-f' : '');
-            }
+            hint.style.display = 'none';
         }
 
         async function savePedidoToSheet(items, lista) {
@@ -1517,20 +1497,17 @@
             btn.disabled = true;
             btn.innerHTML = 'Enviando...';
 
-            const lista = getCartLista();
-            const listaText = lista === 'G' ? 'Lista G (MEJOR PRECIO)' : lista === 'F' ? 'Lista F (MAYOREO)' : 'Lista 2X (MENUDEO)';
-
             let msg = '🛒 *Hola CeluCenter!* Quiero pedir:\n\n';
             items.forEach(item => {
                 const p = item.product;
-                const unitPrice = getProductPriceForCart(p);
+                const unitPrice = getProductPriceForCart(p, p.codigo);
                 const subtotal = unitPrice * item.qty;
                 msg += '• *' + p.codigo + '* — ' + p.nombre + '\n';
                 msg += '   Cant: ' + item.qty + '  |  ' + formatMXN(unitPrice) + ' c/u  =  *' + formatMXN(subtotal) + '*\n\n';
             });
             msg += '━━━━━━━━━━━━━━━━━\n';
             msg += '💰 *Total: ' + formatMXN(getCartTotal()) + '*\n';
-            msg += '📋 ' + listaText + '\n';
+            msg += '📋 Precios por volumen (por producto)\n';
             msg += '📦 ' + getCartItemCount() + ' pieza(s)\n';
 
             if (userSession) {
@@ -1541,7 +1518,7 @@
                 msg += '\n_(Pedido desde catálogo web — aún no registrado)_';
             }
 
-            await savePedidoToSheet(items, lista);
+            await savePedidoToSheet(items, 'mixto');
 
             const url = 'https://wa.me/' + WHATSAPP_PEDIDO_NUMERO + '?text=' + encodeURIComponent(msg);
             window.open(url, '_blank');
@@ -1752,7 +1729,7 @@
                 // Cotización pública: el precio de compra es el de la lista activa del carrito
                 // (2X si total < $3k, F si ≥ $3k, G si ≥ $6k, M si ≥ $9k)
                 // precioPublico solo se muestra como referencia tachada
-                const listaActiva = (typeof getCartLista === 'function') ? getCartLista() : '2X';
+                const listaActiva = getProductLista(product.codigo);
                 const buyFmt = fmt(getUnitPriceForList(product, listaActiva));
                 const pubFmt = fmt(product.precioPublico);
                 if (buyFmt) {
