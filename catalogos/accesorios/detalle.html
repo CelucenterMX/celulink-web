@@ -1300,22 +1300,10 @@
                 ${activePubHtml}
             </div>`;
 
-            const rows = tiers.map(t => {
-                const price = t.key === 'pub' ? pub : getUnitPriceForList(product, t.lista);
-                if (!price) return '';
-                const isActive = t.key === listaActiva;
-                const sav = (pub && price < pub) ? Math.round((1 - price / pub) * 100) : 0;
-                const badge = sav > 0 ? `<span class="list-badge">Ahorras ${sav}%</span>` : '';
-                return `<div class="list-row${isActive ? ' active' : ''}${t.key === 'pub' ? ' public-row' : ''} clickable-tier" data-lista="${t.key}" data-min="${t.minPiezas}" onclick="setQtyToTier('${escapeHtml(codigo)}', ${t.minPiezas})" title="Agregar ${t.minPiezas} pieza${t.minPiezas > 1 ? 's' : ''} al carrito">
-                    <span class="list-name">${t.label} <span class="list-range-tag">${t.range}</span></span>
-                    <span class="list-price">${fmt(price)}${badge}</span>
-                </div>`;
-            }).filter(Boolean).join('');
             const itemCount = cart[codigo] ? cart[codigo].qty : 0;
             const nextTier = getNextTierHint(itemCount);
             const hintText = nextTier ? `Llevas <strong>${itemCount} pieza${itemCount !== 1 ? 's' : ''}</strong> · Agrega ${nextTier.faltan} más para <strong>${nextTier.nombre}</strong>` : `Llevas <strong>${itemCount} pieza${itemCount !== 1 ? 's' : ''}</strong> · ¡Mejor precio desbloqueado!`;
-            return `${bigPriceHtml}<div class="detail-all-lists" id="detailEscalera">${rows}</div>
-                <div class="detail-escalera-hint">${hintText}</div>`;
+            return `${bigPriceHtml}<div class="detail-escalera-hint">${hintText}</div>`;
         }
 
         function getNextTierHint(itemCount) {
