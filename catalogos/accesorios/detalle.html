@@ -621,6 +621,28 @@
 
         .detail-qty-remove:hover { color: var(--celucenter-red); }
 
+        /* ── Tier buttons en área de acción ── */
+        .detail-tier-btns { display: flex; flex-direction: column; gap: 8px; }
+        .detail-tier-btn {
+            display: flex; justify-content: space-between; align-items: center;
+            width: 100%; padding: 10px 16px;
+            border: 1.5px solid #e0e0e0; border-radius: 10px;
+            background: #f9f9f9; cursor: pointer;
+            font-family: 'Poppins', sans-serif; font-size: 0.88rem;
+            transition: background 0.15s, border-color 0.15s; text-align: left;
+        }
+        .detail-tier-btn:hover { background: #e8f4fd; border-color: #2196F3; }
+        .detail-tier-btn.active { background: #e8f4fd; border-color: #2196F3; font-weight: 600; }
+        .detail-tier-range { color: #444; font-weight: 500; }
+        .detail-tier-price { font-weight: 700; color: #1a1a1a; }
+        .detail-tier-save {
+            font-size: 0.72rem; color: #1e8e3e; margin-left: 5px;
+            background: #e6f4ea; border-radius: 4px; padding: 1px 4px;
+        }
+
+        /* ── Tier en carrito ── */
+        .cart-item-tier { font-size: 0.7rem; color: #1e8e3e; font-weight: 600; margin-bottom: 2px; }
+
         /* ===== CART BAR ===== */
         .cart-bar {
             position: fixed;
@@ -1439,6 +1461,13 @@
                 const p = item.product;
                 const unitPrice = getProductPriceForCart(p, p.codigo);
                 const subtotal = unitPrice * item.qty;
+                const lista = getProductLista(p.codigo);
+                const pub = parsePrice(p.precioPublico) || 0;
+                const sav = (pub && unitPrice < pub) ? Math.round((1 - unitPrice / pub) * 100) : 0;
+                const tierLabel = lista === 'pub' ? '1-3 pzas · precio público'
+                                : lista === '2X'  ? 'Lista 2X · 4-7 pzas' + (sav > 0 ? ` · -${sav}%` : '')
+                                : lista === 'F'   ? 'Lista F · 8-15 pzas' + (sav > 0 ? ` · -${sav}%` : '')
+                                :                   'Lista M · 16+ pzas'  + (sav > 0 ? ` · -${sav}%` : '');
                 const imgHtml = p.imagenUrl
                     ? `<img src="${escapeHtml(p.imagenUrl)}" alt="${escapeHtml(p.nombre)}" class="cart-item-img" onerror="this.outerHTML='<div class=\\'cart-item-placeholder\\'>📦</div>'">`
                     : `<div class="cart-item-placeholder">📦</div>`;
@@ -1447,6 +1476,7 @@
                         ${imgHtml}
                         <div class="cart-item-info">
                             <div class="cart-item-name">${escapeHtml(p.nombre)}</div>
+                            <div class="cart-item-tier">${tierLabel}</div>
                             <div class="cart-item-code">${escapeHtml(p.codigo)}</div>
                             <div class="cart-item-price">${formatMXN(subtotal)}<span class="unit">(${formatMXN(unitPrice)} c/u)</span></div>
                         </div>
@@ -1553,31 +1583,44 @@
             container.setAttribute('data-codigo', codigo);
 
             const product = allProducts.find(p => p.codigo === codigo);
-            const agotado = product && product.existencias <= 0;
+            if (!product) return;
 
-            if (agotado) {
-                container.innerHTML = `
-                    <button class="btn-add-cart" disabled style="background:#BDBDBD;cursor:not-allowed;opacity:0.7;">Sin existencias</button>
-                `;
+            if (product.existencias <= 0) {
+                container.innerHTML = `<button class="btn-add-cart" disabled style="background:#BDBDBD;cursor:not-allowed;opacity:0.7;">Sin existencias</button>`;
                 return;
             }
 
+            const pub = parsePrice(product.precioPublico) || 0;
             const item = cart[codigo];
-            if (item) {
-                container.innerHTML = `
-                    <button class="btn-add-cart in-cart" onclick="cartAdd('${escapeHtml(codigo)}')">En el carrito (${item.qty})</button>
-                    <div class="detail-qty-controls">
-                        <button class="detail-qty-btn" onclick="cartSetQty('${escapeHtml(codigo)}', ${item.qty - 1})">−</button>
-                        <span class="detail-qty-value">${item.qty}</span>
-                        <button class="detail-qty-btn" onclick="cartAdd('${escapeHtml(codigo)}')">+</button>
-                    </div>
-                    <button class="detail-qty-remove" onclick="cartRemove('${escapeHtml(codigo)}')">Quitar del carrito</button>
-                `;
-            } else {
-                container.innerHTML = `
-                    <button class="btn-add-cart" onclick="cartAdd('${escapeHtml(codigo)}')">+ Agregar al carrito</button>
-                `;
-            }
+            const listaActiva = getProductLista(codigo);
+            const tiers = [
+                { key: 'pub', label: '1-3 pzas',  minQty: 1,  price: pub },
+                { key: '2X',  label: '4-7 pzas',  minQty: 4,  price: getUnitPriceForList(product, '2X') },
+                { key: 'F',   label: '8-15 pzas', minQty: 8,  price: getUnitPriceForList(product, 'F') },
+                { key: 'M',   label: '16+ pzas',  minQty: 16, price: getUnitPriceForList(product, 'M') },
+            ];
+
+            const tiersHtml = tiers.map(t => {
+                if (!t.price) return '';
+                const isActive = item && t.key === listaActiva;
+                const sav = (pub && t.price < pub) ? Math.round((1 - t.price / pub) * 100) : 0;
+                const savBadge = sav > 0 ? `<span class="detail-tier-save">-${sav}%</span>` : '';
+                return `<button class="detail-tier-btn${isActive ? ' active' : ''}" onclick="setQtyToTier('${escapeHtml(codigo)}', ${t.minQty})" title="Agregar ${t.minQty} pieza${t.minQty > 1 ? 's' : ''}">
+                    <span class="detail-tier-range">${t.label}</span>
+                    <span class="detail-tier-price">${formatMXN(t.price)} c/u${savBadge}</span>
+                </button>`;
+            }).filter(Boolean).join('');
+
+            const controlsHtml = item ? `
+                <div class="detail-qty-controls" style="margin-top:10px;">
+                    <button class="detail-qty-btn" onclick="cartSetQty('${escapeHtml(codigo)}', ${item.qty - 1})">−</button>
+                    <span class="detail-qty-value">${item.qty}</span>
+                    <button class="detail-qty-btn" onclick="cartAdd('${escapeHtml(codigo)}')">+</button>
+                </div>
+                <button class="detail-qty-remove" onclick="cartRemove('${escapeHtml(codigo)}')">Quitar del carrito</button>
+            ` : '';
+
+            container.innerHTML = `<div class="detail-tier-btns">${tiersHtml}</div>${controlsHtml}`;
         }
 
         // ============================================================
