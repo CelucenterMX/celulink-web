@@ -2497,10 +2497,10 @@
                 const lista = getProductLista(p.codigo);
                 const pub = parsePrice(p.precioPublico) || 0;
                 const sav = (pub && unitPrice < pub) ? Math.round((1 - unitPrice / pub) * 100) : 0;
-                const tierLabel = lista === 'pub' ? '1-3 pzas · precio público'
-                                : lista === '2X'  ? 'Lista 2X · 4-7 pzas' + (sav > 0 ? ` · -${sav}%` : '')
-                                : lista === 'F'   ? 'Lista F · 8-15 pzas' + (sav > 0 ? ` · -${sav}%` : '')
-                                :                   'Lista M · 16+ pzas'  + (sav > 0 ? ` · -${sav}%` : '');
+                const tierLabel = lista === 'pub' ? 'Normal · precio público'
+                                : lista === '2X'  ? 'Plus · 4-7 pzas' + (sav > 0 ? ` · -${sav}%` : '')
+                                : lista === 'F'   ? 'Pro · 8-15 pzas' + (sav > 0 ? ` · -${sav}%` : '')
+                                :                   'Diamante · 16+ pzas' + (sav > 0 ? ` · -${sav}%` : '');
                 const imgHtml = p.imagenUrl
                     ? `<img src="${escapeHtml(p.imagenUrl)}" alt="${escapeHtml(p.nombre)}" class="cart-item-img" onerror="this.outerHTML='<div class=\\'cart-item-placeholder\\'>📦</div>'">`
                     : `<div class="cart-item-placeholder">📦</div>`;
@@ -2867,10 +2867,10 @@
             const pub = parsePrice(product.precioPublico) || 0;
             const listaActual = getProductLista(codigo);
             const tiers = [
-                { key: 'pub', label: '1 - 3 pzas',  qty: 1,  price: pub },
-                { key: '2X',  label: '4 - 7 pzas',  qty: 4,  price: getUnitPriceForList(product, '2X') },
-                { key: 'F',   label: '8 - 15 pzas', qty: 8,  price: getUnitPriceForList(product, 'F') },
-                { key: 'M',   label: '16+ pzas',    qty: 16, price: getUnitPriceForList(product, 'M') },
+                { key: 'pub', label: 'Normal',   qty: 1,  price: pub },
+                { key: '2X',  label: 'Plus',     qty: 4,  price: getUnitPriceForList(product, '2X') },
+                { key: 'F',   label: 'Pro',      qty: 8,  price: getUnitPriceForList(product, 'F') },
+                { key: 'M',   label: 'Diamante', qty: 16, price: getUnitPriceForList(product, 'M') },
             ];
 
             document.getElementById('qtyPickerTitle').textContent = product.nombre || codigo;

@@ -1279,10 +1279,10 @@
             const pub = parsePrice(product.precioPublico);
             const codigo = product.codigo;
             const tiers = [
-                { key: 'pub', lista: null, label: '1-3 pzas',  minPiezas: 1  },
-                { key: '2X',  lista: '2X', label: '4-7 pzas',  minPiezas: 4  },
-                { key: 'F',   lista: 'F',  label: '8-15 pzas', minPiezas: 8  },
-                { key: 'M',   lista: 'M',  label: '16+ pzas',  minPiezas: 16 },
+                { key: 'pub', lista: null, label: 'Normal',   minPiezas: 1  },
+                { key: '2X',  lista: '2X', label: 'Plus',     minPiezas: 4  },
+                { key: 'F',   lista: 'F',  label: 'Pro',      minPiezas: 8  },
+                { key: 'M',   lista: 'M',  label: 'Diamante', minPiezas: 16 },
             ];
 
             // Precio en grande: el tier activo
@@ -1316,9 +1316,9 @@
         }
 
         function getNextTierHint(itemCount) {
-            if (itemCount < PIEZAS_2X) return { faltan: PIEZAS_2X - itemCount, nombre: 'precio por 4-7 pzas' };
-            if (itemCount < PIEZAS_F)  return { faltan: PIEZAS_F - itemCount, nombre: 'precio Mayoreo (8-15 pzas)' };
-            if (itemCount < PIEZAS_M)  return { faltan: PIEZAS_M - itemCount, nombre: 'precio VIP+ (16+)' };
+            if (itemCount < PIEZAS_2X) return { faltan: PIEZAS_2X - itemCount, nombre: 'precio Plus (4-7 pzas)' };
+            if (itemCount < PIEZAS_F)  return { faltan: PIEZAS_F - itemCount, nombre: 'precio Pro (8-15 pzas)' };
+            if (itemCount < PIEZAS_M)  return { faltan: PIEZAS_M - itemCount, nombre: 'precio Diamante (16+)' };
             return null;
         }
 
@@ -1337,13 +1337,13 @@
                 const product = allProducts.find(p => p.codigo === code);
                 if (product) {
                     const pub = parsePrice(product.precioPublico);
-                    const tierLabels = { pub: '1-3 pzas', '2X': '4-7 pzas', F: '8-15 pzas', M: '16+ pzas' };
+                    const tierLabels = { pub: 'Normal', '2X': 'Plus', F: 'Pro', M: 'Diamante' };
                     const tierListas = { pub: null, '2X': '2X', F: 'F', M: 'M' };
                     const activePrice = listaActiva === 'pub' ? pub : getUnitPriceForList(product, tierListas[listaActiva]);
                     const sav = (pub && activePrice && activePrice < pub) ? Math.round((1 - activePrice / pub) * 100) : 0;
                     const savBadge = sav > 0 ? `<span class="list-badge">Ahorras ${sav}%</span>` : '';
                     const pubHtml = (pub && activePrice && activePrice < pub) ? `<span class="detail-price-public">P. Público ${fmt(pub)}</span>` : '';
-                    priceDisplay.innerHTML = `<span class="detail-price-label">${tierLabels[listaActiva] || '1-3 pzas'}</span><span class="detail-price-value">${fmt(activePrice)}${savBadge}</span>${pubHtml}`;
+                    priceDisplay.innerHTML = `<span class="detail-price-label">${tierLabels[listaActiva] || 'Normal'}</span><span class="detail-price-value">${fmt(activePrice)}${savBadge}</span>${pubHtml}`;
                 }
             }
 
@@ -1494,10 +1494,10 @@
                 const lista = getProductLista(p.codigo);
                 const pub = parsePrice(p.precioPublico) || 0;
                 const sav = (pub && unitPrice < pub) ? Math.round((1 - unitPrice / pub) * 100) : 0;
-                const tierLabel = lista === 'pub' ? '1-3 pzas · precio público'
-                                : lista === '2X'  ? 'Lista 2X · 4-7 pzas' + (sav > 0 ? ` · -${sav}%` : '')
-                                : lista === 'F'   ? 'Lista F · 8-15 pzas' + (sav > 0 ? ` · -${sav}%` : '')
-                                :                   'Lista M · 16+ pzas'  + (sav > 0 ? ` · -${sav}%` : '');
+                const tierLabel = lista === 'pub' ? 'Normal · precio público'
+                                : lista === '2X'  ? 'Plus · 4-7 pzas' + (sav > 0 ? ` · -${sav}%` : '')
+                                : lista === 'F'   ? 'Pro · 8-15 pzas' + (sav > 0 ? ` · -${sav}%` : '')
+                                :                   'Diamante · 16+ pzas' + (sav > 0 ? ` · -${sav}%` : '');
                 const imgHtml = p.imagenUrl
                     ? `<img src="${escapeHtml(p.imagenUrl)}" alt="${escapeHtml(p.nombre)}" class="cart-item-img" onerror="this.outerHTML='<div class=\\'cart-item-placeholder\\'>📦</div>'">`
                     : `<div class="cart-item-placeholder">📦</div>`;
@@ -1624,10 +1624,10 @@
             const item = cart[codigo];
             const listaActiva = getProductLista(codigo);
             const tiers = [
-                { key: 'pub', label: '1-3 pzas',  minQty: 1,  price: pub },
-                { key: '2X',  label: '4-7 pzas',  minQty: 4,  price: getUnitPriceForList(product, '2X') },
-                { key: 'F',   label: '8-15 pzas', minQty: 8,  price: getUnitPriceForList(product, 'F') },
-                { key: 'M',   label: '16+ pzas',  minQty: 16, price: getUnitPriceForList(product, 'M') },
+                { key: 'pub', label: 'Normal',   minQty: 1,  price: pub },
+                { key: '2X',  label: 'Plus',     minQty: 4,  price: getUnitPriceForList(product, '2X') },
+                { key: 'F',   label: 'Pro',      minQty: 8,  price: getUnitPriceForList(product, 'F') },
+                { key: 'M',   label: 'Diamante', minQty: 16, price: getUnitPriceForList(product, 'M') },
             ];
 
             const tiersHtml = tiers.map(t => {
