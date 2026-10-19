@@ -441,6 +441,8 @@
 <body>
 
 <!-- LOGIN / REGISTER -->
+<!-- login-screen comentado V0.2 (catalogo no disponible) -->
+<!--
 <div class="login-screen" id="loginScreen">
     <img src="https://piztian.github.io/samsung-s25/imagenes/Celucenter-500x260.png" alt="Celucenter">
     <h2>Catálogo de Equipos</h2>
@@ -465,6 +467,7 @@
         <div class="form-message" id="registerMsg"></div>
     </div>
 </div>
+-->
 
 <!-- APP (hidden until login) -->
 <div id="appContainer" style="display:none;">
@@ -488,28 +491,33 @@
     </div>
 </div>
 
-<header class="clk-nav">
-  <div class="clk-nav-inner">
-    <a class="clk-brand" href="../../">
-      <img src="../../assets/icono-celucenter.png" alt="Celulink">
-      <span>Celulink</span>
+<!-- Nav estilo index (patron nav.clk-hide) V0.2 -->
+<nav class="nav clk-hide">
+  <div class="nav-inner">
+    <a href="../../" class="nav-brand">
+      <img class="nav-brand-logo" src="https://raw.githubusercontent.com/piztian/celulink/main/fotos/Celulink%20logo%20(2).png" alt="CeluLink">
+      <span class="nav-brand-text">celu<span class="link">link</span>.mx</span>
     </a>
-    <nav>
-      <ul class="clk-nav-links">
-        <li><a href="../../">Inicio</a></li>
-        <li><a href="../equipos/" style="background:var(--color-bg-alt);color:var(--celeste-oscuro);">Smartphones</a></li>
-        <li><a href="../accesorios/">Accesorios</a></li>
-        <li><a href="../../menu/">Menú</a></li>
-      </ul>
-    </nav>
-    <div class="clk-nav-cta">
-      <span class="user-name-badge" id="userNameNav" style="background:var(--color-bg-alt);color:var(--color-texto);border:1px solid var(--color-borde);padding:7px 14px;border-radius:var(--radius-pill);font-size:0.85rem;font-weight:600;"></span>
-      <span class="user-lista-badge" id="userListaNav" style="background:var(--color-bg-alt);color:var(--color-texto);border:1px solid var(--color-borde);padding:7px 14px;border-radius:var(--radius-pill);font-size:0.85rem;font-weight:600;"></span>
-      <a class="clk-btn clk-btn-wa" href="https://wa.me/523413300001" target="_blank">💬 WhatsApp</a>
+    <div class="nav-links">
+      <a href="../../">Inicio</a>
     </div>
   </div>
-</header>
+</nav>
 
+<!-- Placeholder V0.2: catalogo no disponible hasta nuevo aviso -->
+<section style="max-width:720px;margin:80px auto;padding:48px 32px;text-align:center;background:var(--color-bg);border:2px dashed var(--color-borde);border-radius:var(--radius-lg);">
+  <div style="font-size:3rem;margin-bottom:16px;">🚧</div>
+  <h1 style="font-family:Montserrat,sans-serif;font-size:1.6rem;color:var(--celeste-oscuro);margin:0 0 12px;">Catálogo no disponible por el momento</h1>
+  <p style="color:var(--color-texto-suave);font-size:0.95rem;margin:0 0 24px;line-height:1.5;">
+    Estamos preparando una nueva experiencia para el catálogo de equipos y smartphones.
+    <br>Vuelve pronto para ver las novedades.
+  </p>
+  <a href="../accesorios/" style="display:inline-block;padding:10px 24px;background:var(--celeste);color:#fff;text-decoration:none;border-radius:var(--radius-pill);font-weight:600;font-size:0.9rem;">
+    Mientras tanto, visita el catálogo de accesorios →
+  </a>
+</section>
+
+<!-- clk-catalog-header comentado V0.2 (catalogo no disponible) (catalogo no disponible)
 <section class="clk-catalog-header">
   <div class="clk-container">
     <div class="clk-catalog-header-left">
@@ -530,6 +538,7 @@
     </div>
   </div>
 </section>
+-->
 <script>
 // Espejo de los badges de usuario en el header nuevo
 (function(){

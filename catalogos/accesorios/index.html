@@ -1333,6 +1333,7 @@
 <link rel="stylesheet" href="../../assets/css/chrome.css">
 </head>
 <body>
+<!-- HEADER VIEJO COMENTADO V0.2
     <!-- Header REDISEÑO 2026 (oculta el .header viejo) -->
     <header class="header clk-hide" style="display:none">
         <a href="#" class="logo">
@@ -1349,29 +1350,29 @@
             <a class="header-pricing-note" href="https://wa.me/523413300001?text=Hola%2C%20me%20interesa%20cotizar%20accesorios%20por%20volumen" target="_blank" rel="noopener" title="Cotiza por WhatsApp">📲 Cotizar</a>
         </div>
     </header>
+-->
 
-    <header class="clk-nav">
-      <div class="clk-nav-inner">
-        <a class="clk-brand" href="../../">
-          <img src="../../assets/icono-celucenter.png" alt="Celulink">
-          <span>Celulink</span>
+    <!-- Nav estilo index (patron nav.clk-hide) V0.2 -->
+    <nav class="nav clk-hide">
+      <div class="nav-inner">
+        <a href="../../" class="nav-brand">
+          <img class="nav-brand-logo" src="https://raw.githubusercontent.com/piztian/celulink/main/fotos/Celulink%20logo%20(2).png" alt="CeluLink">
+          <span class="nav-brand-text">celu<span class="link">link</span>.mx</span>
         </a>
-        <nav>
-          <ul class="clk-nav-links">
-            <li><a href="../../">Inicio</a></li>
-            <li><a href="../equipos/">Smartphones</a></li>
-            <li><a href="../accesorios/" style="background:var(--color-bg-alt);color:var(--celeste-oscuro);">Accesorios</a></li>
-            <li><a href="../../menu/">Menú</a></li>
-          </ul>
-        </nav>
-        <div class="clk-nav-cta">
-          <div style="flex:1;min-width:200px;position:relative;">
-            <input type="text" id="searchInputNav" placeholder="🔍 Buscar accesorios..." oninput="document.getElementById('searchInput').value=this.value;filterProducts();" style="width:100%;padding:9px 16px;border:1px solid var(--color-borde);border-radius:var(--radius-pill);font-family:inherit;font-size:0.9rem;background:var(--color-bg-alt);">
-          </div>
-          <span id="headerActionsNav"></span>
+        <div class="nav-links">
+          <a href="../../">Inicio</a>
         </div>
       </div>
-    </header>
+    </nav>
+
+    <!-- Search bar (movido del clk-nav, antes en clk-nav-cta) -->
+    <div style="background:var(--color-bg-alt);padding:10px 32px;border-bottom:1px solid var(--color-borde);">
+      <input type="text" id="searchInput" placeholder="🔍 Buscar accesorios..." oninput="filterProducts()" style="width:100%;max-width:480px;padding:9px 16px;border:1px solid var(--color-borde);border-radius:var(--radius-pill);font-family:inherit;font-size:0.9rem;background:var(--color-bg);">
+    </div>
+
+    <!-- headerActions para login/registro/logout (conservado para no romper JS) -->
+    <span id="headerActions" style="display:none"></span>
+    <span id="headerActionsNav" style="display:none"></span>
 
     <section class="clk-catalog-header">
       <div class="clk-container">
@@ -1429,7 +1430,9 @@
 
     <div class="container">
 
-        <!-- Auth Panel (inline) -->
+        <!-- auth-panel comentado V0.2 (login se reactiva luego) -->
+<!--
+<!-- Auth Panel (inline) -->
         <div class="auth-panel" id="authPanel">
             <div class="auth-panel-header">
                 <button class="auth-panel-close" id="btnClosePanel">&times;</button>
@@ -1468,6 +1471,7 @@
                 </div>
             </div>
         </div>
+-->
 
         <!-- Filters -->
         <div class="filters-section">
@@ -1527,15 +1531,15 @@
               <div>
                 <h4>Productos</h4>
                 <ul>
-                  <li><a href="../equipos/">Smartphones</a></li>
+                  <!-- <li><a href="../equipos/">Smartphones</a></li> -->
                   <li><a href="../accesorios/">Accesorios</a></li>
                 </ul>
               </div>
               <div>
                 <h4>Acceso</h4>
                 <ul>
-                  <li><a href="#" onclick="openModal();return false;">Iniciar sesión</a></li>
-                  <li><a href="#" onclick="openModal();return false;">Registrarse</a></li>
+                  <!-- <li><a href="#" onclick="openModal();return false;">Iniciar sesión</a></li> -->
+                  <!-- <li><a href="#" onclick="openModal();return false;">Registrarse</a></li> -->
                 </ul>
               </div>
               <div>
@@ -1686,7 +1690,7 @@
                     : 'Pendiente de aprobacion';
                 actions.innerHTML = `
                     <span class="btn-auth logged-in">Tel: ${userSession.phone}</span>
-                    <button class="btn-logout btn-close-session">Cerrar sesion</button>
+                    <!-- <button class="btn-logout btn-close-session">Cerrar sesion</button> -->
                 `;
                 status.textContent = listaText;
             } else {
