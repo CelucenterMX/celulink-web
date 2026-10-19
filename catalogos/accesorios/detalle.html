@@ -1284,6 +1284,19 @@
                 { key: 'F',   lista: 'F',  label: '8-15 pzas', minPiezas: 8  },
                 { key: 'M',   lista: 'M',  label: '16+ pzas',  minPiezas: 16 },
             ];
+
+            // Precio en grande: el tier activo
+            const activeTier = tiers.find(t => t.key === listaActiva) || tiers[0];
+            const activePrice = activeTier.key === 'pub' ? pub : getUnitPriceForList(product, activeTier.lista);
+            const activeSav = (pub && activePrice && activePrice < pub) ? Math.round((1 - activePrice / pub) * 100) : 0;
+            const activeSavBadge = activeSav > 0 ? `<span class="list-badge">Ahorras ${activeSav}%</span>` : '';
+            const activePubHtml = (pub && activePrice && activePrice < pub) ? `<span class="detail-price-public">P. Público ${fmt(pub)}</span>` : '';
+            const bigPriceHtml = `<div class="detail-price-tag" id="detailActivePriceDisplay">
+                <span class="detail-price-label">${activeTier.label}</span>
+                <span class="detail-price-value">${fmt(activePrice)}${activeSavBadge}</span>
+                ${activePubHtml}
+            </div>`;
+
             const rows = tiers.map(t => {
                 const price = t.key === 'pub' ? pub : getUnitPriceForList(product, t.lista);
                 if (!price) return '';
@@ -1298,7 +1311,7 @@
             const itemCount = cart[codigo] ? cart[codigo].qty : 0;
             const nextTier = getNextTierHint(itemCount);
             const hintText = nextTier ? `Llevas <strong>${itemCount} pieza${itemCount !== 1 ? 's' : ''}</strong> · Agrega ${nextTier.faltan} más para <strong>${nextTier.nombre}</strong>` : `Llevas <strong>${itemCount} pieza${itemCount !== 1 ? 's' : ''}</strong> · ¡Mejor precio desbloqueado!`;
-            return `<div class="detail-all-lists" id="detailEscalera">${rows}</div>
+            return `${bigPriceHtml}<div class="detail-all-lists" id="detailEscalera">${rows}</div>
                 <div class="detail-escalera-hint">${hintText}</div>`;
         }
 
@@ -1317,6 +1330,23 @@
             el.querySelectorAll('.list-row[data-lista]').forEach(row => {
                 row.classList.toggle('active', row.getAttribute('data-lista') === listaActiva);
             });
+
+            // Actualizar el precio en grande
+            const priceDisplay = document.getElementById('detailActivePriceDisplay');
+            if (priceDisplay && code) {
+                const product = allProducts.find(p => p.codigo === code);
+                if (product) {
+                    const pub = parsePrice(product.precioPublico);
+                    const tierLabels = { pub: '1-3 pzas', '2X': '4-7 pzas', F: '8-15 pzas', M: '16+ pzas' };
+                    const tierListas = { pub: null, '2X': '2X', F: 'F', M: 'M' };
+                    const activePrice = listaActiva === 'pub' ? pub : getUnitPriceForList(product, tierListas[listaActiva]);
+                    const sav = (pub && activePrice && activePrice < pub) ? Math.round((1 - activePrice / pub) * 100) : 0;
+                    const savBadge = sav > 0 ? `<span class="list-badge">Ahorras ${sav}%</span>` : '';
+                    const pubHtml = (pub && activePrice && activePrice < pub) ? `<span class="detail-price-public">P. Público ${fmt(pub)}</span>` : '';
+                    priceDisplay.innerHTML = `<span class="detail-price-label">${tierLabels[listaActiva] || '1-3 pzas'}</span><span class="detail-price-value">${fmt(activePrice)}${savBadge}</span>${pubHtml}`;
+                }
+            }
+
             const hint = el.nextElementSibling;
             if (hint && hint.classList.contains('detail-escalera-hint')) {
                 const itemCount = code && cart[code] ? cart[code].qty : 0;
