@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nota de Venta — Celulink</title>
+  <style>
+    /* ---- RESET ---- */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      font-size: 12px;
+      background: #f0f0f0;
+      color: #1a1a1a;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 24px 16px;
+      gap: 16px;
+    }
+
+    /* ---- TOOLBAR (se oculta al imprimir) ---- */
+    .toolbar {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+    .btn {
+      padding: 8px 20px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+    }
+    .btn-print { background: #0ea5e9; color: #fff; }
+    .btn-clear { background: #e5e7eb; color: #374151; }
+    .btn:hover { opacity: 0.85; }
+
+    /* ---- HOJA (tamaño media carta) ---- */
+    .hoja {
+      width: 5.5in;
+      min-height: 8.5in;
+      background: #fff;
+      padding: 0.45in 0.5in;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    /* ---- ENCABEZADO ---- */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      border-bottom: 2px solid #0ea5e9;
+      padding-bottom: 10px;
+    }
+    .header-logo img { height: 90px; width: auto; }
+    .header-titulo {
+      text-align: right;
+    }
+    .header-titulo h1 {
+      font-size: 18px;
+      font-weight: 700;
+      color: #0ea5e9;
+      letter-spacing: 1px;
+    }
+    .folio-fecha {
+      display: flex;
+      gap: 16px;
+      margin-top: 4px;
+      justify-content: flex-end;
+    }
+    .folio-fecha label { font-size: 10px; color: #6b7280; }
+    .folio-fecha span {
+      border: 1px solid #94a3b8;
+      border-radius: 3px;
+      min-width: 70px;
+      display: inline-block;
+      padding: 2px 5px;
+    }
+
+    /* ---- DATOS CLIENTE ---- */
+    .datos-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px 20px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      padding: 8px 12px;
+    }
+    .campo { display: flex; align-items: baseline; gap: 6px; }
+    .campo label { font-size: 10px; color: #6b7280; white-space: nowrap; }
+    .campo span {
+      border: 1px solid #94a3b8;
+      border-radius: 3px;
+      flex: 1;
+      padding: 2px 5px;
+      font-weight: 500;
+      min-height: 18px;
+    }
+
+    /* ---- TABLA ---- */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 4px;
+    }
+    thead tr {
+      background: #0ea5e9;
+      color: #fff;
+    }
+    thead th {
+      padding: 6px 8px;
+      font-size: 11px;
+      font-weight: 600;
+      text-align: left;
+    }
+    thead th.center, td.center { text-align: center; }
+    thead th.right, td.right { text-align: right; }
+    tbody tr { border-bottom: 1px solid #cbd5e1; }
+    tbody tr:nth-child(even) { background: #f8fafc; }
+    tbody td {
+      padding: 3px 6px;
+      height: 22px;
+      border-right: 1px solid #e2e8f0;
+    }
+    tbody td:last-child { border-right: none; }
+    table { border: 1px solid #cbd5e1; }
+    td[contenteditable] { outline: none; cursor: text; }
+    td[contenteditable]:focus { background: #eff6ff; }
+    td.cant { width: 48px; }
+    td.precio, td.total { width: 80px; }
+
+    /* ---- TOTALES ---- */
+    .totales {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 4px;
+    }
+    .totales-box {
+      width: 220px;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      overflow: hidden;
+    }
+    .totales-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 5px 10px;
+      font-size: 11px;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    .totales-row:last-child { border-bottom: none; }
+    .totales-row.total-final {
+      background: #0ea5e9;
+      color: #fff;
+      font-size: 13px;
+      font-weight: 700;
+    }
+    .totales-row label { color: #6b7280; }
+    .totales-row.total-final label { color: #e0f2fe; }
+
+    /* ---- NOTAS ---- */
+    .notas {
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      padding: 6px 10px;
+      min-height: 40px;
+      font-size: 11px;
+      color: #374151;
+    }
+    .notas-label { font-size: 10px; color: #6b7280; margin-bottom: 3px; }
+
+    /* ---- FIRMAS ---- */
+    .firmas {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      margin-top: auto;
+      padding-top: 20px;
+    }
+    .firma-box { text-align: center; }
+    .firma-linea {
+      border-top: 1px solid #374151;
+      padding-top: 4px;
+      font-size: 10px;
+      color: #6b7280;
+    }
+
+    /* ---- FOOTER LEGAL ---- */
+    .pie {
+      text-align: center;
+      font-size: 9px;
+      color: #9ca3af;
+      border-top: 1px solid #e2e8f0;
+      padding-top: 6px;
+    }
+
+    /* ---- PRINT ---- */
+    @media print {
+      body { background: none; padding: 0; }
+      .toolbar { display: none; }
+      .hoja {
+        box-shadow: none;
+        width: 100%;
+        min-height: unset;
+        padding: 0.45in 0.5in;
+      }
+      @page { size: 5.5in 8.5in; margin: 0; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- TOOLBAR -->
+  <div class="toolbar">
+    <button class="btn btn-print" onclick="window.print()">🖨 Imprimir / PDF</button>
+    <button class="btn btn-clear" onclick="limpiar()">Limpiar</button>
+  </div>
+
+  <!-- HOJA -->
+  <div class="hoja">
+
+    <!-- ENCABEZADO -->
+    <div class="header">
+      <div class="header-logo">
+        <img src="../../assets/marca/logo-color-fondo-blanco.jpeg" alt="Celulink">
+      </div>
+      <div class="header-titulo">
+        <h1>NOTA DE VENTA</h1>
+        <div class="folio-fecha">
+          <div><label>Folio&nbsp;</label><span id="folio" contenteditable="true">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></div>
+          <div><label>Fecha&nbsp;</label><span id="fecha" contenteditable="true">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DATOS CLIENTE -->
+    <div class="datos-grid">
+      <div class="campo">
+        <label>Cliente:</label>
+        <span contenteditable="true">&nbsp;</span>
+      </div>
+      <div class="campo">
+        <label>Teléfono:</label>
+        <span contenteditable="true">&nbsp;</span>
+      </div>
+      <div class="campo">
+        <label>Vendedor:</label>
+        <span contenteditable="true">&nbsp;</span>
+      </div>
+      <div class="campo">
+        <label>Sucursal:</label>
+        <span contenteditable="true">&nbsp;</span>
+      </div>
+    </div>
+
+    <!-- TABLA DE PRODUCTOS -->
+    <table id="tabla">
+      <thead>
+        <tr>
+          <th class="center" style="width:48px">Cant.</th>
+          <th>Descripción</th>
+          <th class="right" style="width:80px">P. Unitario</th>
+          <th class="right" style="width:80px">Total</th>
+        </tr>
+      </thead>
+      <tbody id="tbody">
+      </tbody>
+    </table>
+
+    <!-- TOTALES -->
+    <div class="totales">
+      <div class="totales-box">
+        <div class="totales-row">
+          <label>Subtotal</label>
+          <span id="subtotal">$0.00</span>
+        </div>
+        <div class="totales-row">
+          <label>IVA (16%)</label>
+          <span id="iva">$0.00</span>
+        </div>
+        <div class="totales-row total-final">
+          <label>TOTAL</label>
+          <span id="total">$0.00</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- NOTAS -->
+    <div>
+      <div class="notas-label">Notas / Condiciones:</div>
+      <div class="notas" contenteditable="true">Precios en MXN. Esta nota no es un comprobante fiscal.</div>
+    </div>
+
+    <!-- FIRMAS -->
+    <div class="firmas">
+      <div class="firma-box">
+        <div style="height:36px"></div>
+        <div class="firma-linea">Firma del cliente</div>
+      </div>
+      <div class="firma-box">
+        <div style="height:36px"></div>
+        <div class="firma-linea">Firma del vendedor</div>
+      </div>
+    </div>
+
+    <!-- PIE -->
+    <div class="pie">celulink.mx · Cel accesorios y smartphones · Jalisco, México</div>
+
+  </div>
+
+  <script>
+    const FILAS = 10;
+
+    function fmt(n) {
+      return '$' + n.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    }
+
+    function calcRow(tr) {
+      const cant  = parseFloat(tr.cells[0].innerText) || 0;
+      const pu    = parseFloat(tr.cells[2].innerText.replace(/[$,]/g,'')) || 0;
+      const total = cant * pu;
+      tr.cells[3].innerText = total ? fmt(total) : '';
+      return total;
+    }
+
+    function recalc() {
+      let subtotal = 0;
+      document.querySelectorAll('#tbody tr').forEach(tr => { subtotal += calcRow(tr); });
+      const iva   = subtotal * 0.16;
+      const total = subtotal + iva;
+      document.getElementById('subtotal').innerText = fmt(subtotal);
+      document.getElementById('iva').innerText      = fmt(iva);
+      document.getElementById('total').innerText    = fmt(total);
+    }
+
+    function crearFila() {
+      const tr = document.createElement('tr');
+      ['cant center', 'desc', 'precio right', 'total right'].forEach((cls, i) => {
+        const td = document.createElement('td');
+        cls.split(' ').forEach(c => td.classList.add(c));
+        if (i < 3) td.contentEditable = 'true';
+        tr.appendChild(td);
+      });
+      tr.addEventListener('input', recalc);
+      return tr;
+    }
+
+    function init() {
+      const tbody = document.getElementById('tbody');
+      tbody.innerHTML = '';
+      for (let i = 0; i < FILAS; i++) tbody.appendChild(crearFila());
+      // fecha de hoy por defecto
+      const hoy = new Date().toLocaleDateString('es-MX', { day:'2-digit', month:'2-digit', year:'numeric' });
+      document.getElementById('fecha').innerText = hoy;
+      recalc();
+    }
+
+    function limpiar() {
+      if (!confirm('¿Limpiar toda la nota?')) return;
+      init();
+      document.querySelectorAll('[contenteditable]').forEach(el => {
+        if (el.id !== 'fecha') el.innerText = '\u00a0';
+      });
+      document.querySelector('.notas').innerText = 'Precios en MXN. Esta nota no es un comprobante fiscal.';
+      const hoy = new Date().toLocaleDateString('es-MX', { day:'2-digit', month:'2-digit', year:'numeric' });
+      document.getElementById('fecha').innerText = hoy;
+    }
+
+    init();
+  </script>
+</body>
+</html>
