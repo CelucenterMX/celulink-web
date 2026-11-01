@@ -650,6 +650,64 @@ button { font-family: inherit; cursor: pointer; border: none; background: none; 
 .state-cap { font-size: 0.85rem; color: var(--color-texto-suave); }
 
 /* =========================================
+   CÓMO COMPRAR (steps)
+   ========================================= */
+.steps-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-5);
+}
+.step-card {
+  background: white;
+  padding: var(--space-5) var(--space-4);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-borde);
+  text-align: center;
+  position: relative;
+  transition: var(--transition);
+}
+.step-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--celeste);
+  box-shadow: var(--shadow-md);
+}
+.step-num {
+  position: absolute;
+  top: -14px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--grad-marca);
+  color: white;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 0.85rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(14,165,233,.35);
+}
+.step-icon {
+  font-size: 2rem;
+  margin-bottom: var(--space-3);
+  line-height: 1;
+}
+.step-card h3 {
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--color-texto);
+  margin-bottom: var(--space-2);
+}
+.step-card p {
+  font-size: 0.82rem;
+  color: var(--color-texto-suave);
+  line-height: 1.5;
+}
+
+/* =========================================
    FOOTER
    ========================================= */
 .site-footer {
@@ -926,6 +984,7 @@ body.has-eyebrow .site-header { top: 28px; }
   .cat-grid { grid-template-columns: 1fr; }
   .brands-grid { grid-template-columns: repeat(3, 1fr); }
   .states-grid { grid-template-columns: 1fr 1fr; }
+  .steps-grid { grid-template-columns: 1fr 1fr; gap: var(--space-4); }
   .footer-grid { grid-template-columns: 1fr; }
   .section-head-row { flex-direction: column; align-items: stretch; }
 }
