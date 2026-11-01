@@ -57,19 +57,22 @@
     }
     .doc-header-banner {
       width: 100%;
-      max-height: 110px;
+      height: 100px;
       object-fit: cover;
-      object-position: center top;
+      object-position: center center;
       display: block;
     }
     .doc-header-meta {
-      padding: 12px 28px 14px;
+      padding: 14px 28px 16px;
       display: flex;
       justify-content: space-between;
-      align-items: center;
+      align-items: flex-end;
       gap: 16px;
     }
-    .doc-header-right { text-align: right; }
+    .doc-header-left {
+      display: flex;
+      flex-direction: column;
+    }
     .doc-tipo {
       font-size: 22px;
       font-weight: 800;
@@ -78,33 +81,32 @@
       line-height: 1;
     }
     .doc-subtipo {
-      font-size: 10px;
-      color: #94a3b8;
-      margin-top: 3px;
+      font-size: 9px;
+      color: #64748b;
+      margin-top: 4px;
       letter-spacing: 1px;
       text-transform: uppercase;
     }
     .doc-meta {
       display: flex;
-      gap: 12px;
-      margin-top: 12px;
-      justify-content: flex-end;
+      gap: 10px;
     }
     .meta-item {
       background: #1e293b;
+      border: 1px solid #334155;
       border-radius: 6px;
       padding: 5px 10px;
       display: flex;
       flex-direction: column;
       align-items: flex-end;
-      min-width: 90px;
+      min-width: 88px;
     }
-    .meta-label { font-size: 9px; color: #64748b; text-transform: uppercase; letter-spacing: .8px; }
+    .meta-label { font-size: 8px; color: #64748b; text-transform: uppercase; letter-spacing: .8px; }
     .meta-val {
       font-size: 12px;
       color: #f1f5f9;
       font-weight: 600;
-      min-width: 70px;
+      min-width: 66px;
       text-align: right;
     }
     .meta-val[contenteditable]:focus { outline: none; color: #38bdf8; }
@@ -117,22 +119,24 @@
 
     /* ── BODY ── */
     .doc-body {
-      padding: 20px 28px;
+      padding: 18px 28px;
       display: flex;
       flex-direction: column;
-      gap: 16px;
+      gap: 14px;
       flex: 1;
     }
 
-    /* ── SECCIÓN CLIENTE ── */
+    /* ── SECCIÓN LABELS ── */
     .seccion-label {
       font-size: 9px;
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 1.2px;
       color: #94a3b8;
-      margin-bottom: 6px;
+      margin-bottom: 5px;
     }
+
+    /* ── CLIENTE ── */
     .cliente-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -170,37 +174,40 @@
       width: 100%;
       border-collapse: collapse;
       font-size: 11.5px;
+      border: 1px solid #cbd5e1;
     }
     thead tr {
       background: #1e293b;
       color: #f1f5f9;
     }
     thead th {
-      padding: 8px 10px;
+      padding: 7px 8px;
       font-size: 10px;
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: .8px;
+      border-right: 1px solid #334155;
     }
+    thead th:last-child { border-right: none; }
     thead th.c { text-align: center; }
     thead th.r { text-align: right; }
     tbody td {
-      padding: 5px 10px;
+      padding: 4px 8px;
       border-bottom: 1px solid #e2e8f0;
-      border-right: 1px solid #f1f5f9;
-      height: 26px;
+      border-right: 1px solid #e2e8f0;
+      height: 24px;
       color: #334155;
     }
     tbody td:last-child { border-right: none; }
     tbody tr:nth-child(even) { background: #f8fafc; }
-    tbody tr:last-child td { border-bottom: 2px solid #e2e8f0; }
+    tbody tr:last-child td { border-bottom: none; }
     td[contenteditable] { outline: none; cursor: text; }
     td[contenteditable]:focus { background: #eff6ff !important; }
     td.c { text-align: center; }
     td.r { text-align: right; }
     td.cant { width: 44px; }
-    td.pu   { width: 82px; }
-    td.tot  { width: 82px; font-weight: 600; color: #0f172a; }
+    td.pu   { width: 80px; }
+    td.tot  { width: 80px; font-weight: 600; color: #0f172a; }
 
     /* ── TOTALES ── */
     .totales-wrap {
@@ -208,7 +215,7 @@
       justify-content: flex-end;
     }
     .totales-box {
-      width: 210px;
+      width: 200px;
       border: 1px solid #e2e8f0;
       border-radius: 8px;
       overflow: hidden;
@@ -216,7 +223,7 @@
     .tot-row {
       display: flex;
       justify-content: space-between;
-      padding: 6px 12px;
+      padding: 5px 12px;
       font-size: 11px;
       border-bottom: 1px solid #e2e8f0;
     }
@@ -225,7 +232,7 @@
     .tot-row span:last-child { font-weight: 600; color: #1e293b; }
     .tot-row.grand {
       background: #0f172a;
-      padding: 9px 12px;
+      padding: 8px 12px;
     }
     .tot-row.grand span:first-child { color: #94a3b8; font-weight: 700; font-size: 12px; letter-spacing: .5px; }
     .tot-row.grand span:last-child  { color: #38bdf8; font-size: 15px; font-weight: 800; }
@@ -237,7 +244,7 @@
       padding: 8px 12px;
       font-size: 10.5px;
       color: #64748b;
-      min-height: 36px;
+      min-height: 32px;
       line-height: 1.5;
     }
     .notas-box:focus { outline: none; border-color: #0ea5e9; }
@@ -248,14 +255,14 @@
       grid-template-columns: 1fr 1fr;
       gap: 24px;
       margin-top: auto;
-      padding-top: 12px;
+      padding-top: 10px;
     }
     .firma-box { text-align: center; }
-    .firma-espacio { height: 32px; }
+    .firma-espacio { height: 28px; }
     .firma-linea {
       border-top: 1.5px solid #94a3b8;
-      padding-top: 5px;
-      font-size: 9.5px;
+      padding-top: 4px;
+      font-size: 9px;
       font-weight: 600;
       text-transform: uppercase;
       letter-spacing: .8px;
@@ -266,13 +273,42 @@
     .doc-footer {
       background: #f8fafc;
       border-top: 1px solid #e2e8f0;
-      padding: 8px 28px;
+      padding: 7px 28px;
       display: flex;
       justify-content: space-between;
       align-items: center;
     }
     .doc-footer span { font-size: 9px; color: #94a3b8; }
     .doc-footer strong { color: #64748b; }
+
+    /* ── MOBILE ── */
+    @media (max-width: 600px) {
+      body { padding: 12px 8px; }
+      .hoja {
+        width: 100%;
+        min-height: unset;
+        border-radius: 8px;
+      }
+      .doc-header-banner { height: 70px; }
+      .doc-header-meta {
+        padding: 10px 16px 12px;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+      }
+      .doc-meta { width: 100%; justify-content: flex-end; }
+      .doc-body { padding: 14px 16px; gap: 12px; }
+      .cliente-grid {
+        grid-template-columns: 1fr;
+        gap: 6px;
+      }
+      .doc-footer {
+        padding: 7px 16px;
+        flex-direction: column;
+        gap: 2px;
+        text-align: center;
+      }
+    }
 
     /* ── PRINT ── */
     @media print {
@@ -286,7 +322,7 @@
 <body>
 
   <div class="toolbar">
-    <button class="btn btn-print" onclick="window.print()">⬛ Imprimir / Guardar PDF</button>
+    <button class="btn btn-print" onclick="window.print()">Imprimir / Guardar PDF</button>
     <button class="btn btn-clear" onclick="limpiar()">Limpiar nota</button>
   </div>
 
@@ -296,10 +332,10 @@
     <div class="doc-header">
       <img class="doc-header-banner" src="../../assets/marca/banner-oscuro-conectando-corazones.jpeg" alt="Celulink">
       <div class="doc-header-meta">
-      <div></div>
-      <div class="doc-header-right">
-        <div class="doc-tipo">NOTA DE VENTA</div>
-        <div class="doc-subtipo">Celulink · Mayoreo de accesorios</div>
+        <div class="doc-header-left">
+          <div class="doc-tipo">NOTA DE VENTA</div>
+          <div class="doc-subtipo">Celulink · Mayoreo de accesorios</div>
+        </div>
         <div class="doc-meta">
           <div class="meta-item">
             <span class="meta-label">Folio</span>
@@ -310,7 +346,6 @@
             <span class="meta-val" id="fecha" contenteditable="true"></span>
           </div>
         </div>
-      </div>
       </div>
     </div>
 
@@ -350,8 +385,8 @@
             <tr>
               <th class="c" style="width:44px">Cant.</th>
               <th>Descripción</th>
-              <th class="r" style="width:82px">P. Unitario</th>
-              <th class="r" style="width:82px">Total</th>
+              <th class="r" style="width:80px">P.U.</th>
+              <th class="r" style="width:80px">Total</th>
             </tr>
           </thead>
           <tbody id="tbody"></tbody>
