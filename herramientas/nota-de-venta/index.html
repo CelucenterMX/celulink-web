@@ -5,347 +5,433 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Nota de Venta — Celulink</title>
   <style>
-    /* ---- RESET ---- */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
-      font-family: 'Segoe UI', Arial, sans-serif;
-      font-size: 12px;
-      background: #f0f0f0;
-      color: #1a1a1a;
+      font-family: 'Segoe UI', system-ui, Arial, sans-serif;
+      background: #cbd5e1;
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 24px 16px;
+      padding: 28px 16px;
       gap: 16px;
+      min-height: 100vh;
     }
 
-    /* ---- TOOLBAR (se oculta al imprimir) ---- */
+    /* ── TOOLBAR ── */
     .toolbar {
       display: flex;
       gap: 10px;
-      align-items: center;
     }
     .btn {
-      padding: 8px 20px;
+      padding: 9px 22px;
       border: none;
-      border-radius: 6px;
+      border-radius: 8px;
       cursor: pointer;
       font-size: 13px;
       font-weight: 600;
+      letter-spacing: .3px;
     }
-    .btn-print { background: #0ea5e9; color: #fff; }
-    .btn-clear { background: #e5e7eb; color: #374151; }
-    .btn:hover { opacity: 0.85; }
+    .btn-print { background: #1e293b; color: #fff; }
+    .btn-print:hover { background: #0f172a; }
+    .btn-clear { background: #fff; color: #475569; border: 1px solid #cbd5e1; }
+    .btn-clear:hover { background: #f1f5f9; }
 
-    /* ---- HOJA (tamaño media carta) ---- */
+    /* ── HOJA ── */
     .hoja {
       width: 5.5in;
       min-height: 8.5in;
       background: #fff;
-      padding: 0.45in 0.5in;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+      border-radius: 4px;
+      overflow: hidden;
     }
 
-    /* ---- ENCABEZADO ---- */
-    .header {
+    /* ── HEADER ── */
+    .doc-header {
+      background: #0f172a;
+      display: flex;
+      flex-direction: column;
+    }
+    .doc-header-banner {
+      width: 100%;
+      max-height: 110px;
+      object-fit: cover;
+      object-position: center top;
+      display: block;
+    }
+    .doc-header-meta {
+      padding: 12px 28px 14px;
       display: flex;
       justify-content: space-between;
-      align-items: flex-start;
-      border-bottom: 2px solid #0ea5e9;
-      padding-bottom: 10px;
-    }
-    .header-logo img { height: 90px; width: auto; }
-    .header-titulo {
-      text-align: right;
-    }
-    .header-titulo h1 {
-      font-size: 18px;
-      font-weight: 700;
-      color: #0ea5e9;
-      letter-spacing: 1px;
-    }
-    .folio-fecha {
-      display: flex;
+      align-items: center;
       gap: 16px;
-      margin-top: 4px;
+    }
+    .doc-header-right { text-align: right; }
+    .doc-tipo {
+      font-size: 22px;
+      font-weight: 800;
+      color: #38bdf8;
+      letter-spacing: 2px;
+      line-height: 1;
+    }
+    .doc-subtipo {
+      font-size: 10px;
+      color: #94a3b8;
+      margin-top: 3px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+    .doc-meta {
+      display: flex;
+      gap: 12px;
+      margin-top: 12px;
       justify-content: flex-end;
     }
-    .folio-fecha label { font-size: 10px; color: #6b7280; }
-    .folio-fecha span {
-      border: 1px solid #94a3b8;
-      border-radius: 3px;
+    .meta-item {
+      background: #1e293b;
+      border-radius: 6px;
+      padding: 5px 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      min-width: 90px;
+    }
+    .meta-label { font-size: 9px; color: #64748b; text-transform: uppercase; letter-spacing: .8px; }
+    .meta-val {
+      font-size: 12px;
+      color: #f1f5f9;
+      font-weight: 600;
       min-width: 70px;
-      display: inline-block;
-      padding: 2px 5px;
+      text-align: right;
+    }
+    .meta-val[contenteditable]:focus { outline: none; color: #38bdf8; }
+
+    /* ── ACCENT LINE ── */
+    .accent-line {
+      height: 4px;
+      background: linear-gradient(90deg, #0ea5e9, #38bdf8, #7dd3fc);
     }
 
-    /* ---- DATOS CLIENTE ---- */
-    .datos-grid {
+    /* ── BODY ── */
+    .doc-body {
+      padding: 20px 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      flex: 1;
+    }
+
+    /* ── SECCIÓN CLIENTE ── */
+    .seccion-label {
+      font-size: 9px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      color: #94a3b8;
+      margin-bottom: 6px;
+    }
+    .cliente-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 6px 20px;
+      gap: 8px 20px;
       background: #f8fafc;
       border: 1px solid #e2e8f0;
-      border-radius: 6px;
-      padding: 8px 12px;
+      border-left: 3px solid #0ea5e9;
+      border-radius: 0 8px 8px 0;
+      padding: 10px 14px;
     }
-    .campo { display: flex; align-items: baseline; gap: 6px; }
-    .campo label { font-size: 10px; color: #6b7280; white-space: nowrap; }
-    .campo span {
-      border: 1px solid #94a3b8;
-      border-radius: 3px;
+    .campo { display: flex; align-items: center; gap: 8px; }
+    .campo-label {
+      font-size: 9px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .8px;
+      color: #94a3b8;
+      white-space: nowrap;
+      width: 54px;
+      flex-shrink: 0;
+    }
+    .campo-val {
       flex: 1;
-      padding: 2px 5px;
+      font-size: 11.5px;
       font-weight: 500;
-      min-height: 18px;
+      color: #1e293b;
+      border-bottom: 1.5px solid #cbd5e1;
+      padding: 2px 4px;
+      min-height: 20px;
     }
+    .campo-val:focus { outline: none; border-bottom-color: #0ea5e9; }
 
-    /* ---- TABLA ---- */
+    /* ── TABLA ── */
     table {
       width: 100%;
       border-collapse: collapse;
-      margin-top: 4px;
+      font-size: 11.5px;
     }
     thead tr {
-      background: #0ea5e9;
-      color: #fff;
+      background: #1e293b;
+      color: #f1f5f9;
     }
     thead th {
-      padding: 6px 8px;
-      font-size: 11px;
-      font-weight: 600;
-      text-align: left;
+      padding: 8px 10px;
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .8px;
     }
-    thead th.center, td.center { text-align: center; }
-    thead th.right, td.right { text-align: right; }
-    tbody tr { border-bottom: 1px solid #cbd5e1; }
-    tbody tr:nth-child(even) { background: #f8fafc; }
+    thead th.c { text-align: center; }
+    thead th.r { text-align: right; }
     tbody td {
-      padding: 3px 6px;
-      height: 22px;
-      border-right: 1px solid #e2e8f0;
+      padding: 5px 10px;
+      border-bottom: 1px solid #e2e8f0;
+      border-right: 1px solid #f1f5f9;
+      height: 26px;
+      color: #334155;
     }
     tbody td:last-child { border-right: none; }
-    table { border: 1px solid #cbd5e1; }
+    tbody tr:nth-child(even) { background: #f8fafc; }
+    tbody tr:last-child td { border-bottom: 2px solid #e2e8f0; }
     td[contenteditable] { outline: none; cursor: text; }
-    td[contenteditable]:focus { background: #eff6ff; }
-    td.cant { width: 48px; }
-    td.precio, td.total { width: 80px; }
+    td[contenteditable]:focus { background: #eff6ff !important; }
+    td.c { text-align: center; }
+    td.r { text-align: right; }
+    td.cant { width: 44px; }
+    td.pu   { width: 82px; }
+    td.tot  { width: 82px; font-weight: 600; color: #0f172a; }
 
-    /* ---- TOTALES ---- */
-    .totales {
+    /* ── TOTALES ── */
+    .totales-wrap {
       display: flex;
       justify-content: flex-end;
-      margin-top: 4px;
     }
     .totales-box {
-      width: 220px;
+      width: 210px;
       border: 1px solid #e2e8f0;
-      border-radius: 6px;
+      border-radius: 8px;
       overflow: hidden;
     }
-    .totales-row {
+    .tot-row {
       display: flex;
       justify-content: space-between;
-      padding: 5px 10px;
+      padding: 6px 12px;
       font-size: 11px;
       border-bottom: 1px solid #e2e8f0;
     }
-    .totales-row:last-child { border-bottom: none; }
-    .totales-row.total-final {
-      background: #0ea5e9;
-      color: #fff;
-      font-size: 13px;
-      font-weight: 700;
+    .tot-row:last-child { border: none; }
+    .tot-row span:first-child { color: #64748b; }
+    .tot-row span:last-child { font-weight: 600; color: #1e293b; }
+    .tot-row.grand {
+      background: #0f172a;
+      padding: 9px 12px;
     }
-    .totales-row label { color: #6b7280; }
-    .totales-row.total-final label { color: #e0f2fe; }
+    .tot-row.grand span:first-child { color: #94a3b8; font-weight: 700; font-size: 12px; letter-spacing: .5px; }
+    .tot-row.grand span:last-child  { color: #38bdf8; font-size: 15px; font-weight: 800; }
 
-    /* ---- NOTAS ---- */
-    .notas {
+    /* ── NOTAS ── */
+    .notas-box {
       border: 1px solid #e2e8f0;
-      border-radius: 6px;
-      padding: 6px 10px;
-      min-height: 40px;
-      font-size: 11px;
-      color: #374151;
+      border-radius: 8px;
+      padding: 8px 12px;
+      font-size: 10.5px;
+      color: #64748b;
+      min-height: 36px;
+      line-height: 1.5;
     }
-    .notas-label { font-size: 10px; color: #6b7280; margin-bottom: 3px; }
+    .notas-box:focus { outline: none; border-color: #0ea5e9; }
 
-    /* ---- FIRMAS ---- */
+    /* ── FIRMAS ── */
     .firmas {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 20px;
+      gap: 24px;
       margin-top: auto;
-      padding-top: 20px;
+      padding-top: 12px;
     }
     .firma-box { text-align: center; }
+    .firma-espacio { height: 32px; }
     .firma-linea {
-      border-top: 1px solid #374151;
-      padding-top: 4px;
-      font-size: 10px;
-      color: #6b7280;
+      border-top: 1.5px solid #94a3b8;
+      padding-top: 5px;
+      font-size: 9.5px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .8px;
+      color: #94a3b8;
     }
 
-    /* ---- FOOTER LEGAL ---- */
-    .pie {
-      text-align: center;
-      font-size: 9px;
-      color: #9ca3af;
+    /* ── FOOTER ── */
+    .doc-footer {
+      background: #f8fafc;
       border-top: 1px solid #e2e8f0;
-      padding-top: 6px;
+      padding: 8px 28px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
+    .doc-footer span { font-size: 9px; color: #94a3b8; }
+    .doc-footer strong { color: #64748b; }
 
-    /* ---- PRINT ---- */
+    /* ── PRINT ── */
     @media print {
       body { background: none; padding: 0; }
       .toolbar { display: none; }
-      .hoja {
-        box-shadow: none;
-        width: 100%;
-        min-height: unset;
-        padding: 0.45in 0.5in;
-      }
+      .hoja { box-shadow: none; border-radius: 0; width: 100%; min-height: unset; }
       @page { size: 5.5in 8.5in; margin: 0; }
     }
   </style>
 </head>
 <body>
 
-  <!-- TOOLBAR -->
   <div class="toolbar">
-    <button class="btn btn-print" onclick="window.print()">🖨 Imprimir / PDF</button>
-    <button class="btn btn-clear" onclick="limpiar()">Limpiar</button>
+    <button class="btn btn-print" onclick="window.print()">⬛ Imprimir / Guardar PDF</button>
+    <button class="btn btn-clear" onclick="limpiar()">Limpiar nota</button>
   </div>
 
-  <!-- HOJA -->
   <div class="hoja">
 
-    <!-- ENCABEZADO -->
-    <div class="header">
-      <div class="header-logo">
-        <img src="../../assets/marca/logo-color-fondo-blanco.jpeg" alt="Celulink">
-      </div>
-      <div class="header-titulo">
-        <h1>NOTA DE VENTA</h1>
-        <div class="folio-fecha">
-          <div><label>Folio&nbsp;</label><span id="folio" contenteditable="true">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></div>
-          <div><label>Fecha&nbsp;</label><span id="fecha" contenteditable="true">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></div>
+    <!-- HEADER -->
+    <div class="doc-header">
+      <img class="doc-header-banner" src="../../assets/marca/banner-oscuro-conectando-corazones.jpeg" alt="Celulink">
+      <div class="doc-header-meta">
+      <div></div>
+      <div class="doc-header-right">
+        <div class="doc-tipo">NOTA DE VENTA</div>
+        <div class="doc-subtipo">Celulink · Mayoreo de accesorios</div>
+        <div class="doc-meta">
+          <div class="meta-item">
+            <span class="meta-label">Folio</span>
+            <span class="meta-val" id="folio" contenteditable="true">—</span>
+          </div>
+          <div class="meta-item">
+            <span class="meta-label">Fecha</span>
+            <span class="meta-val" id="fecha" contenteditable="true"></span>
+          </div>
         </div>
       </div>
-    </div>
-
-    <!-- DATOS CLIENTE -->
-    <div class="datos-grid">
-      <div class="campo">
-        <label>Cliente:</label>
-        <span contenteditable="true">&nbsp;</span>
-      </div>
-      <div class="campo">
-        <label>Teléfono:</label>
-        <span contenteditable="true">&nbsp;</span>
-      </div>
-      <div class="campo">
-        <label>Vendedor:</label>
-        <span contenteditable="true">&nbsp;</span>
-      </div>
-      <div class="campo">
-        <label>Sucursal:</label>
-        <span contenteditable="true">&nbsp;</span>
       </div>
     </div>
 
-    <!-- TABLA DE PRODUCTOS -->
-    <table id="tabla">
-      <thead>
-        <tr>
-          <th class="center" style="width:48px">Cant.</th>
-          <th>Descripción</th>
-          <th class="right" style="width:80px">P. Unitario</th>
-          <th class="right" style="width:80px">Total</th>
-        </tr>
-      </thead>
-      <tbody id="tbody">
-      </tbody>
-    </table>
+    <div class="accent-line"></div>
 
-    <!-- TOTALES -->
-    <div class="totales">
-      <div class="totales-box">
-        <div class="totales-row">
-          <label>Subtotal</label>
-          <span id="subtotal">$0.00</span>
-        </div>
-        <div class="totales-row">
-          <label>IVA (16%)</label>
-          <span id="iva">$0.00</span>
-        </div>
-        <div class="totales-row total-final">
-          <label>TOTAL</label>
-          <span id="total">$0.00</span>
+    <!-- BODY -->
+    <div class="doc-body">
+
+      <!-- CLIENTE -->
+      <div>
+        <div class="seccion-label">Datos del cliente</div>
+        <div class="cliente-grid">
+          <div class="campo">
+            <span class="campo-label">Cliente</span>
+            <span class="campo-val" contenteditable="true"></span>
+          </div>
+          <div class="campo">
+            <span class="campo-label">Teléfono</span>
+            <span class="campo-val" contenteditable="true"></span>
+          </div>
+          <div class="campo">
+            <span class="campo-label">Vendedor</span>
+            <span class="campo-val" contenteditable="true"></span>
+          </div>
+          <div class="campo">
+            <span class="campo-label">Sucursal</span>
+            <span class="campo-val" contenteditable="true"></span>
+          </div>
         </div>
       </div>
-    </div>
 
-    <!-- NOTAS -->
-    <div>
-      <div class="notas-label">Notas / Condiciones:</div>
-      <div class="notas" contenteditable="true">Precios en MXN. Esta nota no es un comprobante fiscal.</div>
-    </div>
-
-    <!-- FIRMAS -->
-    <div class="firmas">
-      <div class="firma-box">
-        <div style="height:36px"></div>
-        <div class="firma-linea">Firma del cliente</div>
+      <!-- TABLA -->
+      <div>
+        <div class="seccion-label">Productos</div>
+        <table>
+          <thead>
+            <tr>
+              <th class="c" style="width:44px">Cant.</th>
+              <th>Descripción</th>
+              <th class="r" style="width:82px">P. Unitario</th>
+              <th class="r" style="width:82px">Total</th>
+            </tr>
+          </thead>
+          <tbody id="tbody"></tbody>
+        </table>
       </div>
-      <div class="firma-box">
-        <div style="height:36px"></div>
-        <div class="firma-linea">Firma del vendedor</div>
+
+      <!-- TOTALES -->
+      <div class="totales-wrap">
+        <div class="totales-box">
+          <div class="tot-row">
+            <span>Subtotal</span>
+            <span id="subtotal">$0.00</span>
+          </div>
+          <div class="tot-row">
+            <span>IVA 16%</span>
+            <span id="iva">$0.00</span>
+          </div>
+          <div class="tot-row grand">
+            <span>TOTAL</span>
+            <span id="total">$0.00</span>
+          </div>
+        </div>
       </div>
+
+      <!-- NOTAS -->
+      <div>
+        <div class="seccion-label">Notas / Condiciones</div>
+        <div class="notas-box" contenteditable="true">Precios en MXN. Esta nota no es un comprobante fiscal.</div>
+      </div>
+
+      <!-- FIRMAS -->
+      <div class="firmas">
+        <div class="firma-box">
+          <div class="firma-espacio"></div>
+          <div class="firma-linea">Firma del cliente</div>
+        </div>
+        <div class="firma-box">
+          <div class="firma-espacio"></div>
+          <div class="firma-linea">Firma del vendedor</div>
+        </div>
+      </div>
+
     </div>
 
-    <!-- PIE -->
-    <div class="pie">celulink.mx · Cel accesorios y smartphones · Jalisco, México</div>
+    <!-- FOOTER -->
+    <div class="doc-footer">
+      <span><strong>celulink.mx</strong> · Jalisco, México</span>
+      <span>Este documento no es un comprobante fiscal (CFDI)</span>
+    </div>
 
   </div>
 
   <script>
     const FILAS = 10;
 
-    function fmt(n) {
-      return '$' + n.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-    }
+    const fmt = n => '$' + n.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 
     function calcRow(tr) {
-      const cant  = parseFloat(tr.cells[0].innerText) || 0;
-      const pu    = parseFloat(tr.cells[2].innerText.replace(/[$,]/g,'')) || 0;
-      const total = cant * pu;
-      tr.cells[3].innerText = total ? fmt(total) : '';
-      return total;
+      const cant = parseFloat(tr.cells[0].innerText) || 0;
+      const pu   = parseFloat(tr.cells[2].innerText.replace(/[$,]/g,'')) || 0;
+      const tot  = cant * pu;
+      tr.cells[3].innerText = tot ? fmt(tot) : '';
+      return tot;
     }
 
     function recalc() {
-      let subtotal = 0;
-      document.querySelectorAll('#tbody tr').forEach(tr => { subtotal += calcRow(tr); });
-      const iva   = subtotal * 0.16;
-      const total = subtotal + iva;
-      document.getElementById('subtotal').innerText = fmt(subtotal);
+      let sub = 0;
+      document.querySelectorAll('#tbody tr').forEach(tr => sub += calcRow(tr));
+      const iva = sub * 0.16;
+      document.getElementById('subtotal').innerText = fmt(sub);
       document.getElementById('iva').innerText      = fmt(iva);
-      document.getElementById('total').innerText    = fmt(total);
+      document.getElementById('total').innerText    = fmt(sub + iva);
     }
 
     function crearFila() {
       const tr = document.createElement('tr');
-      ['cant center', 'desc', 'precio right', 'total right'].forEach((cls, i) => {
+      [['cant c',true],['desc',true],['pu r',true],['tot r',false]].forEach(([cls, editable]) => {
         const td = document.createElement('td');
         cls.split(' ').forEach(c => td.classList.add(c));
-        if (i < 3) td.contentEditable = 'true';
+        if (editable) td.contentEditable = 'true';
         tr.appendChild(td);
       });
       tr.addEventListener('input', recalc);
@@ -356,21 +442,17 @@
       const tbody = document.getElementById('tbody');
       tbody.innerHTML = '';
       for (let i = 0; i < FILAS; i++) tbody.appendChild(crearFila());
-      // fecha de hoy por defecto
-      const hoy = new Date().toLocaleDateString('es-MX', { day:'2-digit', month:'2-digit', year:'numeric' });
-      document.getElementById('fecha').innerText = hoy;
+      document.getElementById('fecha').innerText =
+        new Date().toLocaleDateString('es-MX', {day:'2-digit', month:'2-digit', year:'numeric'});
       recalc();
     }
 
     function limpiar() {
       if (!confirm('¿Limpiar toda la nota?')) return;
       init();
-      document.querySelectorAll('[contenteditable]').forEach(el => {
-        if (el.id !== 'fecha') el.innerText = '\u00a0';
-      });
-      document.querySelector('.notas').innerText = 'Precios en MXN. Esta nota no es un comprobante fiscal.';
-      const hoy = new Date().toLocaleDateString('es-MX', { day:'2-digit', month:'2-digit', year:'numeric' });
-      document.getElementById('fecha').innerText = hoy;
+      document.querySelectorAll('.campo-val[contenteditable]').forEach(el => el.innerText = '');
+      document.getElementById('folio').innerText = '—';
+      document.querySelector('.notas-box').innerText = 'Precios en MXN. Esta nota no es un comprobante fiscal.';
     }
 
     init();
