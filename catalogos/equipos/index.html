@@ -561,7 +561,7 @@
       <img src="https://piztian.github.io/samsung-s25/imagenes/Celucenter-500x260.png" alt="Celucenter">
       <div>
         <h1>Catálogo de Equipos</h1>
-        <p>Celulares y tablets · precios escalonados por monto</p>
+        <p>Celulares y tablets · Precios de menudeo</p>
         <div class="clk-catalog-header-stats">
           <span id="statTotalHeader">📦 Cargando...</span>
           <span id="statMarcasHeader">🏷 —</span>
@@ -570,8 +570,7 @@
       </div>
     </div>
     <div class="clk-catalog-header-right">
-      <a class="clk-btn" style="background:rgba(255,255,255,0.15);color:white;border:1px solid rgba(255,255,255,0.3);" href="#" onclick="refreshLista();return false;">📊 Actualizar lista</a>
-      <a class="clk-btn" style="background:rgba(255,255,255,0.15);color:white;border:1px solid rgba(255,255,255,0.3);" href="#" onclick="logout();return false;">Salir</a>
+      <a class="clk-btn" style="background:rgba(255,255,255,0.15);color:white;border:1px solid rgba(255,255,255,0.3);" href="https://wa.me/523413300001?text=Hola%2C%20quiero%20precio%20especial%20de%20mayoreo%20en%20equipos" target="_blank" rel="noopener">💬 Precio especial</a>
     </div>
   </div>
 </section>
@@ -802,7 +801,7 @@ async function loadCatalog() {
     try {
         const res = await fetch(`${APPS_SCRIPT_URL}?action=catalog&token=${TOKEN}`);
         const data = await res.json();
-        allProducts = (data.products || []).filter(p => p.almacen === 'BM');
+        allProducts = (data.products || []).filter(p => p.precioPublico && p.precioPublico > 0);
 
         // Build marca buttons (Hermes style pills)
         const marcas = [...new Set(allProducts.map(p => p.nombreCategoria).filter(Boolean))].sort();
@@ -856,13 +855,7 @@ function applyFilters() {
     const orden = document.getElementById('ordenFilter').value;
     const lista = (userSession && userSession.lista || '').toUpperCase();
 
-    const getPrice = p => {
-        if (lista === 'M') return p.listaM;
-        if (lista === 'G') return p.listaG;
-        if (lista === 'F') return p.listaF;
-        if (lista === 'CRISTIAN') return precioCristian(p.listaF);
-        return precio2X(p.listaF) || p.precioPublico;
-    };
+    const getPrice = p => p.precioPublico || 0;
 
     filteredProducts = allProducts.filter(p => {
         if (selectedMarca && p.nombreCategoria !== selectedMarca) return false;
@@ -938,10 +931,7 @@ function precioCristian(listaF) {
 function getCartKey(p) { return p.codigo + '_' + p.almacen; }
 
 function getProductPrice(p) {
-    // Cotización pública: usar la lista activa calculada por monto del carrito (2X/F/G/M)
-    // Sin depender de userSession.lista
-    const l = getCartLista();
-    return l === 'TODAS' ? (p.listaF || p.precioPublico) : getUnitPriceForList(p, l);
+    return p.precioPublico || 0;
 }
 
 function getUnitPriceForList(product, lista) {
@@ -983,10 +973,7 @@ function getProductPriceForCart(product) {
 
 function getCartTotal() {
     let t = 0;
-    const l = getCartLista();
-    Object.values(cart).forEach(i => {
-        t += ((l === 'TODAS') ? (getProductPrice(i.product) || 0) : getUnitPriceForList(i.product, l)) * i.qty;
-    });
+    Object.values(cart).forEach(i => { t += (getProductPrice(i.product) || 0) * i.qty; });
     return t;
 }
 
@@ -1040,7 +1027,7 @@ function refreshCartBar() {
     bar.classList.add('active'); document.body.classList.add('has-cart-bar');
     document.getElementById('cartBarCount').textContent = count;
     document.getElementById('cartBarTotal').textContent = formatMXN(getCartTotal());
-    document.getElementById('cartBarLista').textContent = getCartListaLabel();
+    document.getElementById('cartBarLista').textContent = 'Precio público';
 }
 
 function initCart() {
@@ -1066,26 +1053,18 @@ function closeCart() { document.getElementById('cartModal').classList.remove('ac
 function renderCartModal() {
     const container = document.getElementById('cartItemsContainer');
     const items = Object.values(cart);
-    const lista = getCartLista();
-    const uLista = (userSession && userSession.lista || '').toUpperCase();
 
     // Lista badge
     const lb = document.getElementById('cartListaBadge');
     if (!items.length) { lb.textContent = 'Agrega productos'; lb.className = 'cart-lista-badge'; }
-    else { lb.textContent = (lista === 'M' ? '🏆 ' : lista === '2X' ? '🏷️ ' : '📋 ') + getCartListaLabel(); lb.className = 'cart-lista-badge lista-' + lista.toLowerCase(); }
+    else { lb.textContent = '🏷️ Precio público'; lb.className = 'cart-lista-badge'; }
 
-    // Envío
-    document.getElementById('cartEnvioNote').style.display = (lista === 'CRISTIAN' || (lista === 'M' && getCartTotal() >= UMBRAL_ENVIO)) ? 'block' : 'none';
-
-    // Hint
+    document.getElementById('cartEnvioNote').style.display = 'none';
     const hint = document.getElementById('cartMayoreoHint');
-    hint.style.display = 'none';
-    if (items.length && !['TODAS','CRISTIAN','M','G'].includes(uLista)) {
-        if (lista === '2X') { const f = UMBRAL_F - getCartTotalAtList('2X'); if (f > 0) { hint.innerHTML = '💡 Agrega <strong>' + formatMXN(f) + '</strong> más para Lista F (mayoreo)'; hint.style.display = 'block'; } }
-        else if (lista === 'F') { const f = UMBRAL_G - getCartTotalAtList('F'); if (f > 0) { hint.innerHTML = '💡 Agrega <strong>' + formatMXN(f) + '</strong> más para Lista G'; hint.style.display = 'block'; } }
-        else if (lista === 'G') { const f = UMBRAL_M - getCartTotalAtList('G'); if (f > 0) { hint.innerHTML = '💡 Agrega <strong>' + formatMXN(f) + '</strong> más para Lista M'; hint.style.display = 'block'; } }
-        else if (lista === 'M') { const f = UMBRAL_ENVIO - getCartTotal(); if (f > 0) { hint.innerHTML = '🚚 Agrega <strong>' + formatMXN(f) + '</strong> más para envío gratis'; hint.style.display = 'block'; } }
-    }
+    if (items.length) {
+        hint.innerHTML = '💡 ¿Eres distribuidor? <a href="https://wa.me/523413300001?text=Hola%2C%20quiero%20precio%20mayorista" target="_blank" style="color:inherit;font-weight:600;">Contáctanos para precio especial →</a>';
+        hint.style.display = 'block';
+    } else { hint.style.display = 'none'; }
 
     if (!items.length) {
         container.innerHTML = '<div class="cart-empty"><div class="cart-empty-icon">🛒</div><p>Tu carrito está vacío</p></div>';
@@ -1098,7 +1077,7 @@ function renderCartModal() {
 
     let html = '';
     items.forEach(item => {
-        const p = item.product, up = getProductPriceForCart(p) || 0, sub = up * item.qty, key = getCartKey(p);
+        const p = item.product, up = getProductPrice(p) || 0, sub = up * item.qty, key = getCartKey(p);
         const img = getProductImage(p.codigo);
         html += '<div class="cart-item">' +
             '<div class="cart-item-img">' + (img ? '<img src="'+escapeHtml(img)+'" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'">' : '') + '<span class="ph" '+(img?'style="display:none"':'')+'>📱</span></div>' +
@@ -1109,23 +1088,19 @@ function renderCartModal() {
     container.innerHTML = html;
     const tc = getCartItemCount();
     document.getElementById('cartSummaryCount').textContent = tc + (tc === 1 ? ' pieza' : ' piezas');
-    document.getElementById('cartSummaryLista').textContent = getCartListaLabel();
+    document.getElementById('cartSummaryLista').textContent = 'Precio público';
     document.getElementById('cartSummaryTotal').textContent = formatMXN(getCartTotal());
     document.getElementById('btnWhatsAppOrder').disabled = false;
 }
 
 function sendWhatsAppOrder() {
     const items = Object.values(cart); if (!items.length) return;
-    const lista = getCartLista(), label = getCartListaLabel();
-    let msg = '🛒 *Hola CeluCenter!* Quiero pedir:\n\n';
+    let msg = '🛒 *Hola CeluCenter!* Me interesan estos equipos:\n\n';
     items.forEach(i => {
-        const p = i.product, up = getProductPriceForCart(p) || 0;
+        const p = i.product, up = getProductPrice(p) || 0;
         msg += '• *' + p.codigo + '* — ' + p.producto + '\n   Cant: ' + i.qty + ' | ' + formatMXN(up) + ' c/u = *' + formatMXN(up * i.qty) + '*\n\n';
     });
-    msg += '━━━━━━━━━━━━━━━━━\n💰 *Total: ' + formatMXN(getCartTotal()) + '*\n📋 ' + label + '\n📦 ' + getCartItemCount() + ' pieza(s)\n';
-    if (lista === 'CRISTIAN') msg += '🚚 Envío incluido\n';
-    if (lista === 'M' && getCartTotal() >= UMBRAL_ENVIO) msg += '🚚 Envío gratis\n';
-    if (userSession) msg += '\n👤 ' + (userSession.name||'') + '\nTel: ' + (userSession.phone||'') + '\n';
+    msg += '━━━━━━━━━━━━━━━━━\n💰 *Total ref: ' + formatMXN(getCartTotal()) + '*\n📦 ' + getCartItemCount() + ' pieza(s)\n\n¿Tienen precio especial para distribuidor?';
     window.open('https://wa.me/' + WHATSAPP_NUMBER + '?text=' + encodeURIComponent(msg), '_blank');
 }
 
@@ -1133,49 +1108,15 @@ function sendWhatsAppOrder() {
 // RENDER CARD (Hermes style)
 // ============================================================
 function renderCard(p) {
-    // Cotización pública: la lista activa se calcula por monto del carrito (2X/F/G/M)
-    const lista = getCartLista();
     const isOut = p.existencias <= 0;
     const imgUrl = getProductImage(p.codigo);
     const cartKey = getCartKey(p);
 
-    // Pricing HTML
-    let priceHtml = '';
-    // Precio público: solo mostrar tachado cuando precioPublico > precio de venta
+    // Precio público simple
     const pubVal = p.precioPublico || 0;
-    if (!lista || lista === '2X') {
-        const price = getUnitPriceForList(p, '2X') || p.precioPublico;
-        const pf = fmt(price);
-        const showStrike = pubVal > 0 && price > 0 && pubVal > price;
-        if (pf) {
-            priceHtml = '<div class="price-row"><span class="price">' + pf + '</span>' + (showStrike ? '<span class="price-public">' + fmt(pubVal) + '</span>' : '') + '</div>';
-            priceHtml += '<div style="font-size:10px;color:var(--muted);text-align:center;padding:0 12px 4px;">Lista 2X (menudeo) · Sube a $15k → Lista F</div>';
-        } else { priceHtml = '<div class="price-pending">Sin precio</div>'; }
-    } else if (lista === 'TODAS') {
-        const rowsData = [
-            { n: 'M', v: p.listaM }, { n: 'G', v: p.listaG },
-            { n: 'F', v: p.listaF }, { n: '2X', v: precio2X(p.listaF) },
-            { n: 'Cristian', v: precioCristian(p.listaF) }
-        ].filter(r => r.v && r.v > 0);
-        // El máximo de las listas mostradas es el precio más alto visible al usuario
-        const maxListPrice = rowsData.reduce((mx, r) => Math.max(mx, r.v || 0), 0);
-        const showStrikeTodas = pubVal > 0 && maxListPrice > 0 && pubVal > maxListPrice;
-        if (rowsData.length) {
-            priceHtml = '<div class="price-all">' + rowsData.map(r => '<div class="price-all-row"><span>' + r.n + '</span><span>' + fmt(r.v) + '</span></div>').join('') +
-                (showStrikeTodas ? '<div class="price-all-row pub"><span>Público</span><span>' + fmt(pubVal) + '</span></div>' : '') + '</div>';
-        } else { priceHtml = '<div class="price-pending">Sin precio</div>'; }
-    } else {
-        let price = null, ln = '';
-        if (lista === 'M') { price = p.listaM; ln = 'Lista M'; }
-        else if (lista === 'G') { price = p.listaG; ln = 'Lista G'; }
-        else if (lista === 'F') { price = p.listaF; ln = 'Lista F'; }
-        else if (lista === 'CRISTIAN') { price = precioCristian(p.listaF); ln = 'Cristian'; }
-        const pf = fmt(price);
-        const showStrikeList = pubVal > 0 && price > 0 && pubVal > price;
-        if (pf) {
-            priceHtml = '<div class="price-row"><span class="price">' + pf + '</span>' + (showStrikeList ? '<span class="price-public">' + fmt(pubVal) + '</span>' : '') + '</div>';
-        } else { priceHtml = '<div class="price-pending">Sin precio</div>'; }
-    }
+    let priceHtml = pubVal > 0
+        ? '<div class="price-row"><span class="price">' + fmt(pubVal) + '</span></div>'
+        : '<div class="price-pending">Sin precio</div>';
 
     // Badges
     const extra = [];
