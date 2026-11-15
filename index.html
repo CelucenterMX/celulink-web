@@ -6,46 +6,6 @@
 <title>celulink.mx — Tecnología para todos | Sub-marca de CeluCenter</title>
 <meta name="description" content="celulink.mx — La forma más fácil y confiable de estrenar tecnología. +1000 productos. Envíos a todo México en 24-48h.">
 <link rel="icon" type="image/png" href="./assets/favicon-celucenter.png">
-
-<!-- Open Graph -->
-<meta property="og:type" content="website">
-<meta property="og:url" content="https://celulink.mx/">
-<meta property="og:title" content="celulink.mx — Tecnología para todos">
-<meta property="og:description" content="La forma más fácil y confiable de estrenar tecnología. +1000 productos. 28 tiendas en occidente de México. Envíos a todo México en 24-48h.">
-<meta property="og:image" content="https://celulink.mx/assets/celulink-logo.png">
-<meta property="og:image:width" content="1024">
-<meta property="og:image:height" content="1024">
-<meta property="og:locale" content="es_MX">
-<meta property="og:site_name" content="Celulink">
-
-<!-- Twitter Card -->
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="celulink.mx — Tecnología para todos">
-<meta name="twitter:description" content="La forma más fácil y confiable de estrenar tecnología. +1000 productos. 28 tiendas en occidente de México.">
-<meta name="twitter:image" content="https://celulink.mx/assets/celulink-logo.png">
-
-<!-- Schema.org -->
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "Organization",
-  "name": "Celulink",
-  "url": "https://celulink.mx",
-  "logo": "https://celulink.mx/assets/celulink-logo.png",
-  "description": "Tienda de smartphones y accesorios. 28 tiendas en Jalisco, Michoacán, Colima y Sinaloa.",
-  "parentOrganization": {
-    "@type": "Organization",
-    "name": "CeluCenter"
-  },
-  "areaServed": ["Jalisco", "Michoacán", "Colima", "Sinaloa"],
-  "contactPoint": {
-    "@type": "ContactPoint",
-    "contactType": "customer service",
-    "availableLanguage": "Spanish"
-  },
-  "sameAs": []
-}
-</script>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/css/tokens.css?v=20261013-1307">
 <link rel="stylesheet" href="assets/css/chrome.css?v=20261013-1307">
@@ -100,6 +60,15 @@
             .main-nav .nav-links a:hover {
                 background: var(--color-bg-alt);
             }
+            /* product-card-link: quitar decoración del enlace wrapper */
+            .product-card-link { text-decoration: none; color: inherit; display: flex; flex-direction: column; height: 100%; }
+            /* price-slot spans */
+            [data-price-slot] .label { display: block; font-size: 0.68rem; font-weight: 700; color: var(--color-texto-suave); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 2px; }
+            [data-price-slot] .val { display: block; font-family: var(--font-display); font-weight: 800; font-size: 1.35rem; color: var(--color-texto); }
+            [data-price-slot] .meta { display: block; font-size: 0.72rem; color: var(--color-texto-suave); margin-top: 2px; }
+            /* cat-phones */
+            .cat-phones { background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%); color: white; }
+            .cat-phones h3, .cat-phones p, .cat-phones .arrow { color: white; }
         </style>
 </head>
 <body>
@@ -108,12 +77,14 @@
 <header class="clk-nav">
   <div class="clk-nav-inner">
     <a class="clk-brand" href="./">
-      <img src="assets/celulink-logo.png" alt="Celulink" style="height:36px;width:auto;display:block;">
+      <img src="assets/icono-celucenter.png" alt="Celulink">
+      <span>Celulink</span>
+      <span class="clk-sub">de CeluCenter</span>
     </a>
     <nav>
       <ul class="clk-nav-links">
         <li><a href="./">Inicio</a></li>
-        <!-- <li><a href="catalogos/equipos/">Smartphones</a></li> -->
+        <li><a href="catalogos/equipos/">Equipos</a></li>
         <li><a href="catalogos/accesorios/">Accesorios</a></li>
         <!-- <li><a href="menu/">Menú</a></li> -->
       </ul>
@@ -130,7 +101,7 @@
 <nav class="main-nav clk-hide">
   <div class="nav-inner">
     <a href="./" class="nav-brand">
-      <img class="nav-brand-logo" style="height:32px;width:auto;display:block" src="assets/celulink-logo.png" alt="CeluLink">
+      <img class="nav-brand-logo" style="height:32px;width:auto;display:block" src="https://raw.githubusercontent.com/piztian/celulink/main/fotos/Celulink%20logo%20(2).png" alt="CeluLink">
       <span class="nav-brand-text">celu<span class="link">link</span>.mx</span>
     </a>
     <div class="nav-links">
@@ -205,7 +176,7 @@
   </div>
 </section>
 
-<!-- ======= ESCAPARATE DE EQUIPOS ======= temporalmente oculto (oct 2026)
+<!-- ======= ESCAPARATE DE EQUIPOS ======= -->
 <section class="section">
   <div class="container">
     <div class="section-head-row">
@@ -217,42 +188,69 @@
           de cada uno, precio y disponibilidad en tienda.
         </p>
       </div>
-      [CTA: Ver catálogo completo - oculto]
+      <div class="right">
+        <a class="clk-btn clk-btn-primary" href="./catalogos/equipos/">Ver catálogo completo →</a>
+      </div>
     </div>
 
     <div class="product-grid">
       <article class="product-card" data-codigo="6932554456016" data-feat="redmi 15c">
-        Xiaomi Redmi 15C 128GB - Azul - 4GB RAM
+        <a class="product-card-link" href="./catalogos/equipos/">
+          <div class="product-image">
+            <img src="https://erppro.celucenter.com/personal/celucenter/bin/catalogos/archivos/cat_productos_IMAGEN_FRENTE_11858.png" alt="Xiaomi Redmi 15C" loading="lazy">
+          </div>
+          <div class="product-body">
+            <span class="product-brand">Xiaomi</span>
+            <h3 class="product-name">Redmi 15C 128GB</h3>
+            <p class="product-variant">Azul · 4 GB RAM</p>
+            <div class="product-price" data-price-slot hidden></div>
+          </div>
+        </a>
       </article>
 
       <article class="product-card" data-codigo="4894947116520" data-feat="smart 20">
-        Infinix Smart 20 64GB - Negro - 4+4GB RAM
+        <a class="product-card-link" href="./catalogos/equipos/">
+          <div class="product-image">
+            <img src="https://erppro.celucenter.com/personal/celucenter/bin/catalogos/archivos/cat_productos_IMAGEN_FRENTE_12706.png" alt="Infinix Smart 20" loading="lazy">
+          </div>
+          <div class="product-body">
+            <span class="product-brand">Infinix</span>
+            <h3 class="product-name">Smart 20 64GB</h3>
+            <p class="product-variant">Negro · 4+4 GB RAM</p>
+            <div class="product-price" data-price-slot hidden></div>
+          </div>
+        </a>
       </article>
 
       <article class="product-card" data-codigo="8806097666882" data-feat="galaxy a17">
-        Samsung Galaxy A17 128GB - Negro - 4GB RAM
+        <a class="product-card-link" href="./catalogos/equipos/">
+          <div class="product-image">
+            <img src="https://erppro.celucenter.com/personal/celucenter/bin/catalogos/archivos/cat_productos_IMAGEN_FRENTE_12724.png" alt="Samsung Galaxy A17" loading="lazy">
+          </div>
+          <div class="product-body">
+            <span class="product-brand">Samsung</span>
+            <h3 class="product-name">Galaxy A17 128GB</h3>
+            <p class="product-variant">Negro · 4 GB RAM</p>
+            <div class="product-price" data-price-slot hidden></div>
+          </div>
+        </a>
       </article>
-
-      BLU G75 retirado temporalmente (2026-10-13): foto sin confirmar.
     </div>
   </div>
 </section>
--->
 
 <!-- ======= CATEGORÍAS VISUALES ======= -->
 <section class="section section-soft">
   <div class="container">
     <div class="cat-grid">
-      <!-- cat-card Smartphones temporalmente oculta (oct 2026)
-      <!-- <a href="./catalogos/equipos/" class="cat-card cat-phones">
-        <img class="preview" src="assets/samsung-a17-frente.png" alt="">
+      <a href="./catalogos/equipos/" class="cat-card cat-phones">
+        <img class="preview" src="https://erppro.celucenter.com/personal/celucenter/bin/catalogos/archivos/cat_productos_IMAGEN_FRENTE_12724.png" alt="Equipos">
         <div>
-          <h3>Smartphones</h3>
-          <p>Equipos nuevos y reacondicionados de todas las marcas, con garantía de fábrica.</p>
+          <h3>Equipos</h3>
+          <p>Celulares y tablets de las mejores marcas, con garantía y precio competitivo.</p>
           <span class="arrow">Explorar catálogo →</span>
         </div>
       </a>
-      -->
       <a href="./catalogos/accesorios/" class="cat-card cat-acc">
         <svg class="preview preview-icon" viewBox="0 0 64 64" aria-hidden="true" focusable="false">
           <defs>
@@ -369,7 +367,7 @@
       <div>
         <h4>Productos</h4>
         <ul>
-          <!-- <li><a href="catalogos/equipos/">Smartphones</a></li> -->
+          <li><a href="catalogos/equipos/">Equipos</a></li>
           <li><a href="catalogos/accesorios/">Accesorios</a></li>
           <li><a href="#">Open Box</a></li>
           <li><a href="#">Marcas</a></li>
@@ -402,7 +400,7 @@
 <footer class="clk-hide" style="display:none">
   <div class="footer-inner">
     <div class="footer-brand">
-      <img src="assets/celulink-logo.png" alt="CeluLink">
+      <img src="https://raw.githubusercontent.com/piztian/celulink/main/fotos/Celulink%20logo%20(2).png" alt="CeluLink">
       <div class="footer-brand-text">
         <strong>celulink.mx</strong>
         <small>Sub-marca digital de CeluCenter · Guadalajara, Jalisco</small>
