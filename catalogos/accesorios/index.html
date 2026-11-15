@@ -2078,6 +2078,13 @@
                 return matchesSearch && matchesCategory && matchesAlmacen && matchesNuevo;
             });
 
+            // Agotados siempre al final
+            filtered.sort((a, b) => {
+                const aAgotado = a.existencias <= 0 ? 1 : 0;
+                const bAgotado = b.existencias <= 0 ? 1 : 0;
+                return aAgotado - bAgotado;
+            });
+
             renderProducts(filtered);
         }
 
