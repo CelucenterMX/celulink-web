@@ -2257,7 +2257,7 @@
                 <div class="product-card${product.existencias <= 0 ? ' agotado' : ''}">
                     <div class="product-image-wrapper${product.existencias <= 0 ? ' agotado' : ''}">
                         ${product.imagenUrl ?
-                            `<img src="${escapeHtml(product.imagenUrl)}" alt="${escapeHtml(product.nombre)}" class="product-image" loading="lazy" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">` :
+                            `<img src="${escapeHtml(product.imagenUrl)}" data-fallback="https://raw.githubusercontent.com/piztian/Accesorios-Celucenter/main/fotos/${escapeHtml(product.archivo)}" alt="${escapeHtml(product.nombre)}" class="product-image" loading="lazy" onerror="if(!this.dataset.tried){this.dataset.tried=1;this.src=this.dataset.fallback;}else{this.style.display='none';this.nextElementSibling.style.display='flex';}">` :
                             ''
                         }
                         <div class="product-image-placeholder" style="display: ${product.imagenUrl ? 'none' : 'flex'}">
