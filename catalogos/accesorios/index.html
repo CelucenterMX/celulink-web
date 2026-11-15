@@ -477,6 +477,26 @@
         @keyframes pulse-nuevo {
             0%, 100% { box-shadow: 0 2px 8px rgba(92,184,92,0.4); }
             50% { box-shadow: 0 0 0 8px rgba(92,184,92,0); }
+        }
+        .badge-pronto {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: #7c3aed;
+            color: #fff;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 5px 12px;
+            border-radius: 12px;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            z-index: 2;
+            box-shadow: 0 2px 8px rgba(124,58,237,0.4);
+            animation: pulse-pronto 2s ease-in-out infinite;
+        }
+        @keyframes pulse-pronto {
+            0%, 100% { box-shadow: 0 2px 8px rgba(124,58,237,0.4); }
+            50% { box-shadow: 0 0 0 8px rgba(124,58,237,0); }
         }/* Card info */
         .product-info {
             padding: 8px 12px 12px;
@@ -2244,7 +2264,7 @@
                             📦
                         </div>
                         <!-- Badge de almacén ocultado al cliente -->
-                        ${product.nuevo ? '<span class="badge-nuevo">NUEVO</span>' : ''}
+                        ${product.nuevo && product.existencias <= 0 ? '<span class="badge-pronto">Próximamente</span>' : (product.nuevo ? '<span class="badge-nuevo">NUEVO</span>' : '')}
                     </div>
                     <div class="product-info">
                         <span class="product-category-badge">${escapeHtml(product.categoria)}</span>
@@ -2253,14 +2273,14 @@
                                 ${escapeHtml(product.codigo)}
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
                             </span>
-                            <span class="stock-badge ${product.existencias > 0 ? 'in-stock' : 'out-of-stock'}">${product.existencias > 0 ? (product.existencias > 99 ? '+99 pzs' : product.existencias + ' pzs') : 'AGOTADO'}</span>
+                            <span class="stock-badge ${product.existencias > 0 ? 'in-stock' : 'out-of-stock'}">${product.existencias > 0 ? (product.existencias > 99 ? '+99 pzs' : product.existencias + ' pzs') : (product.nuevo ? 'Próximamente' : 'AGOTADO')}</span>
                         </div>
                         <h3 class="product-name">${escapeHtml(product.nombre)}</h3>
                         ${pricingHtml}
                         <div class="card-actions">
                             <button class="cart-add-btn${product.existencias <= 0 ? ' agotado' : ''}" data-codigo="${escapeHtml(product.codigo)}" aria-label="Agregar al carrito" title="${product.existencias <= 0 ? 'Sin existencias' : 'Agregar al carrito'}" ${product.existencias <= 0 ? 'disabled' : ''}>
                                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
-                                ${product.existencias <= 0 ? 'Agotado' : 'Agregar'}
+                                ${product.existencias <= 0 ? (product.nuevo ? 'Próximamente' : 'Agotado') : 'Agregar'}
                             </button>
                             ${linkWebHtml}
                         </div>
