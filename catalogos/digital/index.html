@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catálogos Digitales - Celulink</title>
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Poppins', -apple-system, sans-serif;
+            background: #f0f4f8;
+            color: #1a1a1a;
+            min-height: 100vh;
+        }
+
+        /* ===== HEADER ===== */
+        .header {
+            background: linear-gradient(135deg, #0B2545 0%, #1e3c72 50%, #2a5298 100%);
+            padding: 0 40px;
+            height: 72px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.2);
+        }
+        .logo { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+        .logo img { height: 40px; width: auto; filter: brightness(0) invert(1); }
+        .logo-text { color: #fff; font-size: 18px; font-weight: 700; letter-spacing: -0.3px; }
+        .header-link {
+            color: rgba(255,255,255,0.75);
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+        .header-link:hover { color: #fff; }
+
+        /* ===== HERO ===== */
+        .hero {
+            background: linear-gradient(135deg, #0B2545 0%, #1e3c72 100%);
+            padding: 56px 40px 48px;
+            text-align: center;
+            color: #fff;
+        }
+        .hero-eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(255,255,255,0.12);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 20px;
+            padding: 4px 14px;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            margin-bottom: 16px;
+            color: rgba(255,255,255,0.9);
+        }
+        .hero h1 {
+            font-size: 36px;
+            font-weight: 800;
+            line-height: 1.15;
+            letter-spacing: -0.5px;
+            margin-bottom: 12px;
+        }
+        .hero p {
+            font-size: 16px;
+            color: rgba(255,255,255,0.72);
+            max-width: 480px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        /* ===== CONTENT ===== */
+        .content {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 48px 24px 80px;
+        }
+
+        .section-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 24px;
+        }
+
+        /* ===== CATEGORY GRID ===== */
+        .category-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 20px;
+        }
+
+        .cat-card {
+            background: #fff;
+            border-radius: 16px;
+            padding: 28px 24px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            transition: transform 0.2s, box-shadow 0.2s;
+            cursor: default;
+        }
+        .cat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1), 0 8px 24px rgba(0,0,0,0.06);
+        }
+
+        .cat-icon {
+            font-size: 36px;
+            line-height: 1;
+        }
+
+        .cat-name {
+            font-size: 16px;
+            font-weight: 700;
+            color: #0B2545;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .cat-count {
+            font-size: 13px;
+            color: #64748b;
+            font-weight: 400;
+        }
+
+        .cat-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 4px;
+        }
+
+        .btn-ver {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 10px;
+            background: #0B2545;
+            color: #fff;
+            border-radius: 10px;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 600;
+            transition: background 0.2s;
+        }
+        .btn-ver:hover { background: #1e3c72; }
+
+        .btn-pdf {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 10px 14px;
+            background: #f1f5f9;
+            color: #475569;
+            border-radius: 10px;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 600;
+            transition: background 0.2s, color 0.2s;
+            white-space: nowrap;
+        }
+        .btn-pdf:hover { background: #e2e8f0; color: #0B2545; }
+
+        /* Full catalog card */
+        .cat-card.full-catalog {
+            background: linear-gradient(135deg, #0B2545 0%, #1e3c72 100%);
+            color: #fff;
+        }
+        .cat-card.full-catalog .cat-name { color: #fff; }
+        .cat-card.full-catalog .cat-count { color: rgba(255,255,255,0.65); }
+        .cat-card.full-catalog .btn-ver {
+            background: rgba(255,255,255,0.15);
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+        .cat-card.full-catalog .btn-ver:hover { background: rgba(255,255,255,0.25); }
+        .cat-card.full-catalog .btn-pdf {
+            background: rgba(255,255,255,0.1);
+            color: rgba(255,255,255,0.85);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        .cat-card.full-catalog .btn-pdf:hover { background: rgba(255,255,255,0.2); color: #fff; }
+
+        /* ===== SKELETON / LOADING ===== */
+        .loading-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 20px;
+        }
+        .skeleton-card {
+            background: #fff;
+            border-radius: 16px;
+            padding: 28px 24px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+        }
+        .sk { background: #e2e8f0; border-radius: 6px; animation: shimmer 1.5s infinite; }
+        .sk-icon { width: 40px; height: 40px; border-radius: 8px; margin-bottom: 12px; }
+        .sk-title { width: 70%; height: 16px; margin-bottom: 8px; }
+        .sk-sub { width: 40%; height: 12px; margin-bottom: 20px; }
+        .sk-btns { display: flex; gap: 8px; }
+        .sk-btn { height: 40px; border-radius: 10px; }
+        .sk-btn1 { flex: 1; }
+        .sk-btn2 { width: 60px; }
+        @keyframes shimmer {
+            0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; }
+        }
+
+        /* ===== FOOTER ===== */
+        .footer {
+            background: #0B2545;
+            color: rgba(255,255,255,0.5);
+            text-align: center;
+            padding: 24px;
+            font-size: 13px;
+        }
+        .footer a { color: rgba(255,255,255,0.7); text-decoration: none; }
+        .footer a:hover { color: #fff; }
+
+        /* ===== MOBILE ===== */
+        @media (max-width: 600px) {
+            .header { padding: 0 16px; }
+            .hero { padding: 40px 20px 36px; }
+            .hero h1 { font-size: 26px; }
+            .content { padding: 32px 16px 60px; }
+            .category-grid, .loading-grid { grid-template-columns: 1fr 1fr; gap: 12px; }
+            .cat-card { padding: 20px 16px; }
+        }
+        @media (max-width: 400px) {
+            .category-grid, .loading-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- HEADER -->
+    <header class="header">
+        <a class="logo" href="/">
+            <img src="/assets/celulink-logo.png" alt="Celulink" onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
+            <span class="logo-text" style="display:none">Celulink</span>
+        </a>
+        <a href="/" class="header-link">← Volver al inicio</a>
+    </header>
+
+    <!-- HERO -->
+    <div class="hero">
+        <div class="hero-eyebrow">📋 Catálogos Digitales</div>
+        <h1>Explora nuestros productos</h1>
+        <p>Navega por categoría o descarga como PDF para compartir.</p>
+    </div>
+
+    <!-- CONTENT -->
+    <div class="content">
+        <div class="section-title" id="sectionTitle">Cargando categorías...</div>
+
+        <div id="catalogGrid">
+            <!-- Skeleton loading -->
+            <div class="loading-grid" id="skeletonGrid">
+                ${Array.from({length: 6}, () => `
+                <div class="skeleton-card">
+                    <div class="sk sk-icon"></div>
+                    <div class="sk sk-title"></div>
+                    <div class="sk sk-sub"></div>
+                    <div class="sk-btns">
+                        <div class="sk sk-btn sk-btn1"></div>
+                        <div class="sk sk-btn sk-btn2"></div>
+                    </div>
+                </div>`).join('')}
+            </div>
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="footer">
+        <p>© 2026 <a href="/">Celulink</a> · Distribuidora de accesorios y tecnología</p>
+    </footer>
+
+<script>
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyIMh3orFnX-huWtsWPYX3Olb-QGNg8U70SsFWrpHRhqCTTCl5sv-b0Ly7g7YJlYFzCYw/exec';
+const TOKEN = 'CELUCENTER_SECURE_2025';
+
+const CAT_ICONS = {
+    'BOCINAS': '🔊',
+    'CARGADORES': '⚡',
+    'AUDÍFONOS': '🎧',
+    'MEMORIAS': '💾',
+    'ADAPTADORES': '🔌',
+    'COMPUTO': '💻',
+    'VIDEO JUEGOS': '🎮',
+    'ADICIONALES': '✨',
+    'AUDIFONOS': '🎧',
+    'VIDEOJUEGOS': '🎮',
+    'ACCESORIOS': '📱',
+    'CABLES': '🔗',
+};
+const DEFAULT_ICON = '📦';
+
+async function loadCategories() {
+    try {
+        const resp = await fetch(`${APPS_SCRIPT_URL}?token=${TOKEN}&action=catalog`);
+        const data = await resp.json();
+        const products = Array.isArray(data) ? data : (data.products || data.data || []);
+
+        // Group by category, count disponibles (stock > 0)
+        const cats = {};
+        for (const p of products) {
+            const cat = (p.categoria || 'GENERAL').trim().toUpperCase();
+            if (!cats[cat]) cats[cat] = { total: 0, disponibles: 0 };
+            cats[cat].total++;
+            const stock = typeof p.existencias === 'number' ? p.existencias : parseInt(p.existencias) || 0;
+            if (stock > 0) cats[cat].disponibles++;
+        }
+
+        const sortedCats = Object.entries(cats)
+            .sort(([, a], [, b]) => b.total - a.total);
+
+        const totalProducts = products.length;
+        const totalDisp = products.filter(p => {
+            const s = typeof p.existencias === 'number' ? p.existencias : parseInt(p.existencias) || 0;
+            return s > 0;
+        }).length;
+
+        document.getElementById('sectionTitle').textContent =
+            `${sortedCats.length} categorías · ${totalDisp} productos disponibles`;
+
+        const grid = document.createElement('div');
+        grid.className = 'category-grid';
+
+        // Full catalog card first
+        const fullCard = buildCard('ALL', '🗂️', 'Catálogo Completo', `${totalDisp} de ${totalProducts} disponibles`, true);
+        grid.appendChild(fullCard);
+
+        for (const [cat, counts] of sortedCats) {
+            const icon = CAT_ICONS[cat] || DEFAULT_ICON;
+            const label = counts.disponibles < counts.total
+                ? `${counts.disponibles} disponibles · ${counts.total - counts.disponibles} agotados`
+                : `${counts.total} productos`;
+            grid.appendChild(buildCard(cat, icon, cat, label, false));
+        }
+
+        document.getElementById('skeletonGrid').remove();
+        document.getElementById('catalogGrid').appendChild(grid);
+
+    } catch (err) {
+        console.error('Error cargando categorías:', err);
+        document.getElementById('sectionTitle').textContent = 'Error al cargar. Intenta de nuevo.';
+        document.getElementById('skeletonGrid').innerHTML =
+            '<p style="color:#ef4444;padding:20px;">No se pudo cargar el catálogo. Verifica tu conexión e intenta de nuevo.</p>';
+    }
+}
+
+function buildCard(cat, icon, name, subtitle, isFull) {
+    const encoded = encodeURIComponent(cat);
+    const viewUrl = `catalogo.html?cat=${encoded}`;
+    const pdfUrl  = `catalogo.html?cat=${encoded}&print=1`;
+
+    const card = document.createElement('div');
+    card.className = `cat-card${isFull ? ' full-catalog' : ''}`;
+    card.innerHTML = `
+        <div class="cat-icon">${icon}</div>
+        <div>
+            <div class="cat-name">${name}</div>
+            <div class="cat-count">${subtitle}</div>
+        </div>
+        <div class="cat-actions">
+            <a href="${viewUrl}" class="btn-ver">
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                Ver
+            </a>
+            <a href="${pdfUrl}" class="btn-pdf" target="_blank">
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+                PDF
+            </a>
+        </div>
+    `;
+    return card;
+}
+
+loadCategories();
+</script>
+</body>
+</html>
