@@ -2138,18 +2138,20 @@
             let pricingHtml = '';
 
             if (!userSession) {
-                // Precio inicial: precio público. Se actualiza en tiempo real al agregar al carrito.
-                const listaActiva = getProductLista(product.codigo);
-                const buyPrice = listaActiva === 'pub' ? (parsePrice(product.precioPublico) || 0) : getUnitPriceForList(product, listaActiva);
-                const buyFmt = formatMXN(buyPrice);
-                const pubNum = parsePrice(product.precioPublico);
-                const pubFmt = formatMXN(product.precioPublico);
-                if (buyFmt) {
-                    const listaLabel = listaActiva === 'pub' ? 'Precio público' : 'Lista ' + listaActiva;
-                    const pubRef = (pubNum && buyPrice && pubNum > buyPrice) ? `<span class="price-public">P. público ${pubFmt}</span>` : '';
-                    pricingHtml = `<div class="product-pricing"><div class="price-yours"><span class="price-label">${listaLabel}</span><span class="price-value">${buyFmt}</span>${pubRef}</div></div>`;
-                } else if (pubFmt) {
-                    pricingHtml = `<div class="product-pricing"><div class="price-yours"><span class="price-label">Precio público</span><span class="price-value">${pubFmt}</span></div></div>`;
+                // Público: muestra Precio Público, Lista Plus (G) y Lista Diamante (M)
+                const pubNum  = parsePrice(product.precioPublico) || 0;
+                const plusNum = parsePrice(product.listaG) || 0;
+                const diamNum = parsePrice(product.listaM) || 0;
+                const isDiamante = getCartTotal() >= UMBRAL_DIAMANTE;
+                const pubFmt  = pubNum  ? formatMXN(pubNum)  : null;
+                const plusFmt = plusNum ? formatMXN(plusNum) : null;
+                const diamFmt = diamNum ? formatMXN(diamNum) : null;
+                if (plusFmt || pubFmt) {
+                    const activePriceFmt = isDiamante && diamFmt ? diamFmt : (plusFmt || pubFmt);
+                    const activeLabel    = isDiamante && diamFmt ? '💎 Lista Diamante' : '⭐ Lista Plus';
+                    const pubRef = pubNum > (plusNum || pubNum) ? `<span class="price-public" style="text-decoration:line-through;font-size:11px;color:#999;">Público ${pubFmt}</span>` : '';
+                    const diamLock = !isDiamante && diamFmt ? `<span style="font-size:10px;color:#7c3aed;display:block;margin-top:2px;">🔒 Diamante ${diamFmt} (desde $1,500)</span>` : '';
+                    pricingHtml = `<div class="product-pricing"><div class="price-yours"><span class="price-label">${activeLabel}</span><span class="price-value">${activePriceFmt}</span>${pubRef}${diamLock}</div></div>`;
                 } else {
                     pricingHtml = '';
                 }
@@ -2350,7 +2352,8 @@
         const PIEZAS_2X    = 4;   // 4-7 pzas → Lista 2X
         const PIEZAS_F     = 8;   // 8-15 pzas → Mayoreo (Lista F)
         const PIEZAS_M     = 16;  // 16+ pzas → VIP+ (Lista M)
-        const UMBRAL_ENVIO = 10000; // desde $10,000 → envío incluido en pedido
+        const UMBRAL_ENVIO   = 10000; // desde $10,000 → envío incluido en pedido
+        const UMBRAL_DIAMANTE = 1500; // desde $1,500 en carrito → Lista Diamante (listaM)
 
         let cart = {}; // { codigo: { product, qty } }
 
@@ -2402,8 +2405,11 @@
             return parsePrice(product.lista2x) || parsePrice(product.precioPublico) || 0;
         }
 
-        // Precio por cantidad de ESE producto en el carrito (por producto, no total global)
+        // Lista activa para usuarios públicos: Plus (G) siempre, Diamante (M) si carrito >= $1,500
         function getProductLista(codigo) {
+            if (!userSession) {
+                return getCartTotal() >= UMBRAL_DIAMANTE ? 'M' : 'G';
+            }
             const qty = cart[codigo] ? cart[codigo].qty : 0;
             if (qty >= PIEZAS_M)  return 'M';
             if (qty >= PIEZAS_F)  return 'F';
@@ -2617,12 +2623,23 @@
             document.getElementById('cartSummaryTotal').textContent = formatMXN(getCartTotal());
             document.getElementById('btnWhatsAppOrder').disabled = false;
 
-            // Hint: envío incluido desde $10,000
+            // Hint: umbral Diamante y envío
             const totalHint = getCartTotal();
-            if (totalHint >= UMBRAL_ENVIO) {
-                hint.style.display = 'block';
+            hint.style.display = 'block';
+            if (!userSession && totalHint >= UMBRAL_DIAMANTE && totalHint < UMBRAL_ENVIO) {
+                hint.innerHTML = '💎 ¡Lista Diamante desbloqueada! Envío no incluido — maximiza tu pedido.';
+                hint.className = 'cart-mayoreo-hint is-level-m-free-shipping';
+                renderProducts(allProducts.filter(p => {
+                    const s = document.getElementById('searchInput') ? document.getElementById('searchInput').value.toLowerCase() : '';
+                    return !s || p.nombre.toLowerCase().includes(s) || p.codigo.toLowerCase().includes(s);
+                }));
+            } else if (totalHint >= UMBRAL_ENVIO) {
                 hint.innerHTML = '✈️ ¡ENVÍO INCLUIDO en este pedido!';
                 hint.className = 'cart-mayoreo-hint is-level-m-free-shipping';
+            } else if (!userSession && totalHint > 0) {
+                const falta = formatMXN(UMBRAL_DIAMANTE - totalHint);
+                hint.innerHTML = `⭐ Lista Plus activa. Agrega ${falta} más para desbloquear 💎 Lista Diamante.`;
+                hint.className = 'cart-mayoreo-hint';
             } else {
                 hint.style.display = 'none';
             }
