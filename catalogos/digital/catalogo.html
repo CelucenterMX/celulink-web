@@ -4,6 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Catálogo — Celulink</title>
+    <meta name="description" content="Catálogo digital de accesorios Celulink. Precios actualizados, fotos y disponibilidad en tiempo real.">
+    <meta property="og:title" content="Catálogo de Accesorios — Celulink">
+    <meta property="og:description" content="Catálogo con precios actualizados. Descarga como PDF o navega en línea.">
+    <meta property="og:image" content="https://celulink.mx/assets/celulink-logo.png">
+    <meta property="og:image:width" content="1024">
+    <meta property="og:image:height" content="1024">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary_large_image">
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
@@ -322,8 +330,12 @@
 
         /* ===== MOBILE ===== */
         @media (max-width: 600px) {
-            .screen-header { padding: 0 16px; }
+            .screen-header { padding: 0 12px; }
+            .header-left { gap: 8px; }
+            .header-logo { display: none; }
             .header-cat-title { display: none; }
+            .btn-print { padding: 8px 14px; font-size: 12px; gap: 4px; }
+            .btn-print svg { width: 14px; height: 14px; }
             .content { padding: 24px 12px 60px; }
             .product-grid, .skeleton-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
             .cat-heading { font-size: 20px; }
@@ -331,7 +343,7 @@
 
         /* ===== PRINT STYLES ===== */
         @media print {
-            body { background: #fff; }
+            body { background: #fff; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             .screen-header { display: none !important; }
             .btn-print { display: none !important; }
             .content-top { display: none !important; }
@@ -411,16 +423,14 @@
         <div id="mainContent">
             <!-- Skeleton -->
             <div class="skeleton-grid" id="skeletonGrid">
-                ${Array.from({length: 12}, () => `
-                <div class="sk-card">
-                    <div class="sk-img"></div>
-                    <div class="sk-info">
-                        <div class="sk sk-code"></div>
-                        <div class="sk sk-name"></div>
-                        <div class="sk sk-name2"></div>
-                        <div class="sk sk-price"></div>
-                    </div>
-                </div>`).join('')}
+                <div class="sk-card"><div class="sk-img"></div><div class="sk-info"><div class="sk sk-code"></div><div class="sk sk-name"></div><div class="sk sk-name2"></div><div class="sk sk-price"></div></div></div>
+                <div class="sk-card"><div class="sk-img"></div><div class="sk-info"><div class="sk sk-code"></div><div class="sk sk-name"></div><div class="sk sk-name2"></div><div class="sk sk-price"></div></div></div>
+                <div class="sk-card"><div class="sk-img"></div><div class="sk-info"><div class="sk sk-code"></div><div class="sk sk-name"></div><div class="sk sk-name2"></div><div class="sk sk-price"></div></div></div>
+                <div class="sk-card"><div class="sk-img"></div><div class="sk-info"><div class="sk sk-code"></div><div class="sk sk-name"></div><div class="sk sk-name2"></div><div class="sk sk-price"></div></div></div>
+                <div class="sk-card"><div class="sk-img"></div><div class="sk-info"><div class="sk sk-code"></div><div class="sk sk-name"></div><div class="sk sk-name2"></div><div class="sk sk-price"></div></div></div>
+                <div class="sk-card"><div class="sk-img"></div><div class="sk-info"><div class="sk sk-code"></div><div class="sk sk-name"></div><div class="sk sk-name2"></div><div class="sk sk-price"></div></div></div>
+                <div class="sk-card"><div class="sk-img"></div><div class="sk-info"><div class="sk sk-code"></div><div class="sk sk-name"></div><div class="sk sk-name2"></div><div class="sk sk-price"></div></div></div>
+                <div class="sk-card"><div class="sk-img"></div><div class="sk-info"><div class="sk sk-code"></div><div class="sk sk-name"></div><div class="sk sk-name2"></div><div class="sk sk-price"></div></div></div>
             </div>
         </div>
     </div>
@@ -441,8 +451,14 @@ const CAT_ICONS = {
 };
 
 const params = new URLSearchParams(location.search);
-const catParam = (params.get('cat') || 'ALL').trim().toUpperCase();
+const catParamRaw = (params.get('cat') || 'ALL').trim().toUpperCase();
 const autoPrint = params.get('print') === '1';
+
+// Normalize diacritics for fuzzy category matching
+function stripAccents(s) {
+    return s.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+}
+const catParam = catParamRaw;
 
 function formatMXN(val) {
     if (!val && val !== 0) return '';
@@ -507,10 +523,11 @@ async function loadCatalog() {
 
         const isAll = catParam === 'ALL';
 
-        // Filter
+        // Filter (with diacritics normalization for fuzzy match)
+        const catNorm = stripAccents(catParam);
         let filtered = isAll ? products : products.filter(p => {
             const c = (p.categoria || '').trim().toUpperCase();
-            return c === catParam;
+            return c === catParam || stripAccents(c) === catNorm;
         });
 
         // Update title
@@ -553,6 +570,8 @@ async function loadCatalog() {
                 if (!groups[c]) { groups[c] = []; order.push(c); }
                 groups[c].push(p);
             }
+            // Sort categories by size (most products first)
+            order.sort((a, b) => groups[b].length - groups[a].length);
             const sections = order.map(c => {
                 const icon = CAT_ICONS[c] || '📦';
                 const disp2 = groups[c].filter(p => {
@@ -575,9 +594,16 @@ async function loadCatalog() {
             container.innerHTML = `<div class="product-grid">${filtered.map(buildProductCard).join('')}</div>`;
         }
 
-        // Auto-print if requested
+        // Auto-print: wait for images to load before printing
         if (autoPrint) {
-            setTimeout(() => window.print(), 1200);
+            const images = container.querySelectorAll('img.product-img');
+            images.forEach(img => img.loading = 'eager');
+            const loaded = Array.from(images).map(img =>
+                img.complete ? Promise.resolve() : new Promise(r => { img.onload = r; img.onerror = r; })
+            );
+            Promise.all(loaded).then(() => setTimeout(() => window.print(), 400));
+            // Fallback: print even if images are slow
+            setTimeout(() => window.print(), 6000);
         }
 
     } catch (err) {

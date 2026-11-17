@@ -4,6 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Catálogos Digitales - Celulink</title>
+    <meta name="description" content="Explora el catálogo digital de accesorios Celulink. Bocinas, cargadores, audífonos, memorias y más. Descarga como PDF o navega en línea.">
+    <meta property="og:title" content="Catálogos Digitales - Celulink">
+    <meta property="og:description" content="Explora el catálogo de accesorios por categoría. Descarga como PDF o navega en línea.">
+    <meta property="og:image" content="https://celulink.mx/assets/celulink-logo.png">
+    <meta property="og:image:width" content="1024">
+    <meta property="og:image:height" content="1024">
+    <meta property="og:url" content="https://celulink.mx/catalogos/digital/">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary_large_image">
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
@@ -69,7 +78,7 @@
         }
         .hero p {
             font-size: 16px;
-            color: rgba(255,255,255,0.72);
+            color: rgba(255,255,255,0.85);
             max-width: 480px;
             margin: 0 auto;
             line-height: 1.6;
@@ -236,7 +245,7 @@
             .category-grid, .loading-grid { grid-template-columns: 1fr 1fr; gap: 12px; }
             .cat-card { padding: 20px 16px; }
         }
-        @media (max-width: 400px) {
+        @media (max-width: 360px) {
             .category-grid, .loading-grid { grid-template-columns: 1fr; }
         }
     </style>
@@ -266,16 +275,12 @@
         <div id="catalogGrid">
             <!-- Skeleton loading -->
             <div class="loading-grid" id="skeletonGrid">
-                ${Array.from({length: 6}, () => `
-                <div class="skeleton-card">
-                    <div class="sk sk-icon"></div>
-                    <div class="sk sk-title"></div>
-                    <div class="sk sk-sub"></div>
-                    <div class="sk-btns">
-                        <div class="sk sk-btn sk-btn1"></div>
-                        <div class="sk sk-btn sk-btn2"></div>
-                    </div>
-                </div>`).join('')}
+                <div class="skeleton-card"><div class="sk sk-icon"></div><div class="sk sk-title"></div><div class="sk sk-sub"></div><div class="sk-btns"><div class="sk sk-btn sk-btn1"></div><div class="sk sk-btn sk-btn2"></div></div></div>
+                <div class="skeleton-card"><div class="sk sk-icon"></div><div class="sk sk-title"></div><div class="sk sk-sub"></div><div class="sk-btns"><div class="sk sk-btn sk-btn1"></div><div class="sk sk-btn sk-btn2"></div></div></div>
+                <div class="skeleton-card"><div class="sk sk-icon"></div><div class="sk sk-title"></div><div class="sk sk-sub"></div><div class="sk-btns"><div class="sk sk-btn sk-btn1"></div><div class="sk sk-btn sk-btn2"></div></div></div>
+                <div class="skeleton-card"><div class="sk sk-icon"></div><div class="sk sk-title"></div><div class="sk sk-sub"></div><div class="sk-btns"><div class="sk sk-btn sk-btn1"></div><div class="sk sk-btn sk-btn2"></div></div></div>
+                <div class="skeleton-card"><div class="sk sk-icon"></div><div class="sk sk-title"></div><div class="sk sk-sub"></div><div class="sk-btns"><div class="sk sk-btn sk-btn1"></div><div class="sk sk-btn sk-btn2"></div></div></div>
+                <div class="skeleton-card"><div class="sk sk-icon"></div><div class="sk sk-title"></div><div class="sk sk-sub"></div><div class="sk-btns"><div class="sk sk-btn sk-btn1"></div><div class="sk sk-btn sk-btn2"></div></div></div>
             </div>
         </div>
     </div>
@@ -304,6 +309,10 @@ const CAT_ICONS = {
     'CABLES': '🔗',
 };
 const DEFAULT_ICON = '📦';
+
+function escapeHtml(s) {
+    return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
 
 async function loadCategories() {
     try {
@@ -369,8 +378,8 @@ function buildCard(cat, icon, name, subtitle, isFull) {
     card.innerHTML = `
         <div class="cat-icon">${icon}</div>
         <div>
-            <div class="cat-name">${name}</div>
-            <div class="cat-count">${subtitle}</div>
+            <div class="cat-name">${escapeHtml(name)}</div>
+            <div class="cat-count">${escapeHtml(subtitle)}</div>
         </div>
         <div class="cat-actions">
             <a href="${viewUrl}" class="btn-ver">
