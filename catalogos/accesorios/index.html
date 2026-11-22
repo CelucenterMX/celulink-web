@@ -1940,11 +1940,21 @@
         // ============================================================
         // FETCH PRODUCTS
         // ============================================================
-        async function fetchProducts() {
+        async function fetchProducts(retries = 3) {
             const url = `${APPS_SCRIPT_URL}?token=${TOKEN}&action=catalog`;
-            const response = await fetch(url);
-            const data = await response.json();
-            return processDataFromAppsScript(data);
+            let lastError;
+            for (let attempt = 1; attempt <= retries; attempt++) {
+                try {
+                    const response = await fetch(url);
+                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                    const data = await response.json();
+                    return processDataFromAppsScript(data);
+                } catch (err) {
+                    lastError = err;
+                    if (attempt < retries) await new Promise(r => setTimeout(r, 1500 * attempt));
+                }
+            }
+            throw lastError;
         }
 
         function processDataFromAppsScript(data) {
@@ -2340,6 +2350,9 @@
                     <p style="margin-top: 10px; font-size: 0.9rem;">
                         Verifica tu conexion a internet e intenta nuevamente.
                     </p>
+                    <button onclick="location.reload()" style="margin-top:16px;padding:10px 24px;background:#E31837;color:#fff;border:none;border-radius:8px;font-size:1rem;cursor:pointer;">
+                        Reintentar
+                    </button>
                 </div>
             `;
         }
