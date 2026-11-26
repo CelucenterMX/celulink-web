@@ -16,11 +16,6 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://celulink.mx/catalogos/digital/catalogo.html?cat=ALL</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
     <loc>https://celulink.mx/catalogos/accesorios/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
